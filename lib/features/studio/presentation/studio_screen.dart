@@ -3,7 +3,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../core/network/media_headers.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/widgets/section_header.dart';
-import '../../media/presentation/video_list_for_mpids.dart';
+import '../../media/data/video_item.dart';
+import '../../media/data/video_service.dart';
+import '../../media/presentation/video_player_dialog.dart';
 
 class StudioScreen extends StatefulWidget {
   final List<dynamic> menuAreas;
@@ -22,36 +24,163 @@ class StudioScreen extends StatefulWidget {
 class _StudioScreenState extends State<StudioScreen> {
   int _selectedIndex = 0;
 
-  @override
-  Widget build(BuildContext context) {
-    Map<String, dynamic>? studiosArea;
+  final VideoService _videoService = const VideoService();
+  final List<VideoItem> _videos = [];
+  bool _loadingVideos = false;
+  bool _endReached = false;
+  int _offset = 0;
+  final int _limit = 6;
 
+  /// Returnează lista de areas de sub "Sports Studios".
+  List<Map<String, dynamic>> get _studioAreas {
     for (final area in widget.menuAreas) {
       final m = area as Map<String, dynamic>;
       if (m['name']?.toString() == 'Sports Studios') {
-        studiosArea = m;
-        break;
+        final list = m['areas'] as List? ?? [];
+        return list.cast<Map<String, dynamic>>();
       }
     }
+    return const [];
+  }
 
-    if (studiosArea == null) {
-      return const Center(child: Text('No Sports Studios configured'));
+  String? get _currentMpids {
+    final areas = _studioAreas;
+    if (areas.isEmpty || _selectedIndex >= areas.length) return null;
+    final selected = areas[_selectedIndex];
+    return (selected['mpids'] ?? selected['mpid'])?.toString();
+  }
+
+  String get _currentName {
+    final areas = _studioAreas;
+    if (areas.isEmpty || _selectedIndex >= areas.length) return '';
+    return areas[_selectedIndex]['name']?.toString() ?? '';
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // implicit: primul tab (ex: Goats)
+    _resetAndLoadForIndex(0);
+  }
+
+  Future<void> _resetAndLoadForIndex(int index) async {
+    setState(() {
+      _selectedIndex = index;
+      _videos.clear();
+      _offset = 0;
+      _endReached = false;
+    });
+    await _loadMore();
+  }
+
+  Future<void> _loadMore() async {
+    if (_loadingVideos || _endReached) return;
+    final mpids = _currentMpids;
+    if (mpids == null || mpids.trim().isEmpty) {
+      setState(() {
+        _loadingVideos = false;
+        _endReached = true;
+      });
+      return;
     }
 
-    final areas = studiosArea['areas'] as List? ?? [];
+    setState(() {
+      _loadingVideos = true;
+    });
+
+    final newItems = await _videoService.fetchVideosForSets(
+      mpids,
+      _offset,
+      widget.languageCode,
+      limit: _limit,
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      _videos.addAll(newItems);
+      _offset += _limit;
+      if (newItems.length < _limit) {
+        _endReached = true;
+      }
+      _loadingVideos = false;
+    });
+  }
+
+  void _openPlayer(VideoItem v) {
+    final url = v.videoUrl;
+    if (url == null || url.isEmpty) return;
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (_) => VideoPlayerDialog(
+        videoUrl: url,
+        title: v.title,
+      ),
+    );
+  }
+
+  Widget _buildGridItem(VideoItem v) {
+    return InkWell(
+      onTap: () => _openPlayer(v),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AspectRatio(
+            aspectRatio: 16 / 9,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (v.thumbUrl != null)
+                    Image.network(
+                      v.thumbUrl!,
+                      fit: BoxFit.cover,
+                      headers: mediaHeaders,
+                    )
+                  else
+                    Container(color: Colors.grey.shade300),
+                  const Align(
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.play_circle_fill,
+                      size: 40,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            v.title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final areas = _studioAreas;
 
     if (areas.isEmpty) {
-      return const Center(child: Text('No studios areas available'));
+      return const Center(child: Text('No Sports Studios configured'));
     }
 
     if (_selectedIndex >= areas.length) {
       _selectedIndex = 0;
     }
 
-    final selectedArea = areas[_selectedIndex] as Map<String, dynamic>;
-    final String selectedName = selectedArea['name']?.toString() ?? '';
-    final String? selectedMpids =
-        (selectedArea['mpids'] ?? selectedArea['mpid'])?.toString();
+    final selectedName = _currentName;
 
     return Column(
       children: [
@@ -67,16 +196,14 @@ class _StudioScreenState extends State<StudioScreen> {
               itemCount: areas.length,
               separatorBuilder: (_, __) => const SizedBox(width: 8),
               itemBuilder: (context, index) {
-                final area = areas[index] as Map<String, dynamic>;
+                final area = areas[index];
                 final name = area['name']?.toString() ?? '';
                 final iconUrl = area['icon']?.toString();
                 final isSelected = index == _selectedIndex;
 
                 return GestureDetector(
                   onTap: () {
-                    setState(() {
-                      _selectedIndex = index;
-                    });
+                    _resetAndLoadForIndex(index);
                   },
                   child: Container(
                     width: 90,
@@ -85,7 +212,9 @@ class _StudioScreenState extends State<StudioScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 6),
+                      horizontal: 8,
+                      vertical: 6,
+                    ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -134,20 +263,61 @@ class _StudioScreenState extends State<StudioScreen> {
               SliverToBoxAdapter(
                 child: SectionHeader(title: selectedName),
               ),
+              if (_videos.isEmpty && _loadingVideos)
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                )
+              else if (_videos.isEmpty)
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text('No videos configured for this studio.'),
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  sliver: SliverGrid(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                      childAspectRatio: 16 / 11,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final v = _videos[index];
+                        return _buildGridItem(v);
+                      },
+                      childCount: _videos.length,
+                    ),
+                  ),
+                ),
               SliverToBoxAdapter(
-                child: selectedMpids != null &&
-                        selectedMpids.trim().isNotEmpty
-                    ? VideoListForMpids(
-                        mpids: selectedMpids,
-                        languageCode: widget.languageCode,
-                      )
-                    : const Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Text('No videos configured for this studio.'),
+                child: Column(
+                  children: [
+                    if (_videos.isNotEmpty && !_endReached)
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: ElevatedButton(
+                          onPressed: _loadMore,
+                          child: const Text('Load more'),
+                        ),
                       ),
-              ),
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 24),
+                    if (_endReached)
+                      const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Text('No more videos'),
+                      ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
             ],
           ),
