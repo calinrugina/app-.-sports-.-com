@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:video_player/video_player.dart';
-import 'package:chewie/chewie.dart';
+import 'package:flutter_meedu_videoplayer/meedu_player.dart';
+
 import '../../../core/network/media_headers.dart';
+
+
 
 class VideoPlayerDialog extends StatefulWidget {
   final String videoUrl;
@@ -19,10 +20,11 @@ class VideoPlayerDialog extends StatefulWidget {
 }
 
 class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
-  VideoPlayerController? _videoController;
-  ChewieController? _chewieController;
-  bool _initializing = true;
-  String? _error;
+  // 1. Inițializarea Controllerului
+  final MeeduPlayerController _meeduPlayerController = MeeduPlayerController(
+    // Proprietățile de configurare (ex: orientarea) se setează acum direct
+    // pe controller sau sunt gestionate implicit.
+  );
 
   @override
   void initState() {
@@ -31,53 +33,30 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
   }
 
   Future<void> _initPlayer() async {
-    try {
-      final controller = VideoPlayerController.networkUrl(
-        Uri.parse(widget.videoUrl),
-        httpHeaders: mediaHeaders,
-      );
-      await controller.initialize();
+    // 2. Definirea sursei video
+    final dataSource = DataSource(
+      type: DataSourceType.network,
+      source: widget.videoUrl,
 
-      final chewie = ChewieController(
-        videoPlayerController: controller,
-        autoPlay: true,
-        looping: false,
-        allowFullScreen: true,
-        allowMuting: true,
-        // deviceOrientationsOnEnter: const [
-        //   DeviceOrientation.portraitUp,
-        //   DeviceOrientation.landscapeLeft,
-        //   DeviceOrientation.landscapeRight,
-        // ],
-        // deviceOrientationsAfterFullScreen: const [
-        //   DeviceOrientation.portraitUp,
-        // ],
-      );
+      // 🚀 Adăugarea header-ului HTTP solicitat AICI
+      httpHeaders: mediaHeaders,
 
-      if (!mounted) {
-        controller.dispose();
-        chewie.dispose();
-        return;
-      }
+      // 'subtitleTracks' este numele corect al parametrului
+      // subtitleTracks: [],
+    );
 
-      setState(() {
-        _videoController = controller;
-        _chewieController = chewie;
-        _initializing = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = 'Failed to load video';
-        _initializing = false;
-      });
-    }
+    // 3. Setarea sursei video
+    await _meeduPlayerController.setDataSource(
+      dataSource,
+      autoplay: true,
+      // Puteți seta opțiuni suplimentare aici
+      // closedCaptionEnabled: true,
+    );
   }
 
   @override
   void dispose() {
-    _chewieController?.dispose();
-    _videoController?.dispose();
+    _meeduPlayerController.dispose();
     super.dispose();
   }
 
@@ -89,34 +68,27 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           return AspectRatio(
-            aspectRatio: _videoController?.value.aspectRatio ?? (16 / 9),
+            aspectRatio: 16 / 9,
             child: Stack(
               children: [
-                Center(
-                  child: _initializing
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : (_error != null
-                          ? Text(
-                              _error!,
-                              style: const TextStyle(color: Colors.white),
-                            )
-                          : (_chewieController != null
-                              ? Chewie(controller: _chewieController!)
-                              : const Text(
-                                  'No video',
-                                  style: TextStyle(color: Colors.white),
-                                ))),
+                // Meedu Video Player (acest widget folosește controllerul pentru a afișa UI)
+                MeeduVideoPlayer(
+                  controller: _meeduPlayerController,
                 ),
+
+                // Butonul de închidere (Custom Overlay)
                 Positioned(
                   top: 8,
                   right: 8,
                   child: IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
+                    icon: const Icon(Icons.close, color: Colors.white, size: 30),
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
                   ),
                 ),
+
+                // Titlul (Custom Overlay)
                 Positioned(
                   left: 16,
                   right: 16,
@@ -128,6 +100,13 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
+                      shadows: [
+                        Shadow(
+                          blurRadius: 3.0,
+                          color: Colors.black,
+                          offset: Offset(1.0, 1.0),
+                        ),
+                      ],
                     ),
                   ),
                 ),

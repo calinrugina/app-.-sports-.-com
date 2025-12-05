@@ -19,11 +19,11 @@ dependencies:
   crypto: ^3.0.3
   flutter_html: ^3.0.0-beta.2
   video_player: ^2.10.1
-  chewie: ^1.13.0
+  flutter_meedu_videoplayer: ^4.3.2
   webview_flutter: ^4.9.0
   package_info_plus: ^8.0.0
   upgrader: ^12.3.0
-
+  intl:
 
 dev_dependencies:
   flutter_test:

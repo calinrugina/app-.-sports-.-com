@@ -90,18 +90,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           items.add(
             BottomNavigationBarItem(
               icon: SvgPicture.asset(
-                'assets/images/tab_livescores.svg',
+                'assets/images/tab_live.svg',
                 height: 22,
               ),
               activeIcon: SvgPicture.asset(
-                'assets/images/tab_livescores.svg',
+                'assets/images/tab_live.svg',
                 height: 22,
                 colorFilter: const ColorFilter.mode(
                   AppColors.red,
                   BlendMode.srcIn,
                 ),
               ),
-              label: 'Livescores',
+              label: 'Live',
             ),
           );
         }

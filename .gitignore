@@ -119,3 +119,10 @@ app.*.symbols
 !/dev/ci/**/Gemfile.lock
 /.idea/.gitignore
 /.idea/vcs.xml
+/.idea/caches/deviceStreaming.xml
+/.idea/libraries/Dart_Packages.xml
+/.idea/libraries/Dart_SDK.xml
+/.idea/libraries/Flutter_Plugins.xml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/sports-app.iml

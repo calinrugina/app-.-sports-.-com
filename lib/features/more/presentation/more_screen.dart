@@ -6,6 +6,10 @@ import '../../../core/language/language_provider.dart';
 import '../presentation/notifications_settings_screen.dart';
 import '../presentation/language_selection_screen.dart';
 import '../presentation/simple_webview_screen.dart';
+import '../../../core/app_config.dart';
+final _upgraderInstance = Upgrader(
+  debugDisplayAlways: true, // Pentru test
+);
 
 class MoreScreen extends ConsumerWidget {
   const MoreScreen({super.key});
@@ -31,14 +35,7 @@ class MoreScreen extends ConsumerWidget {
     return Center(
       child: UpgradeAlert(
           // 2. Personalizați proprietățile Upgrader-ului, dacă doriți
-          upgrader: Upgrader(
-            // Setarea cheie: forțează afișarea dialogului
-            debugDisplayAlways: true,
-            // Setează ca alerta să apară doar o dată pe zi, de exemplu
-            durationUntilAlertAgain: const Duration(days: 1),
-            // Puteți seta la true doar pentru testare, pentru a forța apariția dialogului
-            // debugDisplayAlways: true,
-          ),
+          upgrader: _upgraderInstance,
           child: ListView(
             children: [
               const SizedBox(height: 16),
@@ -76,9 +73,9 @@ class MoreScreen extends ConsumerWidget {
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => const SimpleWebViewScreen(
+                      builder: (_) => SimpleWebViewScreen(
                         title: 'Terms & Conditions',
-                        url: 'https://sports.com/en/terms-and-conditions',
+                        url: '${AppConfig.baseUrl}/en/terms-and-conditions',
                       ),
                     ),
                   );
@@ -91,9 +88,9 @@ class MoreScreen extends ConsumerWidget {
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => const SimpleWebViewScreen(
+                      builder: (_) => SimpleWebViewScreen(
                         title: 'Privacy Policy',
-                        url: 'https://sports.com/en/privacy-policy',
+                        url: '${AppConfig.baseUrl}/en/privacy-policy',
                       ),
                     ),
                   );

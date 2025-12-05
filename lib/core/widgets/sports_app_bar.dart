@@ -5,6 +5,8 @@ import '../../features/config/providers/config_provider.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
+import '../app_config.dart';
+import '../app_functions.dart';
 import '../network/media_headers.dart';
 
 class SportsAppBar extends ConsumerWidget implements PreferredSizeWidget {
@@ -40,7 +42,7 @@ class SportsAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 );
               }
               return const Text(
-                'SPORTS.COM',
+                AppConfig.appName,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -56,7 +58,7 @@ class SportsAppBar extends ConsumerWidget implements PreferredSizeWidget {
               ),
             ),
             error: (e, st) => const Text(
-              'SPORTS.COM',
+              AppConfig.appName,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
