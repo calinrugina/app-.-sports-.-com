@@ -1,0 +1,33 @@
+name: sports_config_app
+description: Sports.com Flutter app driven by /api/config
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  flutter_riverpod: ^2.5.1
+  dio: ^5.7.0
+  shared_preferences: ^2.3.2
+  flutter_svg: ^2.0.10+1
+  http: ^1.2.2
+  crypto: ^3.0.3
+  flutter_html: ^3.0.0-beta.2
+  video_player: ^2.10.1
+  chewie: ^1.13.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
