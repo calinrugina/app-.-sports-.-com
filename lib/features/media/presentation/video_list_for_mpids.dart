@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../data/video_item.dart';
 import '../data/video_service.dart';
 import '../../../core/network/media_headers.dart';
-import 'video_player_screen.dart';
+import 'video_player_dialog.dart';
 
 /// Listă orizontală de video-uri pentru un set de mpids (from_sets).
 class VideoListForMpids extends StatefulWidget {
@@ -43,6 +43,19 @@ class _VideoListForMpidsState extends State<VideoListForMpids> {
     });
   }
 
+  void _openPlayer(VideoItem v) {
+    final url = v.videoUrl;
+    if (url == null || url.isEmpty) return;
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (_) => VideoPlayerDialog(
+        videoUrl: url,
+        title: v.title,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -68,19 +81,7 @@ class _VideoListForMpidsState extends State<VideoListForMpids> {
         itemBuilder: (context, index) {
           final v = _videos[index];
           return InkWell(
-            onTap: () {
-              final url = v.videoUrl;
-              if (url != null && url.isNotEmpty) {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => VideoPlayerScreen(
-                      videoUrl: url,
-                      title: v.title,
-                    ),
-                  ),
-                );
-              }
-            },
+            onTap: () => _openPlayer(v),
             child: SizedBox(
               width: 260,
               child: Column(

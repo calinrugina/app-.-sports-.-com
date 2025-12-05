@@ -1,0 +1,45 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/notifications_provider.dart';
+
+class NotificationsSettingsScreen extends ConsumerWidget {
+  const NotificationsSettingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final enabled = ref.watch(notificationsProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Notifications'),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          SwitchListTile(
+            title: const Text('Enable notifications'),
+            value: enabled,
+            onChanged: (value) {
+              ref.read(notificationsProvider.notifier).setEnabled(value);
+            },
+          ),
+          const Divider(),
+          const SizedBox(height: 8),
+          const Text(
+            'Teams notifications',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Here you will be able to choose teams for which you want to receive notifications.',
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'TODO: implement real teams list from API.',
+            style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
+          ),
+        ],
+      ),
+    );
+  }
+}

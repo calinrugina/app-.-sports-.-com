@@ -74,7 +74,11 @@ class ArticleService {
         final json = jsonDecode(response.body);
         final newsItem = json['news']?['newsItem']?[0];
         if (newsItem != null) {
-          return newsItem['description']?.toString();
+          var html = newsItem['description']?.toString();
+          if (html != null) {
+            html = html.replaceAll('src="//', 'src="https://');
+          }
+          return html;
         }
       } else {
         debugPrint('HTTP error (article detail): ${response.statusCode}');

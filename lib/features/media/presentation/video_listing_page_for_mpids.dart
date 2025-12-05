@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../data/video_item.dart';
 import '../data/video_service.dart';
 import '../../../core/network/media_headers.dart';
-import 'video_player_screen.dart';
+import 'video_player_dialog.dart';
 
 class VideoListingPageForMpids extends StatefulWidget {
   final String title;
@@ -60,6 +60,19 @@ class _VideoListingPageForMpidsState extends State<VideoListingPageForMpids> {
     });
   }
 
+  void _openPlayer(VideoItem v) {
+    final url = v.videoUrl;
+    if (url == null || url.isEmpty) return;
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (_) => VideoPlayerDialog(
+        videoUrl: url,
+        title: v.title,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,19 +89,7 @@ class _VideoListingPageForMpidsState extends State<VideoListingPageForMpids> {
               itemBuilder: (context, index) {
                 final v = _videos[index];
                 return InkWell(
-                  onTap: () {
-                    final url = v.videoUrl;
-                    if (url != null && url.isNotEmpty) {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => VideoPlayerScreen(
-                            videoUrl: url,
-                            title: v.title,
-                          ),
-                        ),
-                      );
-                    }
-                  },
+                  onTap: () => _openPlayer(v),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../features/config/providers/config_provider.dart';
+import '../../features/auth/providers/auth_provider.dart';
+import '../../features/auth/presentation/login_screen.dart';
+import '../../features/profile/presentation/profile_screen.dart';
 import '../network/media_headers.dart';
 
 class SportsAppBar extends ConsumerWidget implements PreferredSizeWidget {
@@ -82,10 +85,10 @@ class SportsAppBar extends ConsumerWidget implements PreferredSizeWidget {
           ),
           IconButton(
             onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                builder: (ctx) => const _AccountSheet(),
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const ProfileScreen(),
+                ),
               );
             },
             icon: const CircleAvatar(
@@ -174,11 +177,13 @@ class _NotificationsSheet extends StatelessWidget {
   }
 }
 
-class _AccountSheet extends StatelessWidget {
+class _AccountSheet extends ConsumerWidget {
   const _AccountSheet();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isLoggedIn = ref.watch(authProvider);
+
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -195,12 +200,33 @@ class _AccountSheet extends StatelessWidget {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
-          const Text('User not logged in.'),
-          const SizedBox(height: 12),
-          ElevatedButton(
-            onPressed: () {},
-            child: const Text('Login / Sign up'),
-          ),
+          if (!isLoggedIn) ...[
+            const Text('User not logged in.'),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const LoginScreen(),
+                  ),
+                );
+              },
+              child: const Text('Login / Sign up'),
+            ),
+          ] else ...[
+            const Text('You are logged in.'),
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              onPressed: () async {
+                await ref.read(authProvider.notifier).logout();
+                if (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                }
+              },
+              icon: const Icon(Icons.logout),
+              label: const Text('Logout'),
+            ),
+          ],
           const SizedBox(height: 8),
           TextButton(
             onPressed: () {
@@ -214,3 +240,4 @@ class _AccountSheet extends StatelessWidget {
     );
   }
 }
+
