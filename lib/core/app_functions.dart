@@ -2,14 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:http/http.dart' as http;
 
-class SvgIconLoader extends StatefulWidget {
+// Calea către iconița SVG implicită din assets
+const String kDefaultSvgAsset = 'assets/images/default.svg';class SvgIconLoader extends StatefulWidget {
   final String iconUrl;
+  final String? localAssetPath; // Noua proprietate pentru încărcare locală
   final Map<String, String> headers;
+  final double size;
+  final Color color;
+  final Color? backgroundColor; // Proprietate nouă pentru fundal (opțional)
 
   const SvgIconLoader({
     super.key,
+    this.localAssetPath, // Acum opțional
     required this.iconUrl,
     required this.headers,
+    this.size = 24.0, // Dimensiune implicită
+    this.color = Colors.white, // Culoare implicită
+    this.backgroundColor, // Poate fi null (fără fundal) sau o culoare (inclusiv alpha)
   });
 
   @override
@@ -17,76 +26,159 @@ class SvgIconLoader extends StatefulWidget {
 }
 
 class _SvgIconLoaderState extends State<SvgIconLoader> {
-  // O stare pentru a ține minte dacă URL-ul este valid
-  late Future<bool> _isUrlValid;
+  // O stare pentru a ține minte conținutul SVG (String) sau null în caz de eroare.
+  // Folosit doar dacă nu este furnizat un asset local.
+  late Future<String?> _svgContentFuture;
 
   @override
   void initState() {
     super.initState();
-    // Apelăm funcția de verificare la inițializare
-    _isUrlValid = _checkUrlValidity();
-  }
-
-  // Funcție asincronă pentru a verifica dacă URL-ul returnează un cod 200 (OK)
-  Future<bool> _checkUrlValidity() async {
-    // Încercăm să folosim HEAD pentru a verifica existența resursei
-    try {
-      final response = await http.head(Uri.parse(widget.iconUrl), headers: widget.headers);
-
-      // Dacă este 200 OK, returnăm true
-      return response.statusCode == 200;
-
-    } catch (e) {
-      // Dacă apare o eroare de rețea sau altă excepție, returnăm false
-      print('Eroare la verificarea URL-ului SVG: $e');
-      return false;
+    // Inițializăm Future-ul DOAR dacă nu avem un asset local de încărcat
+    if (widget.localAssetPath == null) {
+      _svgContentFuture = _loadSvgContent();
     }
   }
 
+  // Funcție asincronă pentru a descărca și valida conținutul SVG (doar pentru URL-uri).
+  Future<String?> _loadSvgContent() async {
+    if (widget.iconUrl.isEmpty) {
+      return null;
+    }
+
+    try {
+      // Folosim http.get pentru a obține conținutul
+      final response = await http.get(Uri.parse(widget.iconUrl), headers: widget.headers);
+
+      if (response.statusCode == 200) {
+        final content = response.body;
+
+        // Verificăm dacă fișierul este SVG valid înainte de a-l returna.
+        try {
+          // Această linie va arunca XmlParserException dacă SVG-ul este invalid.
+          // O rulăm aici pentru a prinde eroarea în Future, nu în widget build.
+          SvgPicture.string(
+            content,
+            // Adăugăm un placeholderBuilder intern, deși excepțiile majore
+            // sunt prinse de try-catch-ul exterior.
+            placeholderBuilder: (_) => throw Exception("SVG Parsing failed internally"),
+          );
+          return content;
+        } catch (e) {
+          // Prinde eroarea XmlParserException
+          print('Eroare de parsare SVG (conținut invalid): $e');
+          return null;
+        }
+      } else {
+        print('SVG URL invalid (Cod: ${response.statusCode}): ${widget.iconUrl}');
+        return null;
+      }
+
+    } catch (e) {
+      // Prinde erorile de rețea/DNS
+      print('Eroare la descărcarea URL-ului SVG (Rețea/DNS): $e');
+      return null;
+    }
+  }
+
+  // Widget utilitar pentru a înfășura iconița (Asset sau Network) în Container (pentru fundal)
+  Widget _wrapIconWithContainer({required Widget child}) {
+    // Dacă nu există fundal, returnăm doar iconița înfășurată în SizedBox
+    if (widget.backgroundColor == null) {
+      return SizedBox(
+        height: widget.size,
+        width: widget.size,
+        child: child,
+      );
+    }
+
+    // Dacă există fundal, folosim Container pentru a aplica culoarea
+    return Container(
+      height: widget.size,
+      width: widget.size,
+      alignment: Alignment.center, // Centrarea iconiței
+      decoration: BoxDecoration(
+        color: widget.backgroundColor,
+        borderRadius: BorderRadius.circular(widget.size / 2), // Fundal circular (ca un buton de play)
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(widget.size * 0.15), // Mărime iconiță puțin mai mică
+        child: child,
+      ),
+    );
+  }
+
+  // Widget utilitar pentru a afișa iconița SVG din Assets (local)
+  Widget _buildAssetSvg(BuildContext context, String assetPath) {
+    return SvgPicture.asset(
+      assetPath,
+      width: widget.size,
+      height: widget.size,
+      colorFilter: ColorFilter.mode(
+        widget.color,
+        BlendMode.srcIn,
+      ),
+      // Dacă nici Asset-ul nu poate fi citit (foarte rar)
+      placeholderBuilder: (context) => Icon(
+        Icons.error_outline,
+        color: widget.color,
+        size: widget.size,
+      ),
+    );
+  }
+
+  // Widget utilitar pentru a afișa iconița SVG implicită (Fallback)
+  Widget _buildDefaultAssetSvg(BuildContext context) {
+    return _buildAssetSvg(context, kDefaultSvgAsset);
+  }
+
+
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 24,
-      child: FutureBuilder<bool>(
-        future: _isUrlValid,
+    // PRIORITATE 1: Dacă este furnizată o cale locală, o folosim imediat.
+    if (widget.localAssetPath != null && widget.localAssetPath!.isNotEmpty) {
+      return _wrapIconWithContainer(
+        child: _buildAssetSvg(context, widget.localAssetPath!),
+      );
+    }
+
+    // Dacă nu avem asset local, continuăm cu logica de rețea.
+    return _wrapIconWithContainer(
+      child: FutureBuilder<String?>(
+        future: _svgContentFuture,
         builder: (context, snapshot) {
+
+          // 1. Stare de Așteptare (Loading)
           if (snapshot.connectionState == ConnectionState.waiting) {
-            // Se încarcă - afișăm un indicator de progres
-            return const Center(
+            return Center(
               child: SizedBox(
-                height: 16,
-                width: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
+                height: widget.size * 0.7,
+                width: widget.size * 0.7,
+                child: const CircularProgressIndicator(strokeWidth: 2),
               ),
             );
           }
 
-          // Dacă URL-ul este valid (cod 200 OK)
-          if (snapshot.hasData && snapshot.data == true) {
-            return SvgPicture.network(
-              widget.iconUrl,
-              headers: widget.headers,
-              colorFilter: const ColorFilter.mode(
-                Colors.white,
+          // 2. Stare Conținut SVG Valid (Descărcat și Parsat)
+          final svgContent = snapshot.data;
+          if (snapshot.hasData && svgContent != null) {
+            return SvgPicture.string( // Afișăm SVG-ul din string-ul deja validat
+              svgContent,
+              width: widget.size,
+              height: widget.size,
+              colorFilter: ColorFilter.mode(
+                widget.color,
                 BlendMode.srcIn,
               ),
-              // FIX: placeholderBuilder este apelat de 'flutter_svg' în cazul
-              // în care URL-ul este valid (200), dar conținutul (SVG-ul)
-              // este invalid și nu poate fi parsat (XmlParserException).
-              placeholderBuilder: (BuildContext context) => const Icon(
-                Icons.warning, // Iconiță care indică o eroare de parsare/conținut
-                color: Colors.red,
-                size: 24,
-              ),
+              // Dacă totuși apare o eroare de randare (puțin probabil), folosim fallback-ul
+              placeholderBuilder: (BuildContext context) {
+                // print('Eroare de randare SVG, folosim asset-ul implicit.');
+                return _buildDefaultAssetSvg(context);
+              },
             );
           }
 
-          // Dacă URL-ul nu este valid (404, eroare de rețea, sau nu are date)
-          return const Icon(
-            Icons.block, // Iconiță pentru resursă lipsă/blocată
-            color: Colors.white,
-            size: 24,
-          );
+          // 3. Stare Eșuată (URL Invalid, Rețea Eșuată sau Parsare Eșuată)
+          return _buildDefaultAssetSvg(context);
         },
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sports_config_app/features/media/presentation/video_item_in_listing.dart';
 import '../../../core/widgets/sports_app_bar.dart';
 import '../../../core/widgets/back_header.dart';
 import '../data/video_item.dart';
@@ -101,49 +102,10 @@ class _VideoListingPageForSportState extends State<VideoListingPageForSport> {
                       itemCount: _videos.length,
                       itemBuilder: (context, index) {
                         final v = _videos[index];
-                        return InkWell(
+                        return VideoListItem(
+                          video: v,
                           onTap: () => _openPlayer(v),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Stack(
-                                    fit: StackFit.expand,
-                                    children: [
-                                      if (v.thumbUrl != null)
-                                        Image.network(
-                                          v.thumbUrl!,
-                                          fit: BoxFit.cover,
-                                          headers: mediaHeaders,
-                                        )
-                                      else
-                                        Container(color: Colors.grey.shade300),
-                                      const Align(
-                                        alignment: Alignment.center,
-                                        child: Icon(
-                                          Icons.play_circle_fill,
-                                          size: 40,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                v.title,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
+                          headers: mediaHeaders, // Asigurați-vă că mediaHeaders este disponibil aici
                         );
                       },
                     ),

@@ -2,7 +2,7 @@ name: sports_config_app
 description: Sports.com Flutter app driven by /api/config
 publish_to: "none"
 
-version: 1.0.0+1
+version: 1.1.0+1
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -14,7 +14,7 @@ dependencies:
   flutter_riverpod: ^2.5.1
   dio: ^5.7.0
   shared_preferences: ^2.3.2
-  flutter_svg: ^2.0.10+1
+  flutter_svg: ^2.2.3
   http: ^1.2.2
   crypto: ^3.0.3
   flutter_html: ^3.0.0-beta.2

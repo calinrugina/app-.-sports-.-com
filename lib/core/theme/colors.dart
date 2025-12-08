@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AppColors {
   static const red = Color(0xFFEA0029);
   static const darkGrey = Color(0xFF282828);
-  static const darkBackground = Color(0xFF191919);
+
 
   // Culori primare (din paleta 'Black SPORTS' și 'Red SPORTS')
   static const primaryBlack = Color(0xFF191919); // #191919
@@ -30,4 +30,11 @@ class AppColors {
   static const errorRed = Color(0xFFE53935);      // Roșu tipic de eroare (similar cu roșul de eroare din imaginea input-urilor)
   static const focusBlue = Color(0xFF2196F3);
 
+  static const Color lightBackground = smoke;
+  static const Color lightTextPrimary = darkTabs;
+  static const Color lightTextSecondary = gray100;
+
+  static const darkBackground = Color(0xFF191919);
+  static const Color darkTextPrimary = Colors.white;
+  static const Color darkTextSecondary = gray60;
 }

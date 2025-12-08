@@ -66,25 +66,26 @@ class SportsAppBar extends ConsumerWidget implements PreferredSizeWidget {
             ),
           ),
           const Spacer(),
-          IconButton(
-            icon: const Icon(Icons.search, color: Colors.white),
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                builder: (ctx) => const _SearchSheet(),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.notifications_none, color: Colors.white),
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                builder: (ctx) => const _NotificationsSheet(),
-              );
-            },
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.search, color: Colors.white),
+          //   onPressed: () {
+          //     showModalBottomSheet(
+          //       context: context,
+          //       isScrollControlled: true,
+          //       builder: (ctx) => const _SearchSheet(),
+          //     );
+          //   },
+          // ),
+
+          // IconButton(
+          //   icon: const Icon(Icons.notifications_none, color: Colors.white),
+          //   onPressed: () {
+          //     showModalBottomSheet(
+          //       context: context,
+          //       builder: (ctx) => const _NotificationsSheet(),
+          //     );
+          //   },
+          // ),
           IconButton(
             onPressed: () {
               Navigator.of(context).push(

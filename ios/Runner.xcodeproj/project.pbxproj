@@ -152,7 +152,6 @@
 				206104207C002AFED36C1CB5 /* Pods-RunnerTests.release.xcconfig */,
 				C8CD6DBE54341DB30162E325 /* Pods-RunnerTests.profile.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -474,7 +473,7 @@
 				DEVELOPMENT_TEAM = 9V835P4PYH;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Sports App";
+				INFOPLIST_KEY_CFBundleDisplayName = "Sports.com - Live & On-Demand";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -658,7 +657,7 @@
 				DEVELOPMENT_TEAM = 9V835P4PYH;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Sports App";
+				INFOPLIST_KEY_CFBundleDisplayName = "Sports.com - Live & On-Demand";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -682,7 +681,7 @@
 				DEVELOPMENT_TEAM = 9V835P4PYH;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Sports App";
+				INFOPLIST_KEY_CFBundleDisplayName = "Sports.com - Live & On-Demand";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:sports_config_app/core/app_config.dart';
 import 'video_item.dart';
 
 class VideoService {
@@ -41,7 +43,7 @@ class VideoService {
       "limit": limit,
       "get_thumbs": 1,
       "width": 512,
-      "get_sets": 1,
+      "get_sets": 1
     };
 
     final Map<String, dynamic> nonChecksumParams = {"minify": 1};
@@ -84,7 +86,12 @@ class VideoService {
         final list =
             responseJson['response_data']?['list'] as List<dynamic>? ?? [];
         return list
-            .map((item) => VideoItem.fromJson(item as Map<String, dynamic>))
+            .map(
+              (item) => VideoItem.fromJson(
+            item as Map<String, dynamic>,
+            languageCode: languageCode,
+          ),
+        )
             .toList();
       } else {
         debugPrint('HTTP Error (videos): ${response.statusCode}');

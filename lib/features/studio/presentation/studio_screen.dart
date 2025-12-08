@@ -8,6 +8,7 @@ import '../../../core/theme/colors.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../media/data/video_item.dart';
 import '../../media/data/video_service.dart';
+import '../../media/presentation/video_item_in_listing.dart';
 import '../../media/presentation/video_player_dialog.dart';
 
 class StudioScreen extends StatefulWidget {
@@ -65,7 +66,15 @@ class _StudioScreenState extends State<StudioScreen> {
     // implicit: primul tab (ex: Goats)
     _resetAndLoadForIndex(0);
   }
-
+  @override
+  void didUpdateWidget(covariant StudioScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // dacă s-a schimbat limba din setări, refacem lista pentru primul studio
+    if (oldWidget.languageCode != widget.languageCode) {
+      SportsAppLogger.log('STUDIO LANGUAGE CHANGED');
+      _resetAndLoadForIndex(0);
+    }
+  }
   Future<void> _resetAndLoadForIndex(int index) async {
     setState(() {
       _selectedIndex = index;
@@ -123,54 +132,6 @@ class _StudioScreenState extends State<StudioScreen> {
     );
   }
 
-  Widget _buildGridItem(VideoItem v) {
-    return InkWell(
-      onTap: () => _openPlayer(v),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AspectRatio(
-            aspectRatio: 16 / 9,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (v.thumbUrl != null)
-                    Image.network(
-                      v.thumbUrl!,
-                      fit: BoxFit.cover,
-                      headers: mediaHeaders,
-                    )
-                  else
-                    Container(color: Colors.grey.shade300),
-                  const Align(
-                    alignment: Alignment.center,
-                    child: Icon(
-                      Icons.play_circle_fill,
-                      size: 40,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            v.title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final areas = _studioAreas;
@@ -224,13 +185,9 @@ class _StudioScreenState extends State<StudioScreen> {
                         if (iconUrl != null && iconUrl.isNotEmpty)
                           SizedBox(
                             height: 28,
-                            child: SvgPicture.network(
-                              iconUrl,
+                            child: SvgIconLoader(
+                              iconUrl: iconUrl,
                               headers: mediaHeaders,
-                              colorFilter: const ColorFilter.mode(
-                                Colors.white,
-                                BlendMode.srcIn,
-                              ),
                             ),
                           )
                         else
@@ -296,7 +253,11 @@ class _StudioScreenState extends State<StudioScreen> {
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
                         final v = _videos[index];
-                        return _buildGridItem(v);
+                        return VideoListItem(
+                          video: v,
+                          onTap: () => _openPlayer(v),
+                          headers: mediaHeaders, // Asigurați-vă că mediaHeaders este disponibil aici
+                        );
                       },
                       childCount: _videos.length,
                     ),

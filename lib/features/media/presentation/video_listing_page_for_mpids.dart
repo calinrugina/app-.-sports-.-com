@@ -1,4 +1,7 @@
+import 'dart:developer' as SportsAppLogger;
+
 import 'package:flutter/material.dart';
+import 'package:sports_config_app/features/media/presentation/video_item_in_listing.dart';
 import '../data/video_item.dart';
 import '../data/video_service.dart';
 import '../../../core/network/media_headers.dart';
@@ -34,7 +37,30 @@ class _VideoListingPageForMpidsState extends State<VideoListingPageForMpids> {
     super.initState();
     _loadMore();
   }
-
+  @override
+  void didUpdateWidget(covariant VideoListingPageForMpids oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // dacă s-a schimbat limba din setări, refacem lista pentru primul studio
+    if (oldWidget.languageCode != widget.languageCode) {
+      SportsAppLogger.log('VideoListingPageForMpids LANGUAGE CHANGED');
+    }
+  }
+  // @override
+  // void didUpdateWidget(covariant VideoListingPageForMpids oldWidget) {
+  //   super.didUpdateWidget(oldWidget);
+  //   SportsAppLogger.log('PULAAAA ${oldWidget.languageCode}  ${widget.languageCode} ');
+  //
+  //   // dacă s-a schimbat limba sau sportul, refacem lista
+  //   if (oldWidget.languageCode != widget.languageCode ||
+  //       oldWidget.mpids != widget.mpids) {
+  //     SportsAppLogger.log('AICI!!!!');
+  //     setState(() {
+  //       _loading = true;
+  //
+  //     });
+  //     _loadMore();
+  //   }
+  // }
   Future<void> _loadMore() async {
     if (_loading || _endReached) return;
     setState(() {
@@ -88,50 +114,10 @@ class _VideoListingPageForMpidsState extends State<VideoListingPageForMpids> {
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final v = _videos[index];
-                return InkWell(
+                return VideoListItem(
+                  video: v,
                   onTap: () => _openPlayer(v),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AspectRatio(
-                        aspectRatio: 16 / 9,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              if (v.thumbUrl != null)
-                                Image.network(
-                                  v.thumbUrl!,
-                                  fit: BoxFit.cover,
-                                  headers: mediaHeaders,
-                                )
-                              else
-                                Container(color: Colors.grey.shade300),
-                              const Align(
-                                alignment: Alignment.center,
-                                child: Icon(
-                                  Icons.play_circle_fill,
-                                  size: 48,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        v.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  ),
+                  headers: mediaHeaders, // Asigurați-vă că mediaHeaders este disponibil aici
                 );
               },
             ),

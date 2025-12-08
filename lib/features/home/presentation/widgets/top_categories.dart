@@ -61,13 +61,9 @@ class TopCategories extends ConsumerWidget {
                     if (iconUrl != null && iconUrl.isNotEmpty)
                       SizedBox(
                         height: 24,
-                        child: SvgPicture.network(
-                          iconUrl,
+                        child: SvgIconLoader(
+                          iconUrl: iconUrl,
                           headers: mediaHeaders,
-                          colorFilter: const ColorFilter.mode(
-                            Colors.white,
-                            BlendMode.srcIn,
-                          ),
                         ),
                       )
                     else

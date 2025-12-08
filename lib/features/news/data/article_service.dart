@@ -29,8 +29,6 @@ class ArticleService {
         'api_key=$apiKey&method=getNews&tbsec=$hash'
         '&format=json&id=&sport_id=$sportId&limit=$limit&offset=$offset&lang=$languageCode';
 
-    debugPrint('Articles URL: $url');
-
     try {
       final response = await http.post(
         Uri.parse(url),

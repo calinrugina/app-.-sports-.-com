@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sports_config_app/core/app_config.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/widgets/horizontal_list_placeholder.dart';
@@ -39,7 +40,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         final selectedLanguage = ref.watch(languageProvider);
         final String languageCode =
             selectedLanguage.isNotEmpty ? selectedLanguage : 'en';
-
         final hasLive = sports.any((s) {
           final m = s as Map<String, dynamic>;
           final ls = m['livestreams'] as List?;
@@ -70,11 +70,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           BottomNavigationBarItem(
             icon: SvgPicture.asset(
               'assets/images/tab_home.svg',
-              height: 22,
+              // height: 30,
             ),
             activeIcon: SvgPicture.asset(
               'assets/images/tab_home.svg',
-              height: 22,
+              // height: 30,
               colorFilter: const ColorFilter.mode(
                 AppColors.red,
                 BlendMode.srcIn,
@@ -87,15 +87,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         // Live (optional)
         if (hasLive) {
           pages.add(const LiveScreen());
+
           items.add(
             BottomNavigationBarItem(
               icon: SvgPicture.asset(
-                'assets/images/tab_live.svg',
-                height: 22,
+                'assets/images/tab_stream.svg',
+                // height: 22,
               ),
               activeIcon: SvgPicture.asset(
-                'assets/images/tab_live.svg',
-                height: 22,
+                'assets/images/tab_stream.svg',
+                // height: 22,
                 colorFilter: const ColorFilter.mode(
                   AppColors.red,
                   BlendMode.srcIn,
@@ -112,11 +113,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           BottomNavigationBarItem(
             icon: SvgPicture.asset(
               'assets/images/tab_sports.svg',
-              height: 22,
+              // height: 22,
             ),
             activeIcon: SvgPicture.asset(
               'assets/images/tab_sports.svg',
-              height: 22,
+              // height: 22,
               colorFilter: const ColorFilter.mode(
                 AppColors.red,
                 BlendMode.srcIn,
@@ -134,11 +135,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           BottomNavigationBarItem(
             icon: SvgPicture.asset(
               'assets/images/tab_studios.svg',
-              height: 22,
+              // height: 22,
             ),
             activeIcon: SvgPicture.asset(
               'assets/images/tab_studios.svg',
-              height: 22,
+              // height: 22,
               colorFilter: const ColorFilter.mode(
                 AppColors.red,
                 BlendMode.srcIn,
@@ -154,11 +155,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           BottomNavigationBarItem(
             icon: SvgPicture.asset(
               'assets/images/tab_more.svg',
-              height: 22,
+              // height: 22,
             ),
             activeIcon: SvgPicture.asset(
               'assets/images/tab_more.svg',
-              height: 22,
+              // height: 22,
               colorFilter: const ColorFilter.mode(
                 AppColors.red,
                 BlendMode.srcIn,
@@ -181,6 +182,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
           bottomNavigationBar: BottomNavigationBar(
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
             backgroundColor: Colors.black,
             type: BottomNavigationBarType.fixed,
             currentIndex: _selectedIndex,
@@ -191,7 +194,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             },
             selectedItemColor: AppColors.red,
             unselectedItemColor: Colors.white,
-            showUnselectedLabels: true,
             items: items,
           ),
         );
@@ -232,15 +234,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                 final List<Widget> sectionWidgets = [];
 
-                sectionWidgets.add(
-                  SliverToBoxAdapter(
-                    child: SectionHeader(title: name),
-                  ),
-                );
+                // sectionWidgets.add(
+                //   SliverToBoxAdapter(
+                //     child: SectionHeader(title: name),
+                //   ),
+                // );
 
                 final areas = map['areas'] as List?;
 
                 if (areas != null && areas.isNotEmpty) {
+
                   for (final sub in areas) {
                     final subMap = sub as Map<String, dynamic>;
                     final subName = subMap['name']?.toString() ?? '';
@@ -288,7 +291,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       );
                     }
                   }
-                } else {
+                }
+
+                else {
                   final mpidsValue =
                       (map['mpids'] ?? map['mpid'])?.toString();
 
@@ -320,13 +325,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       ),
                     );
-                  } else {
+                  }
+                  /*
+                  else {
                     sectionWidgets.add(
                       const SliverToBoxAdapter(
                         child: VerticalListPlaceholder(),
                       ),
                     );
                   }
+
+                   */
                 }
 
                 return sectionWidgets;

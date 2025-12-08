@@ -3,7 +3,14 @@ import 'colors.dart';
 
 class AppTheme {
   static ThemeData light() {
+    const defaultFont = 'Roboto';
     return ThemeData(
+      fontFamily: defaultFont,
+      textTheme: AppTextStyles.lightTextTheme(defaultFont),
+      //     .apply(
+      //   displayColor: AppColors.white, // Culoarea primară pentru textul de afișare
+      //   bodyColor: AppColors.white,
+      // ),
       brightness: Brightness.light,
       // Fundal principal deschis (din paleta AppColors.smoke sau white)
       scaffoldBackgroundColor: AppColors.white,
@@ -23,11 +30,6 @@ class AppTheme {
         surface: AppColors.white,
         // Albastru pentru focus/selecție, roșu pentru erori
         error: AppColors.errorRed,
-      ),
-      // Setări pentru text (exemplu: textul principal ar fi primaryBlack)
-      textTheme: const TextTheme(
-        bodyMedium: TextStyle(color: AppColors.primaryBlack),
-        // Aici ar trebui definite și stilurile de font din imagini, dar e complex
       ),
       // Stilul pentru butoane (dedus din imagini)
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -66,7 +68,14 @@ class AppTheme {
   }
 
   static ThemeData dark() {
+    const defaultFont = 'Roboto';
     return ThemeData(
+      fontFamily: defaultFont,
+      textTheme: AppTextStyles.darkTextTheme(defaultFont),
+      //     .apply(
+      //   displayColor: AppColors.darkTextPrimary, // Culoarea primară pentru textul de afișare
+      // //   bodyColor: AppColors.darkTextPrimary,
+      // ),
       brightness: Brightness.dark,
       // Fundal principal întunecat (din paleta AppColors.headerNav sau primaryBlack)
       scaffoldBackgroundColor: AppColors.headerNav,
@@ -84,10 +93,6 @@ class AppTheme {
         background: AppColors.primaryBlack,
         surface: AppColors.primaryBlack,
         error: AppColors.errorRed,
-      ),
-      // Setări pentru text (exemplu: textul principal ar fi white)
-      textTheme: const TextTheme(
-        bodyMedium: TextStyle(color: AppColors.white),
       ),
       // Stilul pentru butoane (similar cu cel light, dar fundalul pentru Primary ar fi același)
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -122,6 +127,91 @@ class AppTheme {
         ),
       ),
       useMaterial3: true,
+    );
+  }
+}
+class AppTextStyles {
+  // Styles pentru tema LIGHT
+  static TextTheme lightTextTheme(String? fontFamily) {
+    return TextTheme(
+      // 1. sectionTitle (Ex: UEFA CHAMPIONS LEAGUE - Mare, Bold, ALL CAPS, 16px)
+      headlineLarge: const TextStyle(
+        fontFamily: 'Bebas Neue',
+        fontSize: 20,
+        fontWeight: FontWeight.w400,
+        color: AppColors.lightTextPrimary,
+        letterSpacing: 1,
+      ),
+
+      // 2. itemTitle (Ex: Osimhen hits CL hat-trick - Titlul principal al elementului, Bold, 16px)
+      titleLarge: const TextStyle(
+        fontFamily: 'Bebas Neue',
+        fontSize: 18,
+        fontWeight: FontWeight.w400,
+        // letterSpacing: .8,
+        color: AppColors.lightTextPrimary,
+        // height: 1.00, // Asigură spațiu pentru 2 linii
+      ),
+
+      // 3. itemDescription (Ex: UEFA CHAMPIONS LEAGUE - Textul subtitlu/sursă, 14px)
+      bodyMedium: TextStyle(
+        fontFamily: fontFamily,
+        fontSize: 16,
+        fontWeight: FontWeight.w400,
+        color: AppColors.lightTextSecondary,
+        height: 1.2,
+      ),
+
+      // 4. itemDate (Ex: 6 DAYS AGO - Data/durata, 12px, Subțire/Semi-Bold, ALL CAPS, Gri)
+      labelSmall: const TextStyle(
+        fontFamily: 'Bebas Neue',
+        fontSize: 16,
+        fontWeight: FontWeight.w400,
+        color: AppColors.gray60,
+        // letterSpacing: 0.8,
+      ),
+    );
+  }
+
+  // Styles pentru tema DARK
+  static TextTheme darkTextTheme(String? fontFamily) {
+    return TextTheme(
+      // 1. sectionTitle
+      headlineLarge: const TextStyle(
+        fontFamily: 'Bebas Neue',
+        fontSize: 20,
+        fontWeight: FontWeight.w400,
+        color:AppColors.white,
+        letterSpacing: 0.5,
+      ),
+
+      // 2. itemTitle
+      titleLarge: const TextStyle(
+        fontFamily: 'Bebas Neue',
+        fontSize: 16,
+        fontWeight: FontWeight.w400,
+        letterSpacing: .8,
+        color: AppColors.darkTextPrimary,
+        height: 1.25,
+      ),
+
+      // 3. itemDescription
+      bodyMedium: TextStyle(
+        fontFamily: fontFamily,
+        fontSize: 14,
+        fontWeight: FontWeight.w300,
+        color: AppColors.darkTextPrimary,
+        height: 1,
+      ),
+
+      // 4. itemDate
+      labelSmall: const TextStyle(
+        fontFamily: 'Bebas Neue',
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
+        color: AppColors.darkTextSecondary,
+        letterSpacing: 0.8,
+      ),
     );
   }
 }

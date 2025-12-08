@@ -1,4 +1,7 @@
+import 'dart:developer' as SportsAppLogger;
+
 import 'package:flutter/material.dart';
+import 'package:sports_config_app/features/media/presentation/video_item_in_listing.dart';
 import '../data/video_item.dart';
 import '../data/video_service.dart';
 import '../../../core/network/media_headers.dart';
@@ -27,6 +30,14 @@ class _VideoListForSportState extends State<VideoListForSport> {
   void initState() {
     super.initState();
     _load();
+  }
+  @override
+  void didUpdateWidget(covariant VideoListForSport oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // dacă s-a schimbat limba din setări, refacem lista pentru primul studio
+    if (oldWidget.languageCode != widget.languageCode) {
+      SportsAppLogger.log('VideoListForSport LANGUAGE CHANGED');
+    }
   }
 
   Future<void> _load() async {
@@ -76,7 +87,7 @@ class _VideoListForSportState extends State<VideoListForSport> {
     final displayVideos = _videos.length > 6 ? _videos.sublist(0, 6) : _videos;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
@@ -85,51 +96,15 @@ class _VideoListForSportState extends State<VideoListForSport> {
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
           // 16:9 + text; aproximăm un raport
-          childAspectRatio: 16 / 11,
+          childAspectRatio: 16 / 15,
         ),
         itemCount: displayVideos.length,
         itemBuilder: (context, index) {
           final v = displayVideos[index];
-          return InkWell(
+          return VideoListItem(
+            video: v,
             onTap: () => _openPlayer(v),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        if (v.thumbUrl != null)
-                          Image.network(
-                            v.thumbUrl!,
-                            fit: BoxFit.cover,
-                            headers: mediaHeaders,
-                          )
-                        else
-                          Container(color: Colors.grey.shade300),
-                        const Align(
-                          alignment: Alignment.center,
-                          child: Icon(
-                            Icons.play_circle_fill,
-                            size: 40,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  v.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
+            headers: mediaHeaders, // Asigurați-vă că mediaHeaders este disponibil aici
           );
         },
       ),
