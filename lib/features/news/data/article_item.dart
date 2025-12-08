@@ -4,6 +4,7 @@ class ArticleItem {
   final String description;
   final String? mediaUrl;
   final String publishDate;
+  final String? sportName;
 
   ArticleItem({
     required this.id,
@@ -11,6 +12,7 @@ class ArticleItem {
     required this.description,
     this.mediaUrl,
     required this.publishDate,
+    this.sportName,
   });
 
   factory ArticleItem.fromJson(Map<String, dynamic> json) {

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/back_header.dart';
+import '../../../core/widgets/sports_app_bar.dart';
+import '../../media/presentation/article_item_in_listing.dart';
 import '../data/article_item.dart';
 import '../data/article_service.dart';
 import '../../../core/network/media_headers.dart';
@@ -26,7 +29,7 @@ class _ArticleListingPageForSportState
   bool _loading = false;
   bool _endReached = false;
   int _offset = 0;
-  static const int _limit = 5;
+  static const int _limit = 8;
 
   @override
   void initState() {
@@ -61,62 +64,52 @@ class _ArticleListingPageForSportState
 
   @override
   Widget build(BuildContext context) {
-    final name = widget.sport['name']?.toString() ?? 'Sport';
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Listing Articles ($name)'),
-      ),
+      appBar: const SportsAppBar(),
+
       body: Column(
         children: [
-          Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: _articles.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final a = _articles[index];
-                return ListTile(
-                  leading: a.mediaUrl != null
-                      ? SizedBox(
-                          width: 120,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(6),
-                            child: AspectRatio(
-                              aspectRatio: 16 / 9,
-                              child: Image.network(
-                                a.mediaUrl!,
-                                fit: BoxFit.cover,
-                                headers: mediaHeaders,
-                              ),
+          BackHeader(title: 'Listing Articles (${widget.sport['name']})'),
+          Expanded(child: Column(
+            children: [
+              Expanded(child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 16, // Spațiu vertical (între rânduri)
+                    crossAxisSpacing: 12, // Spațiu orizontal (între coloane)
+                    // CALCUL childAspectRatio:
+                    // Un thumbnail 16:9 + 4 linii de text + spațiere necesită un raport
+                    // mai mic de 1.77. Alegem 16/17 (~0.94) pentru a ne asigura că textul de 3 linii încape.
+                    childAspectRatio: 16 / 17,
+                  ),
+                  itemCount: _articles.length,
+                  itemBuilder: (context, index) {
+                    final a = _articles[index];
+
+                    // Folosim noul widget ArticleGridItem
+                    return ArticleGridItem(
+                      article: a,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => ArticleDetailScreen(
+                              article: a,
+                              lang: widget.languageCode,
                             ),
                           ),
-                        )
-                      : const Icon(Icons.article),
-                  title: Text(
-                    a.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  subtitle: Text(
-                    a.description,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => ArticleDetailScreen(
-                          article: a,
-                          languageCode: widget.languageCode,
-                        ),
-                      ),
+                        );
+                      },
+                      headers: mediaHeaders,
                     );
                   },
-                );
-              },
-            ),
-          ),
+                ),
+              ))
+            ],
+          ),),
           if (_loading)
             const Padding(
               padding: EdgeInsets.all(16),

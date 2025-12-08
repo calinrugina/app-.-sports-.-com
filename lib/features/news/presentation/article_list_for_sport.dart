@@ -78,7 +78,7 @@ class _ArticleListForSportState extends State<ArticleListForSport> {
                 MaterialPageRoute(
                   builder: (_) => ArticleDetailScreen(
                     article: a,
-                    languageCode: widget.languageCode,
+                    lang: widget.languageCode,
                   ),
                 ),
               );
@@ -87,6 +87,6 @@ class _ArticleListForSportState extends State<ArticleListForSport> {
           );
         },
       ),
-    );;
+    );
   }
 }
