@@ -30,7 +30,7 @@ class TopCategories extends ConsumerWidget {
       color: Colors.black,
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: SizedBox(
-        height: 68,
+        height: 60,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -48,10 +48,10 @@ class TopCategories extends ConsumerWidget {
                 }
               },
               child: Container(
-                width: 70,
+                width: 90,
                 decoration: BoxDecoration(
                   color: isSelected ? AppColors.red : Colors.black,
-                  borderRadius: BorderRadius.circular(10),
+                  // borderRadius: BorderRadius.circular(10),
                 ),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
@@ -60,7 +60,7 @@ class TopCategories extends ConsumerWidget {
                   children: [
                     if (iconUrl != null && iconUrl.isNotEmpty)
                       SizedBox(
-                        height: 24,
+                        height: 30,
                         child: SvgIconLoader(
                           iconUrl: iconUrl,
                           headers: mediaHeaders,
@@ -70,7 +70,7 @@ class TopCategories extends ConsumerWidget {
                       const Icon(
                         Icons.sports,
                         color: Colors.white,
-                        size: 20,
+                        size: 30,
                       ),
                     const SizedBox(height: 4),
                     Text(
@@ -78,11 +78,12 @@ class TopCategories extends ConsumerWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: Theme.of(context).textTheme.headlineLarge!.copyWith(fontSize: 14, color: Colors.white)
+                      // const TextStyle(
+                      //   fontSize: 10,
+                      //   color: Colors.white,
+                      //   fontWeight: FontWeight.w500,
+                      // ),
                     ),
                   ],
                 ),

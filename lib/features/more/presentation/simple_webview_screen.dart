@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../../../core/widgets/back_header.dart';
+import '../../../core/widgets/sports_app_bar.dart';
+
 class SimpleWebViewScreen extends StatefulWidget {
   final String title;
   final String url;
@@ -41,16 +44,19 @@ class _SimpleWebViewScreenState extends State<SimpleWebViewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Stack(
+      appBar: const SportsAppBar(),
+      body: Column(
         children: [
-          WebViewWidget(controller: _controller),
-          if (_loading)
-            const Center(
-              child: CircularProgressIndicator(),
-            ),
+           BackHeader(title: widget.title),
+          Expanded(child: Stack(
+            children: [
+              WebViewWidget(controller: _controller),
+              if (_loading)
+                const Center(
+                  child: CircularProgressIndicator(),
+                ),
+            ],
+          ))
         ],
       ),
     );

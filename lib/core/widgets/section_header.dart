@@ -9,7 +9,7 @@ class SectionHeader extends StatelessWidget {
     super.key,
     required this.title,
     this.onMore,
-    this.moreLabel = 'See More',
+    this.moreLabel = 'See More >',
   });
 
   @override
@@ -28,7 +28,8 @@ class SectionHeader extends StatelessWidget {
               onTap: onMore,
               child: Text(
                 moreLabel,
-                style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: Colors.red)
+                  style: Theme.of(context).textTheme.headlineLarge!.copyWith(fontSize: 14, color: Colors.red)
+                  // style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: Colors.red)
                 // style: const TextStyle(
                 //   fontWeight: FontWeight.bold,
                 //   color: Colors.red,

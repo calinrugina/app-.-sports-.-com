@@ -20,6 +20,7 @@ class SportsAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final configAsync = ref.watch(configProvider);
 
     return AppBar(
+      automaticallyImplyLeading: false,
       backgroundColor: Colors.black,
       titleSpacing: 16,
       title: Row(
@@ -30,15 +31,9 @@ class SportsAppBar extends ConsumerWidget implements PreferredSizeWidget {
               if (logoUrl != null && logoUrl.isNotEmpty) {
                 return SvgPicture.network(
                   logoUrl,
-                  height: 24,
+                  height: 25,
                   headers: mediaHeaders,
-                  placeholderBuilder: (_) => const SizedBox(
-                    height: 24,
-                    width: 100,
-                    child: Center(
-                      child: CircularProgressIndicator(strokeWidth: 1),
-                    ),
-                  ),
+
                 );
               }
               return const Text(

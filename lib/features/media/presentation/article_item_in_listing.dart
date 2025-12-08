@@ -62,7 +62,7 @@ class ArticleGridItem extends StatelessWidget {
         children: [
           // 1. Imaginea Articolului (Thumbnail)
           AspectRatio(
-            aspectRatio: 16 / 7,
+            aspectRatio: 16 / 9,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: article.mediaUrl != null
@@ -96,7 +96,7 @@ class ArticleGridItem extends StatelessWidget {
           // 2. itemDescription (Sursa / Categoria)
           // Utilizăm bodyMedium (14px, W600, culoare secundară/gri)
           SizedBox(
-            height: 30,
+            height: 42,
             child: Text(
               article.description, // Adesea este ALL CAPS
               maxLines: 2,

@@ -10,11 +10,11 @@ import '../../../core/widgets/sports_app_bar.dart';
 import '../../config/providers/config_provider.dart';
 import '../../../core/language/language_provider.dart';
 import '../../live/presentation/live_screen.dart';
+import '../../media/presentation/video_listing_page.dart';
 import '../../sports/presentation/sport_screen.dart';
 import '../../studio/presentation/studio_screen.dart';
 import '../../more/presentation/more_screen.dart';
 import '../../media/presentation/video_list_for_mpids.dart';
-import '../../media/presentation/video_listing_page_for_mpids.dart';
 import 'widgets/top_categories.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -255,15 +255,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       SliverToBoxAdapter(
                         child: SectionHeader(
                           title: subName,
-                          moreLabel: 'See More',
+                          moreLabel: 'See More >',
                           onMore: (mpidsValue != null &&
                                   mpidsValue.trim().isNotEmpty)
                               ? () {
+                            SportsAppLogger.log('1-$mpidsValue');
                                   Navigator.of(context).push(
                                     MaterialPageRoute(
-                                      builder: (_) => VideoListingPageForMpids(
+                                      builder: (_) => VideoListingPage(
                                         title: subName,
-                                        mpids: mpidsValue,
+                                        fromSets: mpidsValue,
                                         languageCode: languageCode,
                                       ),
                                     ),
@@ -277,8 +278,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     if (mpidsValue != null && mpidsValue.trim().isNotEmpty) {
                       sectionWidgets.add(
                         SliverToBoxAdapter(
-                          child: VideoListForMpids(
+                          child: VideoCaruselList(
                             mpids: mpidsValue,
+                            title: 'one',
                             languageCode: languageCode,
                           ),
                         ),
@@ -302,13 +304,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       SliverToBoxAdapter(
                         child: SectionHeader(
                           title: name,
-                          moreLabel: 'See More',
+                          moreLabel: 'See More >',
                           onMore: () {
+                            SportsAppLogger.log('2-$mpidsValue');
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (_) => VideoListingPageForMpids(
+                                builder: (_) => VideoListingPage(
                                   title: name,
-                                  mpids: mpidsValue,
+                                  fromSets: mpidsValue,
                                   languageCode: languageCode,
                                 ),
                               ),
@@ -319,7 +322,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     );
                     sectionWidgets.add(
                       SliverToBoxAdapter(
-                        child: VideoListForMpids(
+                        child: VideoCaruselList(
+                          title: 'two',
                           mpids: mpidsValue,
                           languageCode: languageCode,
                         ),

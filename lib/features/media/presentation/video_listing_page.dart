@@ -7,28 +7,32 @@ import '../data/video_service.dart';
 import '../../../core/network/media_headers.dart';
 import 'video_player_dialog.dart';
 
-class VideoListingPageForSport extends StatefulWidget {
-  final Map<String, dynamic> sport;
+class VideoListingPage extends StatefulWidget {
+  // final Map<String, dynamic> sport;
   final String languageCode;
+  final String fromSets;
+  final String title;
 
-  const VideoListingPageForSport({
+  const VideoListingPage({
     super.key,
-    required this.sport,
+    // required this.sport,
     required this.languageCode,
+    required this.fromSets,
+    required this.title,
   });
 
   @override
-  State<VideoListingPageForSport> createState() =>
-      _VideoListingPageForSportState();
+  State<VideoListingPage> createState() =>
+      _VideoListingPageState();
 }
 
-class _VideoListingPageForSportState extends State<VideoListingPageForSport> {
+class _VideoListingPageState extends State<VideoListingPage> {
   final VideoService _service = const VideoService();
   final List<VideoItem> _videos = [];
   bool _loading = false;
   bool _endReached = false;
   int _offset = 0;
-  static const int _limit = 5;
+  static const int _limit = 8;
 
   @override
   void initState() {
@@ -42,8 +46,8 @@ class _VideoListingPageForSportState extends State<VideoListingPageForSport> {
       _loading = true;
     });
 
-    final newItems = await _service.fetchVideos(
-      widget.sport,
+    final newItems = await _service.fetchVideosForSets(
+      widget.fromSets,
       _offset,
       widget.languageCode,
       limit: _limit,
@@ -78,14 +82,13 @@ class _VideoListingPageForSportState extends State<VideoListingPageForSport> {
 
   @override
   Widget build(BuildContext context) {
-    final name = widget.sport['name']?.toString() ?? 'Sport';
 
     return Scaffold(
       appBar: const SportsAppBar(),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          BackHeader(title: 'Listing Videos (\$name)'),
+          BackHeader(title: 'Listing Videos (${widget.title})'),
           Expanded(
             child: Column(
               children: [
@@ -97,7 +100,7 @@ class _VideoListingPageForSportState extends State<VideoListingPageForSport> {
                         crossAxisCount: 2,
                         mainAxisSpacing: 12,
                         crossAxisSpacing: 12,
-                        childAspectRatio: 16 / 11,
+                        childAspectRatio: 16 / 15,
                       ),
                       itemCount: _videos.length,
                       itemBuilder: (context, index) {

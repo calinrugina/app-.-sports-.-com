@@ -153,7 +153,7 @@ class _StudioScreenState extends State<StudioScreen> {
           color: Colors.black,
           padding: const EdgeInsets.symmetric(vertical: 6),
           child: SizedBox(
-            height: 80,
+            height: 60,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -170,21 +170,21 @@ class _StudioScreenState extends State<StudioScreen> {
                     _resetAndLoadForIndex(index);
                   },
                   child: Container(
-                    width: 90,
+                    width: 100,
                     decoration: BoxDecoration(
                       color: isSelected ? AppColors.red : Colors.black,
-                      borderRadius: BorderRadius.circular(10),
+                      // borderRadius: BorderRadius.circular(10),
                     ),
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 6,
+                      horizontal: 6,
+                      vertical: 4,
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         if (iconUrl != null && iconUrl.isNotEmpty)
                           SizedBox(
-                            height: 28,
+                            height: 30,
                             child: SvgIconLoader(
                               iconUrl: iconUrl,
                               headers: mediaHeaders,
@@ -194,7 +194,7 @@ class _StudioScreenState extends State<StudioScreen> {
                           const Icon(
                             Icons.tv,
                             color: Colors.white,
-                            size: 22,
+                            size: 30,
                           ),
                         const SizedBox(height: 4),
                         Text(
@@ -202,11 +202,8 @@ class _StudioScreenState extends State<StudioScreen> {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w500,
-                          ),
+                            style: Theme.of(context).textTheme.headlineLarge!.copyWith(fontSize: 14, color: Colors.white)
+
                         ),
                       ],
                     ),
@@ -248,7 +245,7 @@ class _StudioScreenState extends State<StudioScreen> {
                       crossAxisCount: 2,
                       mainAxisSpacing: 12,
                       crossAxisSpacing: 12,
-                      childAspectRatio: 16 / 11,
+                      childAspectRatio: 16 / 15,
                     ),
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {

@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sports_config_app/core/theme/colors.dart';
 import 'package:upgrader/upgrader.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/language/language_provider.dart';
+import '../../../core/widgets/under_logo_area.dart';
 import '../presentation/notifications_settings_screen.dart';
 import '../presentation/language_selection_screen.dart';
 import '../presentation/simple_webview_screen.dart';
 import '../../../core/app_config.dart';
 final _upgraderInstance = Upgrader(
-  debugDisplayAlways: true, // Pentru test
+  // debugDisplayAlways: true, // Pentru test
 );
 
 class MoreScreen extends ConsumerWidget {
@@ -32,17 +34,30 @@ class MoreScreen extends ConsumerWidget {
     final languageCode = ref.watch(languageProvider);
     final versionAsyncValue = ref.watch(appVersionProvider);
 
+    final isLight = themeMode == ThemeMode.light;
+    final isDark = themeMode == ThemeMode.dark;
+
     return Center(
       child: UpgradeAlert(
           // 2. Personalizați proprietățile Upgrader-ului, dacă doriți
           upgrader: _upgraderInstance,
           child: ListView(
             children: [
-              const SizedBox(height: 16),
+              WelcomeBanner(
+                title: "Welcome to Sports.com",
+                subtitle: "You now have access to personalized content and more.",
+              ),
+              SizedBox(height: 15,),
+              Padding(padding: EdgeInsets.all(16), child: Text(
+                'Other options',
+                style: Theme.of(context).textTheme.headlineLarge,
+
+              ),),
               ListTile(
-                leading: const Icon(Icons.notifications),
-                title: const Text('Notifications'),
-                subtitle: const Text('Teams & alerts preferences'),
+                title:  Text('Notifications',
+                  style: Theme.of(context).textTheme.bodyLarge,
+
+                ),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () {
                   Navigator.of(context).push(
@@ -52,23 +67,10 @@ class MoreScreen extends ConsumerWidget {
                   );
                 },
               ),
-              const Divider(),
               ListTile(
-                leading: const Icon(Icons.language),
-                title: const Text('Language'),
-                subtitle: Text(_languageLabel(languageCode)),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const LanguageSelectionScreen(),
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.description),
-                title: const Text('Terms & Conditions'),
+                title:  Text('Terms & Conditions',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () {
                   Navigator.of(context).push(
@@ -82,8 +84,9 @@ class MoreScreen extends ConsumerWidget {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.privacy_tip),
-                title: const Text('Privacy Policy'),
+                title:  Text('Privacy Policy',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () {
                   Navigator.of(context).push(
@@ -96,7 +99,99 @@ class MoreScreen extends ConsumerWidget {
                   );
                 },
               ),
-              const Divider(),
+              ListTile(
+                title:  Text('Language',
+                  style: Theme.of(context).textTheme.headlineLarge,
+                ),
+                // subtitle: Text(_languageLabel(languageCode)),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const LanguageSelectionScreen(),
+                    ),
+                  );
+                },
+              ),
+              SizedBox(height: 25,),
+              Padding(padding: EdgeInsets.all(16), child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: AppColors.darkGrey, // fundalul "barei"
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child:Row(
+                    children: [
+                      // LIGHT
+                      Expanded(
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(28),
+                          onTap: () {
+                            ref.read(themeProvider.notifier).setTheme(ThemeMode.light);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(32),
+                              border: Border.all(
+                                color: isLight ? Colors.black :  AppColors.darkTabs,
+                                width: 2,
+                              ),
+                              color: isLight ? Colors.black :  AppColors.darkTabs
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children:  [
+                                Icon(Icons.wb_sunny_outlined, color: Colors.white),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Light',
+                                  style: Theme.of(context).textTheme.titleLarge!.copyWith(color: Colors.white),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 6),
+
+                      // DARK
+                      Expanded(
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(28),
+                          onTap: () {
+                            ref.read(themeProvider.notifier).setTheme(ThemeMode.dark);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(28),
+                              border: Border.all(
+                                color: isDark ? Colors.black :  AppColors.darkTabs,
+                                width: 2,
+                              ),
+                                color: isDark ? Colors.black :  AppColors.darkTabs
+
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children:  [
+                                Icon(Icons.dark_mode, color: Colors.white),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Dark',
+                                  style: Theme.of(context).textTheme.titleLarge!.copyWith(color: Colors.white),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+              ),),
+              /*
               const Padding(
                 padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
                 child: Text(
@@ -134,8 +229,8 @@ class MoreScreen extends ConsumerWidget {
                   }
                 },
               ),
-              const SizedBox(height: 24),
-              const Divider(),
+              */
+              const SizedBox(height: 100),
               versionAsyncValue.when(
                 // A. Datele sunt gata (Data)
                 data: (version) => Text(

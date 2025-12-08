@@ -17,16 +17,14 @@ class BackHeader extends StatelessWidget {
         child: Row(
           children: [
             IconButton(
-              icon: const Icon(Icons.arrow_back),
+              icon: const Icon(Icons.arrow_back, color: Colors.red,),
               onPressed: canPop ? () => Navigator.of(context).pop() : null,
             ),
             const SizedBox(width: 4),
             Expanded(
               child: Text(
                 title,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: Theme.of(context).textTheme.headlineLarge!.copyWith(color: Colors.red),
                 overflow: TextOverflow.ellipsis,
               ),
             ),

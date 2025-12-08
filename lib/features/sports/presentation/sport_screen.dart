@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sports_config_app/features/sports/presentation/sport_banners_carousel.dart';
 import '../../../core/widgets/section_header.dart';
-import '../../media/presentation/video_list_for_sport.dart';
+import '../../media/presentation/video_list.dart';
 import '../../news/presentation/article_list_for_sport.dart';
 import '../providers/selected_sport_provider.dart';
 import '../../home/presentation/widgets/top_categories.dart';
-import '../../media/presentation/video_listing_page_for_sport.dart';
+import '../../media/presentation/video_listing_page.dart';
 import '../../news/presentation/article_listing_page_for_sport.dart';
 
 class SportScreen extends ConsumerWidget {
@@ -40,23 +41,28 @@ class SportScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const SizedBox(height: 16),
+                SportBannersCarousel(sport: sport),
+                const SizedBox(height: 12),
                 SectionHeader(
                   title: '$name Videos',
                   moreLabel: 'Load more',
                   onMore: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => VideoListingPageForSport(
-                          sport: sport,
+                        builder: (_) => VideoListingPage(
+                          title: sport['name'],
+                          fromSets: sport['mpid'],
                           languageCode: languageCode,
                         ),
                       ),
                     );
                   },
                 ),
-                VideoListForSport(
+                VideoList(
                   key: ValueKey('videos_$sportKey'),
-                  sport: sport,
+                  fromSets: sport['mpid'].toString(),
+                  title: sport['name'].toString(),
                   languageCode: languageCode,
                 ),
                 const SizedBox(height: 16),

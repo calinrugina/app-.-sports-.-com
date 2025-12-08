@@ -8,21 +8,23 @@ import '../../../core/network/media_headers.dart';
 import 'video_player_dialog.dart';
 
 /// Listă orizontală de video-uri pentru un set de mpids (from_sets).
-class VideoListForMpids extends StatefulWidget {
+class VideoCaruselList extends StatefulWidget {
+  final String title;
   final String mpids;
   final String languageCode;
 
-  const VideoListForMpids({
+  const VideoCaruselList({
     super.key,
+    required this.title,
     required this.mpids,
     required this.languageCode,
   });
 
   @override
-  State<VideoListForMpids> createState() => _VideoListForMpidsState();
+  State<VideoCaruselList> createState() => _VideoCaruselListState();
 }
 
-class _VideoListForMpidsState extends State<VideoListForMpids> {
+class _VideoCaruselListState extends State<VideoCaruselList> {
   final VideoService _service = const VideoService();
   List<VideoItem> _videos = [];
   bool _loading = true;
@@ -33,11 +35,11 @@ class _VideoListForMpidsState extends State<VideoListForMpids> {
     _load();
   }
   @override
-  void didUpdateWidget(covariant VideoListForMpids oldWidget) {
+  void didUpdateWidget(covariant VideoCaruselList oldWidget) {
     super.didUpdateWidget(oldWidget);
     // dacă s-a schimbat limba din setări, refacem lista pentru primul studio
     if (oldWidget.languageCode != widget.languageCode) {
-      SportsAppLogger.log('VideoListForMpids LANGUAGE CHANGED');
+      SportsAppLogger.log('VideoCaruselList LANGUAGE CHANGED');
     }
   }
 

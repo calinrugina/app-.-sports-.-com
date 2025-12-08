@@ -7,21 +7,25 @@ import '../data/video_service.dart';
 import '../../../core/network/media_headers.dart';
 import 'video_player_dialog.dart';
 
-class VideoListForSport extends StatefulWidget {
-  final Map<String, dynamic> sport;
+class VideoList extends StatefulWidget {
+  // final Map<String, dynamic> sport;
   final String languageCode;
+  final String fromSets;
+  final String title;
 
-  const VideoListForSport({
+  const VideoList({
     super.key,
-    required this.sport,
+    // required this.sport,
+    required this.fromSets,
+    required this.title,
     required this.languageCode,
   });
 
   @override
-  State<VideoListForSport> createState() => _VideoListForSportState();
+  State<VideoList> createState() => _VideoListState();
 }
 
-class _VideoListForSportState extends State<VideoListForSport> {
+class _VideoListState extends State<VideoList> {
   final VideoService _service = const VideoService();
   List<VideoItem> _videos = [];
   bool _loading = true;
@@ -32,18 +36,18 @@ class _VideoListForSportState extends State<VideoListForSport> {
     _load();
   }
   @override
-  void didUpdateWidget(covariant VideoListForSport oldWidget) {
+  void didUpdateWidget(covariant VideoList oldWidget) {
     super.didUpdateWidget(oldWidget);
     // dacă s-a schimbat limba din setări, refacem lista pentru primul studio
     if (oldWidget.languageCode != widget.languageCode) {
-      SportsAppLogger.log('VideoListForSport LANGUAGE CHANGED');
+      SportsAppLogger.log('VideoList LANGUAGE CHANGED');
     }
   }
 
   Future<void> _load() async {
     // limit inițial 6 (2 coloane x 3 rânduri)
-    final list = await _service.fetchVideos(
-      widget.sport,
+    final list = await _service.fetchVideosForSets(
+      widget.fromSets,
       0,
       widget.languageCode,
       limit: 6,
