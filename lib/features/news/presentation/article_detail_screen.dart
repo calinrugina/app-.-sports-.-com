@@ -1,14 +1,34 @@
 import 'dart:convert';
 
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
+import 'package:intl/intl.dart';
+import 'package:sports_config_app/core/app_config.dart';
+import 'package:sports_config_app/core/network/media_headers.dart';
+import 'package:sports_config_app/core/theme/colors.dart';
+import 'package:sports_config_app/core/widgets/sports_app_bar.dart';
+import 'package:http/http.dart' as http;
+import 'package:crypto/crypto.dart';
+import 'package:html/dom.dart' as dom;
+
+import '../data/article_item.dart';
+
+import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:http/http.dart' as http;
 
+import '../../../core/widgets/sports_app_bar.dart';
+import '../../../core/widgets/back_header.dart';
 import '../../../core/network/media_headers.dart';
+import '../../../core/language/language_provider.dart';
+import '../../../core/theme/colors.dart';
 import '../data/article_item.dart';
 
-class ArticleDetailScreen extends StatefulWidget {
+class ArticleDetailScreen extends ConsumerStatefulWidget {
   final ArticleItem article;
   final String lang;
 
@@ -19,37 +39,39 @@ class ArticleDetailScreen extends StatefulWidget {
   });
 
   @override
-  State<ArticleDetailScreen> createState() => _ArticleDetailScreenState();
+  ConsumerState<ArticleDetailScreen> createState() =>
+      _ArticleDetailScreenState();
 }
 
-class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
+class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
   bool _loading = true;
   String _htmlContent = '';
-  String? _fullMediaUrl;
+  String? _imageUrl;
+  String? _publishDate;
+  String? _category;
+String? _fullTitle;
 
   @override
   void initState() {
     super.initState();
-    _fullMediaUrl = widget.article.mediaUrl;
     _fetchFullArticle();
   }
 
   Future<void> _fetchFullArticle() async {
-    // poți adapta la implementarea ta existentă
     const apiKey = '0b558c74198915cd8fad9cb8fbb5951a';
     const apiSecret = '3fa2a04361d0b808e4c5560fbffaf6b3';
     final id = widget.article.id;
+    final lang = ref.read(languageProvider);
 
+    final baseStr =
+        'api_key=$apiKey&method=getNews&tbsec=$apiSecret&format=json&id=$id&sport_id=&limit=&offset=&lang=$lang';
 
-    final strUrl =
-        'api_key=$apiKey&method=getNews&tbsec=$apiSecret&format=json'
-        '&id=$id&sport_id=&limit=&offset=&lang=${widget.lang}';
-
-    final hash = md5.convert(utf8.encode(strUrl)).toString();
+    final hash = md5.convert(utf8.encode(baseStr)).toString();
 
     final url =
-        'https://articles.ns-platforms.com/api.php?api_key=$apiKey&method=getNews&tbsec=$hash'
-        '&format=json&id=$id&sport_id=&limit=&offset=&lang=${widget.lang}';
+        'https://articles.ns-platforms.com/api.php'
+        '?api_key=$apiKey&method=getNews&tbsec=$hash'
+        '&format=json&id=$id&sport_id=&limit=&offset=&lang=$lang';
 
     try {
       final response = await http.post(
@@ -57,248 +79,309 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       );
 
+      if (!mounted) return;
+
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
         final newsItem = json['news']?['newsItem']?[0];
-        if (mounted && newsItem != null) {
+
+        if (newsItem != null) {
           setState(() {
-            _htmlContent = newsItem['description']?.toString() ?? '';
-            // dacă în detaliu vine un alt media_url, îl folosim
-            _fullMediaUrl = newsItem['media_url']?.toString() ?? _fullMediaUrl;
+            _htmlContent = newsItem['description'] ?? '';
+            _fullTitle = newsItem['title']?.toString();
+            _publishDate = newsItem['publishedDate']?.toString();
+            _category = newsItem['sport']?['name']?.toString();
+            _loading = false;
+          });
+        } else {
+          setState(() {
+            _htmlContent = '<p>Article not found.</p>';
             _loading = false;
           });
         }
       } else {
-        if (mounted) {
-          setState(() {
-            _loading = false;
-          });
-        }
-      }
-    } catch (_) {
-      if (mounted) {
         setState(() {
+          _htmlContent =
+          '<p>Failed to load article (HTTP ${response.statusCode}).</p>';
           _loading = false;
         });
       }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _htmlContent = '<p>Failed to load article.</p>';
+        _loading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final article = widget.article;
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: _buildHeroHeader(context, article),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding:
-              const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 8),
-              child: _buildMetaRow(theme, article),
-            ),
-          ),
-          SliverToBoxAdapter(
+      body: Column(
+        children: [
+          Expanded(
             child: _loading
-                ? const Padding(
-              padding: EdgeInsets.all(24),
-              child: Center(child: CircularProgressIndicator()),
-            )
-                : Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Html(
-                data: _htmlContent.isNotEmpty
-                    ? _htmlContent
-                    : '<p>${article.description}</p>',
-                style: {
-                  'body': Style(
-                    color: theme.textTheme.bodyMedium?.color,
-                    fontSize: FontSize(16),
-                    lineHeight: const LineHeight(1.4),
-                  ),
-                },
-                // customImageRenders: {
-                //   networkSourceMatcher(): (context, attributes, element) {
-                //     String? src =
-                //         attributes['src'] ?? attributes['data-src'] ?? '';
-                //
-                //     if (src == null || src.isEmpty) {
-                //       return const SizedBox.shrink();
-                //     }
-                //
-                //     // cazuri de tipul //image.assets...
-                //     if (src.startsWith('//')) {
-                //       src = 'https:$src';
-                //     }
-                //
-                //     return Image.network(
-                //       src,
-                //       fit: BoxFit.cover,
-                //       headers: mediaHeaders, // x_app_key: mobile-sports-com
-                //     );
-                //   },
-                // },
-                //
-                // // (opțional) link tap
-                // onLinkTap: (url, ctx, attrs, element) {
-                //   // poți deschide cu url_launcher dacă vrei
-                // },
-              ),
-            ),
+                ? const Center(child: CircularProgressIndicator())
+                : _buildContent(theme),
           ),
         ],
       ),
     );
   }
+  String _formatDate(String? raw) {
+    if (raw == null || raw.isEmpty) return '';
+    try {
+      final dt = DateTime.parse(raw);
+      final date = DateFormat('EEE dd/MM').format(dt);
+      final time = DateFormat('h:mm a').format(dt);
+      return '$date · $time';
+    } catch (_) {
+      return raw;
+    }
+  }
+  Widget _buildContent(ThemeData theme) {
+    final textTheme = theme.textTheme;
+    final bodyColor = textTheme.bodyMedium?.color ?? Colors.white;
+    final heroTitle = widget.article.title;
+    final heroImage = widget.article.mediaUrl;
 
-  Widget _buildHeroHeader(BuildContext context, ArticleItem article) {
-    final mediaUrl = _fullMediaUrl;
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // 1. Imaginea mare de sus (media_url)
+          _ArticleHero(
+            imageUrl: heroImage,
+            // title: heroTitle,
+            headers: mediaHeaders,
+          ),
 
-    return Column(
-      children: [
-        SizedBox(
-          height: 350,
-          width: double.infinity,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              if (mediaUrl != null && mediaUrl.isNotEmpty)
-                Image.network(
-                  mediaUrl,
-                  fit: BoxFit.cover,
-                  headers: mediaHeaders,
-                )
-              else
-                Container(color: Colors.black),
+          Container(
+            color: theme.scaffoldBackgroundColor,
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
+            child: Column(
+              children: [
+                const SizedBox(height: 16),
 
-              // gradient jos ca să se vadă titlul
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.black.withOpacity(0.7),
-                      Colors.transparent,
-                      Colors.black.withOpacity(0.8),
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    stops: const [0.0, 0.4, 1.0],
+                // 2. Titlul articolului
+                Text(
+                  widget.article.title,
+                  style: textTheme.headlineLarge?.copyWith(
+                    fontSize: 22,
                   ),
                 ),
-              ),
 
-              // Back + title + meniul din dreapta
-              SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // back row + more icon
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          InkWell(
-                            borderRadius: BorderRadius.circular(24),
-                            onTap: () => Navigator.of(context).pop(),
-                            child: Row(
-                              children: const [
-                                Icon(Icons.arrow_back,
-                                    color: Colors.white, size: 20),
-                                SizedBox(width: 6),
-                                Text(
-                                  'Back',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
+                const SizedBox(height: 8),
+
+                // categorie + dată
+                if (_category != null || _publishDate != null)
+                  Padding(
+                    padding:
+                    const EdgeInsets.only(bottom: 12.0),
+                    child: Row(
+                      children: [
+                        if (_category != null)
+                          Text(
+                            _category!,
+                            style: textTheme.labelSmall?.copyWith(
+                              color: AppColors.redSports,
                             ),
                           ),
-                          const Icon(
-                            Icons.more_vert,
-                            color: Colors.white,
+                        if (_category != null &&
+                            _publishDate != null)
+                          Text(
+                            ' · ',
+                            style: textTheme.labelSmall,
                           ),
-                        ],
+                        if (_publishDate != null)
+                          Text(
+                            _formatDate(_publishDate),
+                            style: textTheme.labelSmall,
+                          ),
+                      ],
+                    ),
+                  ),
+
+
+                const SizedBox(height: 16),
+
+                // 4. Conținut HTML complet (paragrafe + imagini inline)
+                Html(
+                  data: _htmlContent,
+                  shrinkWrap: true,
+                  style: {
+                    "body": Style(
+                      margin: Margins.zero,
+                      padding: HtmlPaddings.zero,
+                      color: bodyColor,
+                      fontStyle: textTheme.bodyMedium!.fontStyle,
+                      fontSize: FontSize(textTheme.bodyMedium?.fontSize ?? 14),
+                      // lineHeight: LineHeight.number(1.4),
+                    ),
+                    "p": Style(
+                      // margin: Margins.only(bottom: Margin(12, Unit.px)),
+                      fontStyle: textTheme.bodyMedium!.fontStyle,
+                      fontSize: FontSize(textTheme.bodyMedium?.fontSize ?? 14),
+                    ),
+                    "figure": Style(
+                      margin: Margins.symmetric(
+                        // vertical: Margin(12, Unit.px),
                       ),
-                      const Spacer(),
-                      // tag + title
-                      // Optional: tag „Top news” (poți adapta după API)
-                      // const Padding(
-                      //   padding: EdgeInsets.only(bottom: 8),
-                      //   child: Chip(
-                      //     label: Text(
-                      //       'Top news',
-                      //       style: TextStyle(
-                      //         color: Colors.white,
-                      //         fontSize: 12,
-                      //       ),
-                      //     ),
-                      //     backgroundColor: Colors.red,
-                      //   ),
-                      // ),
+                    ),
+                    "img": Style(
+                      margin: Margins.symmetric(
+                        // vertical: Margin(8, Unit.px),
+                      ),
+                      width: Width(100, Unit.percent),
+                      height: Height.auto(),
+                    ),
+                  },
+                  extensions: [
+                    // Render special pentru <img>, ca să prindem și src de tip //image...
+                    TagExtension(
+                      tagsToExtend: {"img"},
+                      builder: (ctx) {
+                        var src = ctx.attributes['src'] ?? '';
+                        if (src.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
 
-                    ],
-                  ),
+                        // dacă vine //image.assets..., prefixăm cu https:
+                        if (src.startsWith('//')) {
+                          src = 'https:$src';
+                        }
+
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Image.network(
+                            src,
+                            fit: BoxFit.cover,
+                            headers: mediaHeaders, // ok și pt host-urile tale
+                            errorBuilder: (_, __, ___) => Container(
+                              height: 180,
+                              color: AppColors.gray60,
+                              child: const Center(
+                                child: Icon(Icons.broken_image, size: 32),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
-              ),
-
-            ],
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top:16, left: 16, right: 12),
-          child: Text(
-            article.title,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style:Theme.of(context).textTheme.titleLarge,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMetaRow(ThemeData theme, ArticleItem article) {
-    final colorAccent = Colors.red; // poți folosi culoarea brandului
-    final sport = article.sportName ?? '';
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (sport.isNotEmpty)
-          RichText(
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: sport,
-                  style: TextStyle(
-                    color: colorAccent,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                if (article.publishDate.isNotEmpty) ...[
-                  const TextSpan(
-                    text: ' · ',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                  TextSpan(
-                    text: article.publishDate,
-                    style: const TextStyle(color: Colors.grey),
-                  ),
-                ]
               ],
             ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class _ArticleHero extends StatelessWidget {
+  final String? imageUrl;
+  // final String title;
+  final Map<String, String> headers;
+
+  const _ArticleHero({
+    required this.imageUrl,
+    // required this.title,
+    required this.headers,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return AspectRatio(
+      aspectRatio: 16 / 16,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+
+          // imaginea de fundal
+          if (imageUrl != null)
+            Image.network(
+              imageUrl!,
+              fit: BoxFit.cover,
+              headers: headers,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(color: Colors.black26);
+              },
+            )
+          else
+            Container(color: Colors.black26),
+
+          // gradient de jos în sus
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors: [
+                  Colors.black87,
+                  Colors.transparent,
+                ],
+              ),
+            ),
           ),
-      ],
+
+          // buton Back + titlu
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 8,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Back
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.arrow_back,
+                            color: Colors.white, size: 20),
+                        SizedBox(width: 4),
+                        Text(
+                          'Back',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // const Spacer(),
+                  // // Titlu peste imagine
+                  // Padding(
+                  //   padding: const EdgeInsets.only(bottom: 12.0, right: 8),
+                  //   child: AutoSizeText(
+                  //     title,
+                  //     maxLines: 3,
+                  //     minFontSize: 14,
+                  //     overflow: TextOverflow.ellipsis,
+                  //     style: textTheme.headlineLarge?.copyWith(
+                  //       color: Colors.white,
+                  //     ),
+                  //   ),
+                  // ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

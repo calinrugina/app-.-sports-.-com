@@ -16,18 +16,6 @@ final _upgraderInstance = Upgrader(
 class MoreScreen extends ConsumerWidget {
   const MoreScreen({super.key});
 
-  String _languageLabel(String code) {
-    switch (code) {
-      case 'ro':
-        return 'Română';
-      case 'es':
-        return 'Español';
-      case 'en':
-      default:
-        return 'English';
-    }
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeProvider);
@@ -77,7 +65,7 @@ class MoreScreen extends ConsumerWidget {
                     MaterialPageRoute(
                       builder: (_) => SimpleWebViewScreen(
                         title: 'Terms & Conditions',
-                        url: '${AppConfig.baseUrl}/en/terms-and-conditions',
+                        url: '${AppConfig.baseUrl}/$languageCode/terms-and-conditions?no-header=true&theme=${isLight?'light':'dark'}',
                       ),
                     ),
                   );
@@ -93,7 +81,7 @@ class MoreScreen extends ConsumerWidget {
                     MaterialPageRoute(
                       builder: (_) => SimpleWebViewScreen(
                         title: 'Privacy Policy',
-                        url: '${AppConfig.baseUrl}/en/privacy-policy',
+                        url: '${AppConfig.baseUrl}/$languageCode/privacy-policy?no-header=true&theme=${isLight?'light':'dark'}',
                       ),
                     ),
                   );
@@ -103,7 +91,7 @@ class MoreScreen extends ConsumerWidget {
                 title:  Text('Language',
                   style: Theme.of(context).textTheme.headlineLarge,
                 ),
-                // subtitle: Text(_languageLabel(languageCode)),
+                // subtitle: Text(_languageLabel(languageCode),style: Theme.of(context).textTheme.bodySmall),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () {
                   Navigator.of(context).push(
@@ -115,9 +103,9 @@ class MoreScreen extends ConsumerWidget {
               ),
               SizedBox(height: 25,),
               Padding(padding: EdgeInsets.all(16), child: Container(
-                  padding: const EdgeInsets.all(4),
+                  padding: const EdgeInsets.all(5),
                   decoration: BoxDecoration(
-                    color: AppColors.darkGrey, // fundalul "barei"
+                    color: isDark ? AppColors.darkGrey: AppColors.gray20, // fundalul "barei"
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child:Row(
@@ -125,28 +113,28 @@ class MoreScreen extends ConsumerWidget {
                       // LIGHT
                       Expanded(
                         child: InkWell(
-                          borderRadius: BorderRadius.circular(28),
+                          borderRadius: BorderRadius.circular(16),
                           onTap: () {
                             ref.read(themeProvider.notifier).setTheme(ThemeMode.light);
                           },
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(32),
+                              borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: isLight ? Colors.black :  AppColors.darkTabs,
+                                color: isLight ? Colors.white :  AppColors.darkTabs,
                                 width: 2,
                               ),
-                              color: isLight ? Colors.black :  AppColors.darkTabs
-                            ),
+                                color: isLight  ? Colors.white: AppColors.darkTabs                            ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children:  [
-                                Icon(Icons.wb_sunny_outlined, color: Colors.white),
-                                SizedBox(width: 8),
+                                Icon(Icons.wb_sunny_outlined,
+                                    color: isDark  ? Colors.white: Colors.black),
+                                const SizedBox(width: 8),
                                 Text(
                                   'Light',
-                                  style: Theme.of(context).textTheme.titleLarge!.copyWith(color: Colors.white),
+                                  style: Theme.of(context).textTheme.titleLarge!.copyWith(color: isDark  ? Colors.white: Colors.black),
                                 ),
                               ],
                             ),
@@ -159,29 +147,29 @@ class MoreScreen extends ConsumerWidget {
                       // DARK
                       Expanded(
                         child: InkWell(
-                          borderRadius: BorderRadius.circular(28),
+                          borderRadius: BorderRadius.circular(16),
                           onTap: () {
                             ref.read(themeProvider.notifier).setTheme(ThemeMode.dark);
                           },
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(28),
+                              borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: isDark ? Colors.black :  AppColors.darkTabs,
+                                color: isDark ? Colors.black :  AppColors.gray20,
                                 width: 2,
                               ),
-                                color: isDark ? Colors.black :  AppColors.darkTabs
+                              color: isDark ? Colors.black :  AppColors.gray20,
 
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children:  [
-                                Icon(Icons.dark_mode, color: Colors.white),
+                                Icon(Icons.dark_mode, color: isDark?Colors.white:Colors.black),
                                 SizedBox(width: 8),
                                 Text(
                                   'Dark',
-                                  style: Theme.of(context).textTheme.titleLarge!.copyWith(color: Colors.white),
+                                  style: Theme.of(context).textTheme.titleLarge!.copyWith(color: isDark?Colors.white:Colors.black),
                                 ),
                               ],
                             ),
@@ -245,7 +233,7 @@ class MoreScreen extends ConsumerWidget {
                 // C. A apărut o eroare (Error)
                 error: (error, stackTrace) => Text(
                   'Eroare versiune: $error',
-                  style: const TextStyle(fontSize: 12, color: Colors.red),
+                  style: const TextStyle(fontSize: 12, color: AppColors.redSports),
                 ),
               )
             ],

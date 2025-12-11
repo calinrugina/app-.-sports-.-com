@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sports_config_app/features/media/presentation/video_listing_two_columns.dart';
 import 'package:sports_config_app/features/sports/presentation/sport_banners_carousel.dart';
+import '../../../core/app_config.dart';
 import '../../../core/widgets/section_header.dart';
-import '../../media/presentation/video_list.dart';
-import '../../news/presentation/article_list_for_sport.dart';
+import '../../media/presentation/videos_listing.dart';
+import '../../news/presentation/article_detail_screen.dart';
+import '../../news/presentation/articles_listing.dart';
+import '../../news/presentation/article_listing_one_column.dart';
+import '../../news/presentation/article_listing_two_columns.dart';
 import '../providers/selected_sport_provider.dart';
-import '../../home/presentation/widgets/top_categories.dart';
-import '../../media/presentation/video_listing_page.dart';
-import '../../news/presentation/article_listing_page_for_sport.dart';
+import '../../home/presentation/widgets/top_sports.dart';
 
 class SportScreen extends ConsumerWidget {
   final List<dynamic> sports;
@@ -34,62 +37,73 @@ class SportScreen extends ConsumerWidget {
     return Column(
       children: [
         // lista de sporturi sus, fixa în tabul Sports
-        TopCategories(sports: sports),
+        SportsOnTop(sports: sports),
         const Divider(height: 1),
         Expanded(
           child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 16),
-                SportBannersCarousel(sport: sport),
-                const SizedBox(height: 12),
-                SectionHeader(
-                  title: '$name Videos',
-                  moreLabel: 'Load more',
-                  onMore: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => VideoListingPage(
-                          title: sport['name'],
-                          fromSets: sport['mpid'],
-                          languageCode: languageCode,
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: AppConfig.appPadding),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // const SizedBox(height: 16),
+                  SportBannersCarousel(sport: sport),
+                  // const SizedBox(height: 12),
+                  SectionHeader(
+                    title: name,
+                    titleRed: 'Latest Videos',
+                    moreLabel: 'See More',
+                    onMore: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => VideosListing(
+                            languageCode: languageCode,
+                            mpids: sport['mpid'],
+                            title: sport['name'],
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                ),
-                VideoList(
-                  key: ValueKey('videos_$sportKey'),
-                  fromSets: sport['mpid'].toString(),
-                  title: sport['name'].toString(),
-                  languageCode: languageCode,
-                ),
-                const SizedBox(height: 16),
-                SectionHeader(
-                  title: '$name News',
-                  moreLabel: 'Load more',
-                  onMore: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => ArticleListingPageForSport(
-                          sport: sport,
-                          languageCode: languageCode,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 0),
-                  child: ArticleListForSport(
-                    key: ValueKey('articles_$sportKey'),
-                    sport: sport,
-                    languageCode: languageCode,
+                      );
+                    },
                   ),
-                ),
-                const SizedBox(height: 24),
-              ],
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 0),
+                    child: VideosGridTwoColumns(
+                      title: sport['name'],
+                      mpids: sport['mpid'],
+                      languageCode: languageCode,
+                      shrinkWrap: true,
+                      showMore: true,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SectionHeader(
+                    title: name,
+                    moreLabel: 'See More',
+                    titleRed: 'News',
+                    onMore: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => ArticlesListing(
+                            sport: sport,
+                            languageCode: languageCode,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 0),
+                    child: ArticlesGridTwoColumns(
+                      sport: sport,
+                      languageCode: languageCode,
+                      shrinkWrap: true,
+                      showMore: true,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
             ),
           ),
         ),

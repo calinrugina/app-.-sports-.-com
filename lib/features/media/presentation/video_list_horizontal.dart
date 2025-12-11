@@ -1,7 +1,8 @@
 import 'dart:developer' as SportsAppLogger;
-
 import 'package:flutter/material.dart';
-import 'package:sports_config_app/features/media/presentation/video_item_in_listing.dart';
+import 'package:sports_config_app/core/app_config.dart';
+import 'package:sports_config_app/features/media/presentation/video_card.dart';
+import '../../../core/app_functions.dart';
 import '../data/video_item.dart';
 import '../data/video_service.dart';
 import '../../../core/network/media_headers.dart';
@@ -32,24 +33,38 @@ class _VideoCaruselListState extends State<VideoCaruselList> {
   @override
   void initState() {
     super.initState();
-    _load();
+    _load(reset: true);
   }
+
   @override
   void didUpdateWidget(covariant VideoCaruselList oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // dacă s-a schimbat limba din setări, refacem lista pentru primul studio
-    if (oldWidget.languageCode != widget.languageCode) {
-      SportsAppLogger.log('VideoCaruselList LANGUAGE CHANGED');
+
+    // Dacă s-a schimbat limba sau mpids-urile, refacem lista
+    if (oldWidget.languageCode != widget.languageCode ||
+        oldWidget.mpids != widget.mpids) {
+      SportsAppLogger.log('VideoCaruselList – reload (lang or mpids changed)');
+      _load(reset: true);
     }
   }
 
-  Future<void> _load() async {
+  Future<void> _load({bool reset = false}) async {
+    if (reset) {
+      setState(() {
+        _loading = true;
+        _videos = [];
+      });
+    }
+
     final list = await _service.fetchVideosForSets(
       widget.mpids,
       0,
       widget.languageCode,
+      limit: 5, // vrei 4–5 videouri în carusel
     );
+
     if (!mounted) return;
+
     setState(() {
       _videos = list;
       _loading = false;
@@ -59,6 +74,7 @@ class _VideoCaruselListState extends State<VideoCaruselList> {
   void _openPlayer(VideoItem v) {
     final url = v.videoUrl;
     if (url == null || url.isEmpty) return;
+
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -73,31 +89,55 @@ class _VideoCaruselListState extends State<VideoCaruselList> {
   Widget build(BuildContext context) {
     if (_loading) {
       return const SizedBox(
-        height: 180,
+        height: 200,
         child: Center(child: CircularProgressIndicator()),
       );
     }
     if (_videos.isEmpty) {
       return const Padding(
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.all(15),
         child: Text('No videos.'),
       );
     }
 
+    // vrem ~4 item-uri vizibile pe ecran
+    const visibleItems = 2;
+    const horizontalPadding = 0.0;
+    const itemSpacing = AppConfig.appPadding;
+
+    final screenWidth = MediaQuery.of(context).size.width;
+    final totalSpacing = itemSpacing * (visibleItems - 1);
+    final availableWidth =
+        screenWidth - horizontalPadding * 2 - totalSpacing;
+    final itemWidth = availableWidth / visibleItems;
+
+
+    // astea sunt OK
+    // lățimea fiecărui card ~70% din ecran
+    final cardWidth = screenWidth * 0.8;
+
+    const referenceWidth = 430.0;
+    final scale = cardWidth / referenceWidth;
+
+    // înălțime aproximativă pt card + padding
+    final listHeight = cardWidth * .9;
+
     return SizedBox(
-      height: 200,
+      height: listHeight, // înălțime suficientă pentru thumb + titlu
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: horizontalPadding),
         itemCount: _videos.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        separatorBuilder: (_, __) => const SizedBox(width: itemSpacing),
         itemBuilder: (context, index) {
           final v = _videos[index];
-          return VideoListItem(
-            sizeWidth: 280,
-            video: v,
-            onTap: () => _openPlayer(v),
-            headers: mediaHeaders, // Asigurați-vă că mediaHeaders este disponibil aici
+          return SizedBox(
+            width: cardWidth,
+            child: VideoCard(
+              video: v,
+              onTap: () => SportsFunction().openPlayer(v, context),
+              pictureRatio: 16/9,
+            ),
           );
         },
       ),

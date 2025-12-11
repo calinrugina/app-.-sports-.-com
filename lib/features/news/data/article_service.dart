@@ -17,7 +17,7 @@ class ArticleService {
     Map<String, dynamic> sport,
     int offset,
     String languageCode, {
-    int limit = 5,
+    int limit = 6,
   }) async {
     final int sportId = int.tryParse(sport['lpid']?.toString() ?? '') ?? 0;
 

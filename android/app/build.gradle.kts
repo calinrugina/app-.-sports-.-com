@@ -16,7 +16,15 @@ plugins {
 android {
     namespace = "com.sportsdotcom.app"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.0.12077973"
+
+    defaultConfig {
+        applicationId = "com.sportsdotcom.app"  // TREBUIE să fie EXACT ID-ul din Google Play
+        minSdk = 21
+        targetSdk = 34
+        versionCode = 11      // > decât ce e acum live
+        versionName = "1.1.0"
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -41,7 +49,17 @@ android {
 
     buildTypes {
         getByName("release") {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+
+            // Dacă vrei și resource shrinking (foarte probabil da):
+            isShrinkResources = true
+
+            // Fişierele de ProGuard/R8 (template standard Flutter)
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+
             signingConfig = signingConfigs.getByName("release")
         }
     }

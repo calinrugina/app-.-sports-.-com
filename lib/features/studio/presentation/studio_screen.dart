@@ -1,15 +1,16 @@
-import 'dart:developer' as SportsAppLogger;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sports_config_app/core/app_config.dart';
 import '../../../core/app_functions.dart';
 import '../../../core/network/media_headers.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../media/data/video_item.dart';
 import '../../media/data/video_service.dart';
-import '../../media/presentation/video_item_in_listing.dart';
+import '../../media/presentation/video_card.dart';
+import '../../media/presentation/video_listing_two_columns.dart';
 import '../../media/presentation/video_player_dialog.dart';
+import '../../media/presentation/videos_listing.dart';
 
 class StudioScreen extends StatefulWidget {
   final List<dynamic> menuAreas;
@@ -27,13 +28,6 @@ class StudioScreen extends StatefulWidget {
 
 class _StudioScreenState extends State<StudioScreen> {
   int _selectedIndex = 0;
-
-  final VideoService _videoService = const VideoService();
-  final List<VideoItem> _videos = [];
-  bool _loadingVideos = false;
-  bool _endReached = false;
-  int _offset = 0;
-  final int _limit = 6;
 
   /// Returnează lista de areas de sub "Sports Studios".
   List<Map<String, dynamic>> get _studioAreas {
@@ -66,6 +60,7 @@ class _StudioScreenState extends State<StudioScreen> {
     // implicit: primul tab (ex: Goats)
     _resetAndLoadForIndex(0);
   }
+
   @override
   void didUpdateWidget(covariant StudioScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -75,65 +70,16 @@ class _StudioScreenState extends State<StudioScreen> {
       _resetAndLoadForIndex(0);
     }
   }
+
   Future<void> _resetAndLoadForIndex(int index) async {
     setState(() {
       _selectedIndex = index;
-      _videos.clear();
-      _offset = 0;
-      _endReached = false;
     });
-    await _loadMore();
-  }
-
-  Future<void> _loadMore() async {
-    if (_loadingVideos || _endReached) return;
-    final mpids = _currentMpids;
-    if (mpids == null || mpids.trim().isEmpty) {
-      setState(() {
-        _loadingVideos = false;
-        _endReached = true;
-      });
-      return;
-    }
-
-    setState(() {
-      _loadingVideos = true;
-    });
-
-    final newItems = await _videoService.fetchVideosForSets(
-      mpids,
-      _offset,
-      widget.languageCode,
-      limit: _limit,
-    );
-
-    if (!mounted) return;
-
-    setState(() {
-      _videos.addAll(newItems);
-      _offset += _limit;
-      if (newItems.length < _limit) {
-        _endReached = true;
-      }
-      _loadingVideos = false;
-    });
-  }
-
-  void _openPlayer(VideoItem v) {
-    final url = v.videoUrl;
-    if (url == null || url.isEmpty) return;
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (_) => VideoPlayerDialog(
-        videoUrl: url,
-        title: v.title,
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
+
     final areas = _studioAreas;
 
     if (areas.isEmpty) {
@@ -143,22 +89,28 @@ class _StudioScreenState extends State<StudioScreen> {
     if (_selectedIndex >= areas.length) {
       _selectedIndex = 0;
     }
-
     final selectedName = _currentName;
+// === CALCUL DINAMIC PENTRU childAspectRatio ===
+    final screenWidth = MediaQuery.of(context).size.width;
+    const referenceWidth = 430.0;
+    final scale = screenWidth / referenceWidth;
 
     return Column(
       children: [
         // carusel cu toate studiourile, similar cu bara de sporturi
         Container(
-          color: Colors.black,
-          padding: const EdgeInsets.symmetric(vertical: 6),
+          color: AppColors.darkTabs,
+          // padding: const EdgeInsets.symmetric(vertical: AppConfig.paddingInside),
           child: SizedBox(
             height: 60,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              // padding: const EdgeInsets.symmetric(horizontal: 12),
               itemCount: areas.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              separatorBuilder: (_, __) => Container(
+                color: Colors.black,
+                child: SizedBox(width: 1),
+              ),
               itemBuilder: (context, index) {
                 final area = areas[index];
                 final name = area['name']?.toString() ?? '';
@@ -172,39 +124,41 @@ class _StudioScreenState extends State<StudioScreen> {
                   child: Container(
                     width: 100,
                     decoration: BoxDecoration(
-                      color: isSelected ? AppColors.red : Colors.black,
+                      color:
+                          isSelected ? AppColors.redSports : AppColors.darkTabs,
                       // borderRadius: BorderRadius.circular(10),
                     ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 4,
-                    ),
+                    // padding: const EdgeInsets.symmetric(
+                    //   horizontal: 6,
+                    //   vertical: 4,
+                    // ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         if (iconUrl != null && iconUrl.isNotEmpty)
                           SizedBox(
-                            height: 30,
+                            height: 24,
                             child: SvgIconLoader(
                               iconUrl: iconUrl,
                               headers: mediaHeaders,
+                              size: 40,
                             ),
                           )
                         else
                           const Icon(
-                            Icons.tv,
+                            Icons.sports,
                             color: Colors.white,
-                            size: 30,
+                            size: 24,
                           ),
-                        const SizedBox(height: 4),
-                        Text(
-                          name,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.headlineLarge!.copyWith(fontSize: 14, color: Colors.white)
-
-                        ),
+                        const SizedBox(height: 2),
+                        Text(name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineLarge!
+                                .copyWith(fontSize: 14, color: Colors.white)),
                       ],
                     ),
                   ),
@@ -214,75 +168,72 @@ class _StudioScreenState extends State<StudioScreen> {
           ),
         ),
         const Divider(height: 1),
+        Padding(padding: EdgeInsets.symmetric(horizontal:  AppConfig.appPadding), child: SectionHeader(
+          title: _currentName,
+          moreLabel: 'See More',
+          titleRed: 'Latest Videos',
+          onMore: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => VideosListing(
+                  languageCode: 'en',
+                  mpids: _currentMpids ?? '',
+                  title: _currentName,
+                ),
+              ),
+            );
+          },
+        ),),
         Expanded(
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: SectionHeader(title: selectedName),
+            child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric( horizontal: AppConfig.appPadding),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 0),
+              child: VideosGridTwoColumns(
+                title: _currentName,
+                mpids: _currentMpids ?? '',
+                languageCode: 'en',
+                shrinkWrap: true,
+                showMore: true,
               ),
-              if (_videos.isEmpty && _loadingVideos)
-                const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.all(24),
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-                )
-              else if (_videos.isEmpty)
-                const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text('No videos configured for this studio.'),
-                  ),
-                )
-              else
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  sliver: SliverGrid(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 12,
-                      childAspectRatio: 16 / 15,
-                    ),
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final v = _videos[index];
-                        return VideoListItem(
-                          video: v,
-                          onTap: () => _openPlayer(v),
-                          headers: mediaHeaders, // Asigurați-vă că mediaHeaders este disponibil aici
-                        );
-                      },
-                      childCount: _videos.length,
-                    ),
-                  ),
-                ),
-              SliverToBoxAdapter(
-                child: Column(
-                  children: [
-                    if (_videos.isNotEmpty && !_endReached)
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: ElevatedButton(
-                          onPressed: _loadMore,
-                          child: const Text('Load more'),
-                        ),
-                      ),
-                    if (_endReached)
-                      const Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Text('No more videos'),
-                      ),
-                    const SizedBox(height: 24),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+        ))
+        // Expanded(
+        //   child: SingleChildScrollView(
+        //     child: Padding(
+        //       padding: const EdgeInsets.symmetric(
+        //           horizontal: AppConfig.appPadding,
+        //           vertical: AppConfig.appPadding),
+        //       child: Column(children: [
+        //         GridView.builder(
+        //           shrinkWrap: true,
+        //           physics: const BouncingScrollPhysics(),
+        //           padding: const EdgeInsets.symmetric(
+        //             horizontal: 0,
+        //             vertical: 2,
+        //           ),
+        //           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        //             crossAxisCount: 2,
+        //             crossAxisSpacing: 12,
+        //             mainAxisSpacing: 12,
+        //             // joacă-te cu raportul până arată bine pe device-ul de referință
+        //             childAspectRatio: 0.96 * SportsFunction().scale(context),
+        //           ),
+        //           itemCount: _videos.length,
+        //           itemBuilder: (context, index) {
+        //             final video = _videos[index];
+        //             return VideoCard(
+        //               video: video,
+        //               onTap: () => _openPlayer(video),
+        //             );
+        //           },
+        //         )
+        //       ]),
+        //     ),
+        //   ),
+        // ),
       ],
     );
   }

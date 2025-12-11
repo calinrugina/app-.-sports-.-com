@@ -2,8 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sports_config_app/core/theme/colors.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:sports_config_app/core/network/media_headers.dart';
+
+import '../../../core/app_config.dart';
 
 class SportBannersCarousel extends StatefulWidget {
   final Map<String, dynamic> sport;
@@ -58,7 +61,7 @@ class _SportBannersCarouselState extends State<SportBannersCarousel> {
 
     _timer = Timer.periodic(
       Duration(seconds: _slideSeconds),
-          (timer) {
+      (timer) {
         if (!_pageController.hasClients) return;
         int next = _currentIndex + 1;
         if (next >= items.length) next = 0;
@@ -84,10 +87,13 @@ class _SportBannersCarouselState extends State<SportBannersCarousel> {
     if (items.isEmpty) {
       return const SizedBox.shrink();
     }
+    final screenWidth = MediaQuery.of(context).size.width;
+    const referenceWidth = 430.0;
+    final scale = screenWidth / referenceWidth;
 
     return SizedBox(
-      height: 350,
-      child: Padding( padding: EdgeInsets.only(left: 15, right: 15), child: Column(
+      height: 430 * scale,
+      child: Column(
         children: [
           Expanded(
             child: PageView.builder(
@@ -123,14 +129,14 @@ class _SportBannersCarouselState extends State<SportBannersCarousel> {
                 width: isActive ? 10 : 6,
                 height: 6,
                 decoration: BoxDecoration(
-                  color: isActive ? Colors.white : Colors.white54,
+                  color: isActive ? AppColors.redSports : AppColors.gray60,
                   borderRadius: BorderRadius.circular(4),
                 ),
               );
             }),
           ),
         ],
-      ),),
+      ),
     );
   }
 
@@ -138,14 +144,14 @@ class _SportBannersCarouselState extends State<SportBannersCarousel> {
     if (url.toLowerCase().endsWith('.svg')) {
       return SvgPicture.network(
         url,
-        fit: BoxFit.cover,
+        fit: BoxFit.contain,
         headers: mediaHeaders,
       );
     }
 
     return Image.network(
       url,
-      fit: BoxFit.cover,
+      fit: BoxFit.contain,
       headers: mediaHeaders,
     );
   }

@@ -2,20 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sports_config_app/core/app_config.dart';
+import '../../../core/widgets/custom_bottom_bar.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/widgets/horizontal_list_placeholder.dart';
-import '../../../core/widgets/vertical_list_placeholder.dart';
 import '../../../core/widgets/sports_app_bar.dart';
 import '../../config/providers/config_provider.dart';
 import '../../../core/language/language_provider.dart';
 import '../../live/presentation/live_screen.dart';
-import '../../media/presentation/video_listing_page.dart';
+import '../../media/presentation/videos_listing.dart';
 import '../../sports/presentation/sport_screen.dart';
 import '../../studio/presentation/studio_screen.dart';
 import '../../more/presentation/more_screen.dart';
-import '../../media/presentation/video_list_for_mpids.dart';
-import 'widgets/top_categories.dart';
+import '../../media/presentation/video_list_horizontal.dart';
+import 'widgets/top_sports.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -31,7 +31,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final configAsync = ref.watch(configProvider);
 
-
     return configAsync.when(
       data: (config) {
         final sports = (config?['sports'] as List?) ?? [];
@@ -39,7 +38,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
         final selectedLanguage = ref.watch(languageProvider);
         final String languageCode =
-            selectedLanguage.isNotEmpty ? selectedLanguage : 'en';
+        selectedLanguage.isNotEmpty ? selectedLanguage : 'en';
+
+        // există sporturi cu livestream?
         final hasLive = sports.any((s) {
           final m = s as Map<String, dynamic>;
           final ls = m['livestreams'] as List?;
@@ -47,7 +48,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         });
 
         final List<Widget> pages = [];
-        final List<BottomNavigationBarItem> items = [];
 
         // indexul tab-ului Sports în bottom bar:
         final int sportsTabIndex = 1 + (hasLive ? 1 : 0);
@@ -59,117 +59,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             sports,
             menuAreas,
             languageCode,
-            () {
+                () {
               setState(() {
                 _selectedIndex = sportsTabIndex;
               });
             },
           ),
         );
-        items.add(
-          BottomNavigationBarItem(
-            icon: SvgPicture.asset(
-              'assets/images/tab_home.svg',
-              // height: 30,
-            ),
-            activeIcon: SvgPicture.asset(
-              'assets/images/tab_home.svg',
-              // height: 30,
-              colorFilter: const ColorFilter.mode(
-                AppColors.red,
-                BlendMode.srcIn,
-              ),
-            ),
-            label: 'Home',
-          ),
-        );
 
         // Live (optional)
         if (hasLive) {
           pages.add(const LiveScreen());
-
-          items.add(
-            BottomNavigationBarItem(
-              icon: SvgPicture.asset(
-                'assets/images/tab_stream.svg',
-                // height: 22,
-              ),
-              activeIcon: SvgPicture.asset(
-                'assets/images/tab_stream.svg',
-                // height: 22,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.red,
-                  BlendMode.srcIn,
-                ),
-              ),
-              label: 'Live',
-            ),
-          );
         }
 
         // Sports
         pages.add(SportScreen(sports: sports, languageCode: languageCode));
-        items.add(
-          BottomNavigationBarItem(
-            icon: SvgPicture.asset(
-              'assets/images/tab_sports.svg',
-              // height: 22,
-            ),
-            activeIcon: SvgPicture.asset(
-              'assets/images/tab_sports.svg',
-              // height: 22,
-              colorFilter: const ColorFilter.mode(
-                AppColors.red,
-                BlendMode.srcIn,
-              ),
-            ),
-            label: 'Sports',
-          ),
-        );
 
         // Studio
         pages.add(
           StudioScreen(menuAreas: menuAreas, languageCode: languageCode),
         );
-        items.add(
-          BottomNavigationBarItem(
-            icon: SvgPicture.asset(
-              'assets/images/tab_studios.svg',
-              // height: 22,
-            ),
-            activeIcon: SvgPicture.asset(
-              'assets/images/tab_studios.svg',
-              // height: 22,
-              colorFilter: const ColorFilter.mode(
-                AppColors.red,
-                BlendMode.srcIn,
-              ),
-            ),
-            label: 'Studios',
-          ),
-        );
 
         // More
         pages.add(const MoreScreen());
-        items.add(
-          BottomNavigationBarItem(
-            icon: SvgPicture.asset(
-              'assets/images/tab_more.svg',
-              // height: 22,
-            ),
-            activeIcon: SvgPicture.asset(
-              'assets/images/tab_more.svg',
-              // height: 22,
-              colorFilter: const ColorFilter.mode(
-                AppColors.red,
-                BlendMode.srcIn,
-              ),
-            ),
-            label: 'More',
-          ),
-        );
 
-        if (_selectedIndex >= items.length) {
+        // dacă între timp numărul de pagini s-a schimbat (ex: a apărut/dispărut Live),
+        // ne asigurăm că indexul curent este valid
+        if (_selectedIndex >= pages.length) {
           _selectedIndex = 0;
         }
 
@@ -178,23 +94,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           body: SafeArea(
             child: IndexedStack(
               index: _selectedIndex,
-              children: pages.take(items.length).toList(),
+              children: pages,
             ),
           ),
-          bottomNavigationBar: BottomNavigationBar(
-            showSelectedLabels: false,
-            showUnselectedLabels: false,
-            backgroundColor: Colors.black,
-            type: BottomNavigationBarType.fixed,
-            currentIndex: _selectedIndex,
-            onTap: (i) {
+          bottomNavigationBar: CustomBottomNavBar(
+            selectedIndex: _selectedIndex,
+            onItemTapped: (i) {
               setState(() {
                 _selectedIndex = i;
               });
             },
-            selectedItemColor: AppColors.red,
-            unselectedItemColor: Colors.white,
-            items: items,
+            hasLive: hasLive,
           ),
         );
       },
@@ -210,141 +120,126 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildHomeBody(
-    BuildContext context,
-    List<dynamic> sports,
-    List<dynamic> menuAreas,
-    String languageCode,
-    VoidCallback goToSportsTab,
-  ) {
+      BuildContext context,
+      List<dynamic> sports,
+      List<dynamic> menuAreas,
+      String languageCode,
+      VoidCallback goToSportsTab,
+      ) {
     return Column(
       children: [
         // bara de sporturi, fixă sus, la fel ca în tabul Sports
-        TopCategories(
+        SportsOnTop(
           sports: sports,
           highlightSelected: false,
           onSportSelected: (_) => goToSportsTab(),
         ),
         const Divider(height: 1),
         Expanded(
-          child: CustomScrollView(
-            slivers: [
-              ...menuAreas.expand((area) {
-                final map = area as Map<String, dynamic>;
-                final String name = map['name']?.toString() ?? '';
+          child: Padding(
+            padding:
+            const EdgeInsets.symmetric(horizontal: AppConfig.appPadding),
+            child: CustomScrollView(
+              slivers: [
+                ...menuAreas.expand((area) {
+                  final map = area as Map<String, dynamic>;
+                  final String name = map['name']?.toString() ?? '';
 
-                final List<Widget> sectionWidgets = [];
+                  final List<Widget> sectionWidgets = [];
 
-                // sectionWidgets.add(
-                //   SliverToBoxAdapter(
-                //     child: SectionHeader(title: name),
-                //   ),
-                // );
+                  final areas = map['areas'] as List?;
 
-                final areas = map['areas'] as List?;
+                  if (areas != null && areas.isNotEmpty) {
+                    for (final sub in areas) {
+                      final subMap = sub as Map<String, dynamic>;
+                      final subName = subMap['name']?.toString() ?? '';
 
-                if (areas != null && areas.isNotEmpty) {
+                      final mpidsValue =
+                      (subMap['mpids'] ?? subMap['mpid'])?.toString();
 
-                  for (final sub in areas) {
-                    final subMap = sub as Map<String, dynamic>;
-                    final subName = subMap['name']?.toString() ?? '';
-
-                    final mpidsValue =
-                        (subMap['mpids'] ?? subMap['mpid'])?.toString();
-
-                    sectionWidgets.add(
-                      SliverToBoxAdapter(
-                        child: SectionHeader(
-                          title: subName,
-                          moreLabel: 'See More >',
-                          onMore: (mpidsValue != null &&
-                                  mpidsValue.trim().isNotEmpty)
-                              ? () {
-                            SportsAppLogger.log('1-$mpidsValue');
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) => VideoListingPage(
-                                        title: subName,
-                                        fromSets: mpidsValue,
-                                        languageCode: languageCode,
-                                      ),
-                                    ),
-                                  );
-                                }
-                              : null,
+                      sectionWidgets.add(
+                        SliverToBoxAdapter(
+                          child: SectionHeader(
+                            title: subName,
+                            moreLabel: 'See More',
+                            onMore: (mpidsValue != null &&
+                                mpidsValue.trim().isNotEmpty)
+                                ? () {
+                              SportsAppLogger.log('1-$mpidsValue');
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => VideosListing(
+                                    title: name,
+                                    mpids: mpidsValue,
+                                    languageCode: languageCode,
+                                  ),
+                                ),
+                              );
+                            }
+                                : null,
+                          ),
                         ),
-                      ),
-                    );
+                      );
+
+                      if (mpidsValue != null && mpidsValue.trim().isNotEmpty) {
+                        sectionWidgets.add(
+                          SliverToBoxAdapter(
+                            child: VideoCaruselList(
+                              mpids: mpidsValue,
+                              title: '',
+                              languageCode: languageCode,
+                            ),
+                          ),
+                        );
+                      } else {
+                        sectionWidgets.add(
+                          const SliverToBoxAdapter(
+                            child: HorizontalListPlaceholder(),
+                          ),
+                        );
+                      }
+                    }
+                  } else {
+                    final mpidsValue =
+                    (map['mpids'] ?? map['mpid'])?.toString();
 
                     if (mpidsValue != null && mpidsValue.trim().isNotEmpty) {
                       sectionWidgets.add(
                         SliverToBoxAdapter(
+                          child: SectionHeader(
+                            title: name,
+                            moreLabel: 'See More',
+                            onMore: () {
+                              SportsAppLogger.log('2-$mpidsValue');
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => VideosListing(
+                                    title: name,
+                                    mpids: mpidsValue,
+                                    languageCode: languageCode,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      );
+                      sectionWidgets.add(
+                        SliverToBoxAdapter(
                           child: VideoCaruselList(
+                            title: 'two',
                             mpids: mpidsValue,
-                            title: 'one',
                             languageCode: languageCode,
                           ),
                         ),
                       );
-                    } else {
-                      sectionWidgets.add(
-                        const SliverToBoxAdapter(
-                          child: HorizontalListPlaceholder(),
-                        ),
-                      );
                     }
                   }
-                }
 
-                else {
-                  final mpidsValue =
-                      (map['mpids'] ?? map['mpid'])?.toString();
-
-                  if (mpidsValue != null && mpidsValue.trim().isNotEmpty) {
-                    sectionWidgets.add(
-                      SliverToBoxAdapter(
-                        child: SectionHeader(
-                          title: name,
-                          moreLabel: 'See More >',
-                          onMore: () {
-                            SportsAppLogger.log('2-$mpidsValue');
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => VideoListingPage(
-                                  title: name,
-                                  fromSets: mpidsValue,
-                                  languageCode: languageCode,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    );
-                    sectionWidgets.add(
-                      SliverToBoxAdapter(
-                        child: VideoCaruselList(
-                          title: 'two',
-                          mpids: mpidsValue,
-                          languageCode: languageCode,
-                        ),
-                      ),
-                    );
-                  }
-                  /*
-                  else {
-                    sectionWidgets.add(
-                      const SliverToBoxAdapter(
-                        child: VerticalListPlaceholder(),
-                      ),
-                    );
-                  }
-
-                   */
-                }
-
-                return sectionWidgets;
-              }),
-            ],
+                  return sectionWidgets;
+                }),
+              ],
+            ),
           ),
         ),
       ],

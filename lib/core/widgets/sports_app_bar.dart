@@ -4,10 +4,12 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../features/config/providers/config_provider.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/auth/presentation/login_screen.dart';
+import '../../features/more/presentation/notifications_settings_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../app_config.dart';
 import '../app_functions.dart';
 import '../network/media_headers.dart';
+import '../theme/colors.dart';
 
 class SportsAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const SportsAppBar({super.key});
@@ -61,48 +63,49 @@ class SportsAppBar extends ConsumerWidget implements PreferredSizeWidget {
             ),
           ),
           const Spacer(),
-          // IconButton(
-          //   icon: const Icon(Icons.search, color: Colors.white),
-          //   onPressed: () {
-          //     showModalBottomSheet(
-          //       context: context,
-          //       isScrollControlled: true,
-          //       builder: (ctx) => const _SearchSheet(),
-          //     );
-          //   },
-          // ),
-
-          // IconButton(
-          //   icon: const Icon(Icons.notifications_none, color: Colors.white),
-          //   onPressed: () {
-          //     showModalBottomSheet(
-          //       context: context,
-          //       builder: (ctx) => const _NotificationsSheet(),
-          //     );
-          //   },
-          // ),
           IconButton(
+            icon: const Icon(Icons.search, color: Colors.white),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                builder: (ctx) => const _SearchSheet(),
+              );
+            },
+          ),
+
+          IconButton(
+            icon: const Icon(Icons.notifications_none, color: Colors.white),
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => const ProfileScreen(),
+                  builder: (_) => const NotificationsSettingsScreen(),
                 ),
               );
             },
-            icon: const CircleAvatar(
-              radius: 14,
-              backgroundColor: Colors.white,
-              child: CircleAvatar(
-                radius: 12,
-                backgroundColor: Colors.red,
-                child: Icon(
-                  Icons.person,
-                  size: 16,
-                  color: Colors.white,
-                ),
-              ),
-            ),
           ),
+          // IconButton(
+          //   onPressed: () {
+          //     Navigator.of(context).push(
+          //       MaterialPageRoute(
+          //         builder: (_) => const ProfileScreen(),
+          //       ),
+          //     );
+          //   },
+          //   icon: const CircleAvatar(
+          //     radius: 14,
+          //     backgroundColor: Colors.white,
+          //     child: CircleAvatar(
+          //       radius: 12,
+          //       backgroundColor: AppColors.redSports,
+          //       child: Icon(
+          //         Icons.person,
+          //         size: 16,
+          //         color: Colors.white,
+          //       ),
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );
@@ -125,11 +128,11 @@ class _SearchSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
+          Text(
             'Search',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.titleLarge,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 5),
           const TextField(
             decoration: InputDecoration(
               hintText: 'Search articles, videos, teams...',
@@ -142,7 +145,7 @@ class _SearchSheet extends StatelessWidget {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: const Text('Close'),
+            child: Text('Close', style: Theme.of(context).textTheme.labelSmall!.copyWith(color: Colors.white),),
           ),
           const SizedBox(height: 16),
         ],
@@ -161,14 +164,14 @@ class _NotificationsSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: const [
+        children:  [
           Text(
             'Notifications',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.titleLarge,
           ),
-          SizedBox(height: 12),
-          Text('No notifications yet. (TODO: implement real notifications)'),
-          SizedBox(height: 16),
+          SizedBox(height: 10),
+          Text('No notifications yet. (TODO: implement real notifications)', style: Theme.of(context).textTheme.bodyMedium,),
+          SizedBox(height: 10),
         ],
       ),
     );

@@ -20,6 +20,15 @@ class AppConfig {
   // Alte constante
   static const int apiTimeoutSeconds = 30;
   static const String appName = 'Sport App';
+
+  static const double bigSpace = 15;
+  static const double smallSpace = 5;
+
+  static const double appPadding = 10;
+
+  // padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+  // padding: EdgeInsets.all(15),
+
 }
 
 class SportsAppLogger {
