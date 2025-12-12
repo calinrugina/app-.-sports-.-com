@@ -1,0 +1,105 @@
+{
+  "@@locale": "en",
+  "@error_loading_live_e": {
+    "description": "",
+    "placeholders": {
+      "e": {
+        "type": "String"
+      }
+    }
+  },
+  "@listing_articles_sport": {
+    "description": "Named argument text"
+  },
+  "@listing_videos_title": {
+    "description": "Named argument text",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@notifications": {
+    "description": "Named argument text"
+  },
+  "@privacy_policy": {
+    "description": "Named argument text"
+  },
+  "@select_language": {
+    "description": "Named argument text"
+  },
+  "@terms_conditions": {
+    "description": "Named argument text"
+  },
+  "@two": {
+    "description": "Named argument text"
+  },
+  "@welcome_to_sports_com": {
+    "description": "Named argument text"
+  },
+  "@you_now_have_access_to_personalized_cont": {
+    "description": "Named argument text"
+  },
+  "cancel": "Cancel",
+  "close": "Close",
+  "dark": "Dark",
+  "email": "Email",
+  "enable_notifications": "Enable notifications",
+  "error_loading_config": "Error loading config",
+  "error_loading_live_e": "Error loading live: {e}",
+  "light": "Light",
+  "listing_articles_sport": "Listing Articles ${sport}",
+  "listing_videos_title": "Listing Videos {title}",
+  "load_more": "Load more",
+  "login_sign_up": "Login / Sign up",
+  "logout": "Logout",
+  "no_config_loaded": "No config loaded",
+  "no_live_streams_available": "No live streams available",
+  "no_news_for_this_sport": "No news for this sport.",
+  "no_sports_configured": "No sports configured",
+  "no_sports_studios_configured": "No Sports Studios configured",
+  "no_url": "NO URL!",
+  "no_videos": "No videos.",
+  "no_videos_for_this_sport": "No videos for this sport.",
+  "not_stored_demo_only": "Not stored (demo only)",
+  "notifications": "Notifications",
+  "password": "Password",
+  "please_enter_email": "Please enter email",
+  "please_enter_password": "Please enter password",
+  "privacy_policy": "Privacy Policy",
+  "profile": "Profile",
+  "search_articles_videos_teams": "Search articles, videos, teams...",
+  "select_language": "Select Language",
+  "stream_start_at": "LiveStream will start ",
+  "system_default": "System default",
+  "terms_conditions": "Terms & Conditions",
+  "two": "two",
+  "user_not_logged_in": "User not logged in.",
+  "welcome_to_sports_com": "Welcome to Sports.com",
+  "you_are_logged_in": "You are logged in.",
+  "you_now_have_access_to_personalized_cont": "You now have access to personalized content and more.",
+  "unknown_date": "Unknown date",
+
+  "years_ago": "{count, plural, =1{1 year ago} other{{count} years ago}}",
+  "months_ago": "{count, plural, =1{1 month ago} other{{count} months ago}}",
+  "days_ago": "{count, plural, =1{1 day ago} other{{count} days ago}}",
+  "hours_ago": "{count, plural, =1{1 hour ago} other{{count} hours ago}}",
+  "minutes_ago": "{count, plural, =1{1 minute ago} other{{count} minutes ago}}",
+
+  "@years_ago": { "placeholders": { "count": { "type": "int" } } },
+  "@months_ago": { "placeholders": { "count": { "type": "int" } } },
+  "@days_ago": { "placeholders": { "count": { "type": "int" } } },
+  "@hours_ago": { "placeholders": { "count": { "type": "int" } } },
+  "@minutes_ago": { "placeholders": { "count": { "type": "int" } } },
+
+  "other_options": "Other options",
+  "language": "Language",
+  "version" : "Version",
+  "loading": "Loading",
+
+  "see_more" : "See more",
+  "latest_videos": "Latest Videos",
+  "live_now": "Live Now",
+  "news" : "News",
+  "videos" : "Vodeos"
+}

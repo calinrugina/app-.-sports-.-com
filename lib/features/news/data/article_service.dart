@@ -18,17 +18,24 @@ class ArticleService {
     int offset,
     String languageCode, {
     int limit = 6,
+        String? q,
   }) async {
     final int sportId = int.tryParse(sport['lpid']?.toString() ?? '') ?? 0;
 
     String strUrl = 'api_key=$apiKey&method=getNews&tbsec=$apiSecret'
         '&format=json&id=&sport_id=$sportId&limit=$limit&offset=$offset&lang=$languageCode';
 
+    if (q != null && q.trim().isNotEmpty) {
+      strUrl += '&q=${Uri.encodeQueryComponent(q.trim())}';
+    }
     final String hash = md5.convert(utf8.encode(strUrl)).toString();
-    final String url = 'https://articles.ns-platforms.com/api.php?'
+    String url = 'https://articles.ns-platforms.com/api.php?'
         'api_key=$apiKey&method=getNews&tbsec=$hash'
         '&format=json&id=&sport_id=$sportId&limit=$limit&offset=$offset&lang=$languageCode';
 
+    if (q != null && q.trim().isNotEmpty) {
+      url += '&q=${Uri.encodeQueryComponent(q.trim())}';
+    }
     try {
       final response = await http.post(
         Uri.parse(url),

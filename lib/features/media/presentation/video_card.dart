@@ -33,7 +33,7 @@ class VideoCard extends StatelessWidget {
     final clampedTextScale = mq.textScaleFactor.clamp(1.0, 1.2);
     final mediaWithClamp = mq.copyWith(textScaleFactor: clampedTextScale);
 
-    final formattedDate = SportsFunction().formatDateRelative(video.cDate);
+    final formattedDate = SportsFunction().formatDateRelative(context,video.cDate);
 
     return InkWell(
         onTap: onTap,

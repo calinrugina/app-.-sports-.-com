@@ -1,3 +1,4 @@
+import 'package:sports_config_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -136,9 +137,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         appBar: SportsAppBar(),
         body: Center(child: CircularProgressIndicator()),
       ),
-      error: (e, st) => const Scaffold(
+      error: (e, st) =>  Scaffold(
         appBar: SportsAppBar(),
-        body: Center(child: Text('Error loading config')),
+        body: Center(child: Text(AppLocalizations.of(context)!.error_loading_config)),
       ),
     );
   }
@@ -185,7 +186,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         SliverToBoxAdapter(
                           child: SectionHeader(
                             title: subName,
-                            moreLabel: 'See More',
+                            moreLabel: AppLocalizations.of(context)!.see_more,
                             onMore: (mpidsValue != null &&
                                 mpidsValue.trim().isNotEmpty)
                                 ? () {
@@ -232,7 +233,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         SliverToBoxAdapter(
                           child: SectionHeader(
                             title: name,
-                            moreLabel: 'See More',
+                            moreLabel: AppLocalizations.of(context)!.see_more,
                             onMore: () {
                               SportsAppLogger.log('2-$mpidsValue');
                               Navigator.of(context).push(
@@ -251,7 +252,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       sectionWidgets.add(
                         SliverToBoxAdapter(
                           child: VideoCaruselList(
-                            title: 'two',
+                            title: AppLocalizations.of(context)!.two,
                             mpids: mpidsValue,
                             languageCode: languageCode,
                           ),

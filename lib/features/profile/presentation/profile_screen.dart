@@ -1,3 +1,4 @@
+import 'package:sports_config_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -38,10 +39,10 @@ class ProfileScreen extends ConsumerWidget {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
-          const ListTile(
+           ListTile(
             leading: Icon(Icons.email),
-            title: Text('Email'),
-            subtitle: Text('Not stored (demo only)'),
+            title: Text(AppLocalizations.of(context)!.email),
+            subtitle: Text(AppLocalizations.of(context)!.not_stored_demo_only),
           ),
         ] else ...[
           Center(
@@ -63,7 +64,7 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                     );
                   },
-                  child: const Text('Login / Sign up'),
+                  child:  Text(AppLocalizations.of(context)!.login_sign_up),
                 ),
               ],
             ),
@@ -78,7 +79,7 @@ class ProfileScreen extends ConsumerWidget {
         ),
         const SizedBox(height: 8),
         RadioListTile<ThemeMode>(
-          title: const Text('System default'),
+          title:  Text(AppLocalizations.of(context)!.system_default),
           value: ThemeMode.system,
           groupValue: themeMode,
           onChanged: (mode) {
@@ -88,7 +89,7 @@ class ProfileScreen extends ConsumerWidget {
           },
         ),
         RadioListTile<ThemeMode>(
-          title: const Text('Light'),
+          title:  Text(AppLocalizations.of(context)!.light),
           value: ThemeMode.light,
           groupValue: themeMode,
           onChanged: (mode) {
@@ -98,7 +99,7 @@ class ProfileScreen extends ConsumerWidget {
           },
         ),
         RadioListTile<ThemeMode>(
-          title: const Text('Dark'),
+          title:  Text(AppLocalizations.of(context)!.dark),
           value: ThemeMode.dark,
           groupValue: themeMode,
           onChanged: (mode) {
@@ -115,7 +116,7 @@ class ProfileScreen extends ConsumerWidget {
                 await ref.read(authProvider.notifier).logout();
               },
               icon: const Icon(Icons.logout),
-              label: const Text('Logout'),
+              label:  Text(AppLocalizations.of(context)!.logout),
             ),
           ),
         if (isLoggedIn) const SizedBox(height: 24),
@@ -124,7 +125,7 @@ class ProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title:  Text(AppLocalizations.of(context)!.profile),
       ),
       body: SafeArea(
         child: SingleChildScrollView(

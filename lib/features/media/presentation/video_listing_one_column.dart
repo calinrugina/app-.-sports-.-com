@@ -1,3 +1,4 @@
+import 'package:sports_config_app/l10n/app_localizations.dart';
 // lib/features/media/presentation/videos_list_one_column.dart
 import 'package:flutter/material.dart';
 import 'package:sports_config_app/core/app_config.dart';
@@ -13,12 +14,13 @@ class VideosListOneColumn extends StatefulWidget {
   final String title;
   final String mpids;
   final String languageCode;
-
+  final String? q;
   const VideosListOneColumn({
     super.key,
     required this.title,
     required this.mpids,
     required this.languageCode,
+    this.q,
   });
 
   @override
@@ -70,6 +72,7 @@ class _VideosListOneColumnState extends State<VideosListOneColumn> {
       _offset,
       widget.languageCode,
       limit: _limit,
+      q: widget.q,
     );
 
     if (!mounted) return;
@@ -95,10 +98,10 @@ class _VideosListOneColumnState extends State<VideosListOneColumn> {
     }
 
     if (_videos.isEmpty) {
-      return const Center(
+      return  Center(
         child: Padding(
           padding: EdgeInsets.all(24),
-          child: Text('No videos for this sport.'),
+          child: Text(AppLocalizations.of(context)!.no_videos_for_this_sport),
         ),
       );
     }

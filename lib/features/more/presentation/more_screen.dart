@@ -1,3 +1,4 @@
+import 'package:sports_config_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sports_config_app/core/theme/colors.dart';
@@ -31,18 +32,18 @@ class MoreScreen extends ConsumerWidget {
           upgrader: _upgraderInstance,
           child: ListView(
             children: [
-              WelcomeBanner(
-                title: "Welcome to Sports.com",
-                subtitle: "You now have access to personalized content and more.",
+               WelcomeBanner(
+                title: AppLocalizations.of(context)!.welcome_to_sports_com,
+                subtitle: AppLocalizations.of(context)!.you_now_have_access_to_personalized_cont,
               ),
               SizedBox(height: 15,),
               Padding(padding: EdgeInsets.all(16), child: Text(
-                'Other options',
+                AppLocalizations.of(context)!.other_options,
                 style: Theme.of(context).textTheme.headlineLarge,
 
               ),),
               ListTile(
-                title:  Text('Notifications',
+                title:  Text(AppLocalizations.of(context)!.notifications,
                   style: Theme.of(context).textTheme.bodyLarge,
 
                 ),
@@ -56,7 +57,7 @@ class MoreScreen extends ConsumerWidget {
                 },
               ),
               ListTile(
-                title:  Text('Terms & Conditions',
+                title:  Text(AppLocalizations.of(context)!.terms_conditions,
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 trailing: const Icon(Icons.chevron_right),
@@ -64,7 +65,7 @@ class MoreScreen extends ConsumerWidget {
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (_) => SimpleWebViewScreen(
-                        title: 'Terms & Conditions',
+                        title: AppLocalizations.of(context)!.terms_conditions,
                         url: '${AppConfig.baseUrl}/$languageCode/terms-and-conditions?no-header=true&theme=${isLight?'light':'dark'}',
                       ),
                     ),
@@ -72,7 +73,7 @@ class MoreScreen extends ConsumerWidget {
                 },
               ),
               ListTile(
-                title:  Text('Privacy Policy',
+                title:  Text(AppLocalizations.of(context)!.privacy_policy,
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 trailing: const Icon(Icons.chevron_right),
@@ -80,7 +81,7 @@ class MoreScreen extends ConsumerWidget {
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (_) => SimpleWebViewScreen(
-                        title: 'Privacy Policy',
+                        title: AppLocalizations.of(context)!.privacy_policy,
                         url: '${AppConfig.baseUrl}/$languageCode/privacy-policy?no-header=true&theme=${isLight?'light':'dark'}',
                       ),
                     ),
@@ -88,7 +89,7 @@ class MoreScreen extends ConsumerWidget {
                 },
               ),
               ListTile(
-                title:  Text('Language',
+                title:  Text(AppLocalizations.of(context)!.language,
                   style: Theme.of(context).textTheme.headlineLarge,
                 ),
                 // subtitle: Text(_languageLabel(languageCode),style: Theme.of(context).textTheme.bodySmall),
@@ -133,7 +134,7 @@ class MoreScreen extends ConsumerWidget {
                                     color: isDark  ? Colors.white: Colors.black),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'Light',
+                                  AppLocalizations.of(context)!.light,
                                   style: Theme.of(context).textTheme.titleLarge!.copyWith(color: isDark  ? Colors.white: Colors.black),
                                 ),
                               ],
@@ -168,7 +169,7 @@ class MoreScreen extends ConsumerWidget {
                                 Icon(Icons.dark_mode, color: isDark?Colors.white:Colors.black),
                                 SizedBox(width: 8),
                                 Text(
-                                  'Dark',
+                                  AppLocalizations.of(context)!.dark,
                                   style: Theme.of(context).textTheme.titleLarge!.copyWith(color: isDark?Colors.white:Colors.black),
                                 ),
                               ],
@@ -188,7 +189,7 @@ class MoreScreen extends ConsumerWidget {
                 ),
               ),
               RadioListTile<ThemeMode>(
-                title: const Text('System default'),
+                title: const Text(AppLocalizations.of(context)!.system_default),
                 value: ThemeMode.system,
                 groupValue: themeMode,
                 onChanged: (mode) {
@@ -198,7 +199,7 @@ class MoreScreen extends ConsumerWidget {
                 },
               ),
               RadioListTile<ThemeMode>(
-                title: const Text('Light'),
+                title: const Text(AppLocalizations.of(context)!.light),
                 value: ThemeMode.light,
                 groupValue: themeMode,
                 onChanged: (mode) {
@@ -208,7 +209,7 @@ class MoreScreen extends ConsumerWidget {
                 },
               ),
               RadioListTile<ThemeMode>(
-                title: const Text('Dark'),
+                title: const Text(AppLocalizations.of(context)!.dark),
                 value: ThemeMode.dark,
                 groupValue: themeMode,
                 onChanged: (mode) {
@@ -222,17 +223,17 @@ class MoreScreen extends ConsumerWidget {
               versionAsyncValue.when(
                 // A. Datele sunt gata (Data)
                 data: (version) => Text(
-                  'Versiune: $version',
+                  'Version: $version',
                   style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
                 // B. Datele se încarcă (Loading)
-                loading: () => const Text(
-                  'Versiune: Loading...',
+                loading: () =>  Text(
+                  AppLocalizations.of(context)!.version + AppLocalizations.of(context)!.loading,
                   style: TextStyle(fontSize: 12, color: Colors.grey),
                 ),
                 // C. A apărut o eroare (Error)
                 error: (error, stackTrace) => Text(
-                  'Eroare versiune: $error',
+                  'Error: $error',
                   style: const TextStyle(fontSize: 12, color: AppColors.redSports),
                 ),
               )

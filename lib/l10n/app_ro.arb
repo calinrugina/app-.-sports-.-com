@@ -1,0 +1,87 @@
+{
+  "@@locale": "ro",
+
+  "@error_loading_live_e": {
+    "description": "",
+    "placeholders": {
+      "e": { "type": "String" }
+    }
+  },
+  "@listing_articles_sport": { "description": "Named argument text" },
+  "@listing_videos_title": {
+    "description": "Named argument text",
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "@notifications": { "description": "Named argument text" },
+  "@privacy_policy": { "description": "Named argument text" },
+  "@select_language": { "description": "Named argument text" },
+  "@terms_conditions": { "description": "Named argument text" },
+  "@two": { "description": "Named argument text" },
+  "@welcome_to_sports_com": { "description": "Named argument text" },
+  "@you_now_have_access_to_personalized_cont": { "description": "Named argument text" },
+
+  "cancel": "Anulează",
+  "close": "Închide",
+  "dark": "Întunecat",
+  "email": "Email",
+  "enable_notifications": "Activează notificările",
+  "error_loading_config": "Eroare la încărcarea configurației",
+  "error_loading_live_e": "Eroare la încărcarea live: {e}",
+  "light": "Deschis",
+  "listing_articles_sport": "Listă articole",
+  "listing_videos_title": "Listă videoclipuri {title}",
+  "load_more": "Încarcă mai mult",
+  "login_sign_up": "Autentificare / Înregistrare",
+  "logout": "Deconectare",
+  "no_config_loaded": "Nu există configurație încărcată",
+  "no_live_streams_available": "Nu există transmisiuni live disponibile",
+  "no_news_for_this_sport": "Nu există știri pentru acest sport.",
+  "no_sports_configured": "Nu există sporturi configurate",
+  "no_sports_studios_configured": "Nu există studiouri Sports configurate",
+  "no_url": "FĂRĂ URL!",
+  "no_videos": "Nu există videoclipuri.",
+  "no_videos_for_this_sport": "Nu există videoclipuri pentru acest sport.",
+  "not_stored_demo_only": "Nu se salvează (doar demo)",
+  "notifications": "Notificări",
+  "password": "Parolă",
+  "please_enter_email": "Te rog introdu emailul",
+  "please_enter_password": "Te rog introdu parola",
+  "privacy_policy": "Politica de confidențialitate",
+  "profile": "Profil",
+  "search_articles_videos_teams": "Caută articole, videoclipuri, echipe...",
+  "select_language": "Selectează limba",
+  "stream_start_at": "Live-ul va începe ",
+  "system_default": "Implicit sistem",
+  "terms_conditions": "Termeni și condiții",
+  "two": "doi",
+  "user_not_logged_in": "Utilizatorul nu este autentificat.",
+  "welcome_to_sports_com": "Bine ai venit pe Sports.com",
+  "you_are_logged_in": "Ești autentificat.",
+  "you_now_have_access_to_personalized_cont": "Acum ai acces la conținut personalizat și multe altele.",
+  "unknown_date": "Dată necunoscută",
+
+  "years_ago": "{count, plural, =1{acum 1 an} other{acum {count} ani}}",
+  "months_ago": "{count, plural, =1{acum 1 lună} other{acum {count} luni}}",
+  "days_ago": "{count, plural, =1{acum 1 zi} other{acum {count} zile}}",
+  "hours_ago": "{count, plural, =1{acum 1 oră} other{acum {count} ore}}",
+  "minutes_ago": "{count, plural, =1{acum 1 minut} other{acum {count} minute}}",
+
+  "@years_ago": { "placeholders": { "count": { "type": "int" } } },
+  "@months_ago": { "placeholders": { "count": { "type": "int" } } },
+  "@days_ago": { "placeholders": { "count": { "type": "int" } } },
+  "@hours_ago": { "placeholders": { "count": { "type": "int" } } },
+  "@minutes_ago": { "placeholders": { "count": { "type": "int" } } },
+
+  "other_options": "Alte opțiuni",
+  "language": "Limbă",
+  "version": "Versiune",
+  "loading": "Se încarcă",
+
+  "see_more": "Vezi mai mult",
+  "latest_videos": "Ultimele videoclipuri",
+  "live_now": "Live acum",
+  "news": "Știri",
+  "videos" : "Vídeo"
+}

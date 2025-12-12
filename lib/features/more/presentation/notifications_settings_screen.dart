@@ -1,3 +1,4 @@
+import 'package:sports_config_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/widgets/back_header.dart';
@@ -17,13 +18,13 @@ class NotificationsSettingsScreen extends ConsumerWidget {
 
       body: Column(
         children: [
-          const BackHeader(title: 'Notifications'),
+           BackHeader(title: AppLocalizations.of(context)!.notifications),
 
           Expanded(child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
               SwitchListTile(
-                title: const Text('Enable notifications'),
+                title:  Text(AppLocalizations.of(context)!.enable_notifications),
                 value: enabled,
                 onChanged: (value) {
                   ref.read(notificationsProvider.notifier).setEnabled(value);

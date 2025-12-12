@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Extract hardcoded UI strings from lib/*.dart into lib/l10n/app_ro.arb
+Extract hardcoded UI strings from lib/*.dart into lib/l10n/app_en.arb
 
 - Detects placeholders like $var and converts to {var} in ARB
 - Emits @key metadata with placeholders/types
@@ -9,6 +9,11 @@ Extract hardcoded UI strings from lib/*.dart into lib/l10n/app_ro.arb
 - Heuristics to also extract strings from validators:
   * errorText: '...'/ "..."
   * return '...'; / "..." inside validator-like contexts (see VALIDATOR_HINTS)
+
+NEW (v2):
+- Extracts common named-argument strings: title:, subtitle:, label:, text:, message:, etc.
+- Optional fallback extractor for "any string literal" near UI-ish hints (OFF by default)
+- Better handling of multi-line strings and basic Dart escaping
 """
 
 import os
@@ -31,6 +36,9 @@ VALIDATOR_HINTS = (
     "validate", "validator", "FormFieldValidator", "TextFormField(",
     "String? _validate", "String? validate", "String Function", "Form("
 )
+
+# Optional: very aggressive fallback extractor (OFF by default)
+ENABLE_FALLBACK_ANY_STRING = False
 
 # ---------- Path helpers ----------
 def find_project_root(start_dir: str) -> str:
@@ -66,20 +74,17 @@ def slug_key(s: str, existing_keys: set = None) -> str:
     base = re.sub(r'[^a-zA-Z0-9]+', '_', normalized.strip()).strip('_').lower()
     base = base[:40] if base else 'text'
 
-    # Dacă nu avem colecția cu cheile existente, returnăm base
     if existing_keys is None:
         return base
 
-    # Dacă nu există coliziune, returnăm base simplu
     if base not in existing_keys:
         return base
 
-    # Dacă există coliziune, adaugă hash-ul
     h = hashlib.md5(s.encode('utf-8')).hexdigest()[:6]
     return f"{base}_{h}"
 
 # ---------- Patterns ----------
-# UI sites
+# UI sites (your original patterns)
 PATTERNS = [
     r"Text\(\s*'([^'\n]{2,})'\s*\)",
     r'Text\(\s*"([^"\n]{2,})"\s*\)',
@@ -103,6 +108,35 @@ RETURN_SINGLE = re.compile(r"return\s*'([^'\n]{2,})'\s*;")
 RETURN_DOUBLE = re.compile(r'return\s*"([^"\n]{2,})"\s*;')
 
 PLACEHOLDER_RX = re.compile(r"\$([a-zA-Z_]\w*)")
+
+# ---------- NEW: Generic named-argument extractor ----------
+NAMED_ARG_KEYS = (
+    "title", "subtitle", "label", "text", "message", "hint",
+    "header", "subheader", "emptyText", "error", "tooltip",
+    "confirmText", "cancelText", "okText", "buttonText",
+)
+
+# title: '...' or "..." across newlines, including escaped quotes
+NAMED_ARG_RX = re.compile(
+    r"(?:(?:" + "|".join(NAMED_ARG_KEYS) + r")\s*:\s*)"
+    r"(?P<q>['\"])(?P<s>(?:\\.|(?!\1).){2,})\1",
+    re.DOTALL
+)
+
+# ---------- NEW: Optional fallback: any string literal (guarded) ----------
+ANY_STRING_RX = re.compile(
+    r"(?P<q>['\"])(?P<s>(?:\\.|(?!\1).){2,})\1",
+    re.DOTALL
+)
+
+SKIP_STRING_PREFIXES = (
+    "http://", "https://", "assets/", "packages/", "data:",
+)
+SKIP_LIKE_CODE_RX = re.compile(r"^[A-Z0-9_]{2,}$")  # e.g. SOME_ENUM, KEY_NAME
+SKIP_FILE_EXT_RX = re.compile(
+    r".*\.(png|jpg|jpeg|webp|svg|json|arb|mp4|m3u8|vtt|srt)$",
+    re.IGNORECASE
+)
 
 def is_generated_or_excluded(path: str) -> bool:
     parts = set(os.path.normpath(path).split(os.sep))
@@ -137,15 +171,64 @@ def handle_match(text: str):
         return None, None
     if text.startswith("http"):
         return None, None
-    # allow simple $var placeholders
     ph_names = PLACEHOLDER_RX.findall(text)
     arb_value = text
-    placeholders_meta = {}
     if ph_names:
         for name in sorted(set(ph_names), key=ph_names.index):
             arb_value = arb_value.replace(f"${name}", f"{{{name}}}")
-            placeholders_meta[name] = {"type": "String"}
-    return arb_value, list(dict.fromkeys(ph_names))  # unique, preserve order
+    # unique, preserve order
+    return arb_value, list(dict.fromkeys(ph_names))
+
+def _unescape_dart_string(s: str) -> str:
+    # minimal unescape for common sequences
+    return (s.replace(r"\n", "\n")
+             .replace(r"\t", "\t")
+             .replace(r"\'", "'")
+             .replace(r"\"", '"')
+             .replace(r"\\", "\\"))
+
+def should_skip_literal(text: str) -> bool:
+    t = text.strip()
+    if len(t) < 2:
+        return True
+    if any(t.startswith(p) for p in SKIP_STRING_PREFIXES):
+        return True
+    if SKIP_FILE_EXT_RX.match(t):
+        return True
+    if SKIP_LIKE_CODE_RX.match(t):
+        return True
+    if t.startswith("@") or t.startswith("#"):
+        return True
+    # common "not UI" patterns
+    if t.startswith("BEGIN:VEVENT") or t.startswith("RRULE:"):
+        return True
+    return False
+
+def add_entry(rel_file: str, raw_text: str, entries: dict, metas: dict, report: list, description: str = ""):
+    raw_text = raw_text.strip()
+    processed = handle_match(raw_text)
+    if not processed or processed[0] is None:
+        return
+    arb_value, ph_names = processed
+    key = slug_key(raw_text, entries.keys())
+
+    if key not in entries:
+        entries[key] = arb_value
+        meta_key = f"@{key}"
+        if ph_names:
+            metas[meta_key] = {
+                "description": description,
+                "placeholders": {n: {"type": "String"} for n in ph_names}
+            }
+        elif description:
+            metas.setdefault(meta_key, {"description": description})
+
+    report.append({
+        "file": rel_file,
+        "match": raw_text,
+        "key": key,
+        "placeholders": ph_names or []
+    })
 
 def main():
     ensure_dirs()
@@ -167,7 +250,7 @@ def main():
 
             rel = os.path.relpath(path, LIB_DIR).replace(os.sep, "/")
 
-            # 1) UI patterns
+            # 1) UI patterns (original)
             for rx in COMPILED:
                 for m in rx.finditer(content):
                     text = (m.group(1) or "").strip()
@@ -190,15 +273,43 @@ def main():
                         "placeholders": ph_names or []
                     })
 
+            # 1.5) NEW: Named arguments like title:, subtitle:, label:, text: ...
+            for m in NAMED_ARG_RX.finditer(content):
+                s = _unescape_dart_string(m.group("s") or "").strip()
+                if should_skip_literal(s):
+                    continue
+                add_entry(rel, s, entries, metas, report, description="Named argument text")
+
+            # 1.6) OPTIONAL: Fallback - any string literal, but guarded by UI hints
+            if ENABLE_FALLBACK_ANY_STRING:
+                for m in ANY_STRING_RX.finditer(content):
+                    s = _unescape_dart_string(m.group("s") or "").strip()
+                    if should_skip_literal(s):
+                        continue
+
+                    window_from = max(0, m.start() - 120)
+                    window_to = min(len(content), m.end() + 120)
+                    around = content[window_from:window_to]
+
+                    ui_hints = (
+                        "Text(", "title:", "subtitle:", "labelText:", "hintText:",
+                        "SnackBar", "ListTile", "AppBar", "Dialog",
+                        "ElevatedButton", "OutlinedButton", "TextButton",
+                        "WelcomeBanner(", "SectionHeader(", "Scaffold("
+                    )
+                    if not any(h in around for h in ui_hints):
+                        continue
+
+                    add_entry(rel, s, entries, metas, report, description="Generic UI-ish string")
+
             # 2) Validator returns (heuristic)
             for rx in (RETURN_SINGLE, RETURN_DOUBLE):
                 for m in rx.finditer(content):
                     start = m.start()
-                    # look back a small window for validator hints
                     ctx_from = max(0, start - VALIDATOR_CONTEXT_WINDOW)
                     ctx = content[ctx_from:start]
                     if not any(h in ctx for h in VALIDATOR_HINTS):
-                        continue  # likely not a validator message
+                        continue
                     text = (m.group(1) or "").strip()
                     processed = handle_match(text)
                     if not processed or processed[0] is None:
@@ -247,6 +358,7 @@ def main():
     print(f"Report written : {REPORT_PATH}")
     print(f"New keys added : {added}")
     print(f"Total report items: {len(report)}")
+    print(f"Fallback ANY_STRING enabled: {ENABLE_FALLBACK_ANY_STRING}")
 
 if __name__ == "__main__":
     sys.exit(main() or 0)

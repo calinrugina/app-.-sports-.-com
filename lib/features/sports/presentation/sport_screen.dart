@@ -1,3 +1,4 @@
+import 'package:sports_config_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sports_config_app/features/media/presentation/video_listing_two_columns.dart';
@@ -25,7 +26,7 @@ class SportScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (sports.isEmpty) {
-      return const Center(child: Text('No sports configured'));
+      return  Center(child: Text(AppLocalizations.of(context)!.no_sports_configured));
     }
 
     final selectedIndex = ref.watch(selectedSportIndexProvider);
@@ -52,8 +53,8 @@ class SportScreen extends ConsumerWidget {
                   // const SizedBox(height: 12),
                   SectionHeader(
                     title: name,
-                    titleRed: 'Latest Videos',
-                    moreLabel: 'See More',
+                    titleRed: AppLocalizations.of(context)!.latest_videos,
+                    moreLabel: AppLocalizations.of(context)!.see_more,
                     onMore: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
@@ -79,8 +80,8 @@ class SportScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
                   SectionHeader(
                     title: name,
-                    moreLabel: 'See More',
-                    titleRed: 'News',
+                    moreLabel: AppLocalizations.of(context)!.see_more,
+                    titleRed: AppLocalizations.of(context)!.news,
                     onMore: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(

@@ -1,0 +1,87 @@
+{
+  "@@locale": "hi",
+
+  "@error_loading_live_e": {
+    "description": "",
+    "placeholders": {
+      "e": { "type": "String" }
+    }
+  },
+  "@listing_articles_sport": { "description": "Named argument text" },
+  "@listing_videos_title": {
+    "description": "Named argument text",
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "@notifications": { "description": "Named argument text" },
+  "@privacy_policy": { "description": "Named argument text" },
+  "@select_language": { "description": "Named argument text" },
+  "@terms_conditions": { "description": "Named argument text" },
+  "@two": { "description": "Named argument text" },
+  "@welcome_to_sports_com": { "description": "Named argument text" },
+  "@you_now_have_access_to_personalized_cont": { "description": "Named argument text" },
+
+  "cancel": "रद्द करें",
+  "close": "बंद करें",
+  "dark": "डार्क",
+  "email": "ईमेल",
+  "enable_notifications": "सूचनाएँ सक्षम करें",
+  "error_loading_config": "कॉन्फ़िग लोड करने में त्रुटि",
+  "error_loading_live_e": "लाइव लोड करने में त्रुटि: {e}",
+  "light": "लाइट",
+  "listing_articles_sport": "लेख सूची  ${sport}",
+  "listing_videos_title": "वीडियो सूची {title}",
+  "load_more": "और लोड करें",
+  "login_sign_up": "लॉगिन / साइन अप",
+  "logout": "लॉगआउट",
+  "no_config_loaded": "कोई कॉन्फ़िग लोड नहीं हुआ",
+  "no_live_streams_available": "कोई लाइव स्ट्रीम उपलब्ध नहीं है",
+  "no_news_for_this_sport": "इस खेल के लिए कोई समाचार नहीं।",
+  "no_sports_configured": "कोई खेल कॉन्फ़िगर नहीं है",
+  "no_sports_studios_configured": "कोई Sports Studios कॉन्फ़िगर नहीं है",
+  "no_url": "कोई URL नहीं!",
+  "no_videos": "कोई वीडियो नहीं।",
+  "no_videos_for_this_sport": "इस खेल के लिए कोई वीडियो नहीं।",
+  "not_stored_demo_only": "सहेजा नहीं गया (केवल डेमो)",
+  "notifications": "सूचनाएँ",
+  "password": "पासवर्ड",
+  "please_enter_email": "कृपया ईमेल दर्ज करें",
+  "please_enter_password": "कृपया पासवर्ड दर्ज करें",
+  "privacy_policy": "गोपनीयता नीति",
+  "profile": "प्रोफ़ाइल",
+  "search_articles_videos_teams": "लेख, वीडियो, टीम खोजें...",
+  "select_language": "भाषा चुनें",
+  "stream_start_at": "लाइवस्ट्रीम शुरू होगा ",
+  "system_default": "सिस्टम डिफ़ॉल्ट",
+  "terms_conditions": "नियम और शर्तें",
+  "two": "दो",
+  "user_not_logged_in": "उपयोगकर्ता लॉगिन नहीं है।",
+  "welcome_to_sports_com": "Sports.com में आपका स्वागत है",
+  "you_are_logged_in": "आप लॉगिन हैं।",
+  "you_now_have_access_to_personalized_cont": "अब आपको व्यक्तिगत सामग्री और अधिक तक पहुँच प्राप्त है।",
+  "unknown_date": "अज्ञात तिथि",
+
+  "years_ago": "{count, plural, =1{1 साल पहले} other{{count} साल पहले}}",
+  "months_ago": "{count, plural, =1{1 महीने पहले} other{{count} महीने पहले}}",
+  "days_ago": "{count, plural, =1{1 दिन पहले} other{{count} दिन पहले}}",
+  "hours_ago": "{count, plural, =1{1 घंटे पहले} other{{count} घंटे पहले}}",
+  "minutes_ago": "{count, plural, =1{1 मिनट पहले} other{{count} मिनट पहले}}",
+
+  "@years_ago": { "placeholders": { "count": { "type": "int" } } },
+  "@months_ago": { "placeholders": { "count": { "type": "int" } } },
+  "@days_ago": { "placeholders": { "count": { "type": "int" } } },
+  "@hours_ago": { "placeholders": { "count": { "type": "int" } } },
+  "@minutes_ago": { "placeholders": { "count": { "type": "int" } } },
+
+  "other_options": "अन्य विकल्प",
+  "language": "भाषा",
+  "version": "संस्करण",
+  "loading": "लोड हो रहा है",
+
+  "see_more": "और देखें",
+  "latest_videos": "नवीनतम वीडियो",
+  "live_now": "लाइव अभी",
+  "news": "समाचार",
+  "videos" : "Vídeos"
+}

@@ -1,3 +1,4 @@
+import 'package:sports_config_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:sports_config_app/core/app_functions.dart';
 import 'package:sports_config_app/features/media/presentation/video_card.dart';
@@ -104,9 +105,9 @@ class _VideosGridTwoColumnsState extends State<VideosGridTwoColumns> {
     }
 
     if (_videos.isEmpty) {
-      return const Padding(
+      return  Padding(
         padding: EdgeInsets.all(24),
-        child: Text('No videos for this sport.'),
+        child: Text(AppLocalizations.of(context)!.no_videos_for_this_sport),
       );
     }
     final scale = SportsFunction().scale(context);

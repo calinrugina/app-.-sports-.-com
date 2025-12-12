@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 
 import '../features/media/data/video_item.dart';
 import '../features/media/presentation/video_player_dialog.dart';
+import '../l10n/app_localizations.dart';
 
 // Calea către iconița SVG implicită din assets
 const String kDefaultSvgAsset = 'assets/images/default.svg';
@@ -194,36 +195,38 @@ class _SvgIconLoaderState extends State<SvgIconLoader> {
 }
 
 class SportsFunction {
-  String formatDateRelative(String dateString) {
+  String formatDateRelative(
+      BuildContext context,
+      String dateString,
+      ) {
     DateTime videoDate;
+
     try {
-      // 🚀 CONVERSIE DIN STRING LA DATETIME 🚀
       videoDate = DateTime.parse(dateString).toLocal();
-    } catch (e) {
-      // Gestionarea erorilor de parsare (dacă stringul nu este un format ISO 8601 valid)
-      print('Eroare la parsarea datei "$dateString": $e');
-      return 'Dată necunoscută';
+    } catch (_) {
+      return AppLocalizations.of(context)!.unknown_date;
     }
 
-    final difference = DateTime.now().difference(videoDate);
+    final diff = DateTime.now().difference(videoDate);
+    final l10n = AppLocalizations.of(context)!;
 
-    // Logica de calcul a diferenței relative
-    if (difference.inDays >= 365) {
-      return '${(difference.inDays / 365).floor()} years ago';
+    if (diff.inDays >= 365) {
+      return l10n.years_ago((diff.inDays / 365).floor());
     }
-    if (difference.inDays >= 30) {
-      return '${(difference.inDays / 30).floor()} mounths ago';
+    if (diff.inDays >= 30) {
+      return l10n.months_ago((diff.inDays / 30).floor());
     }
-    if (difference.inDays > 0) {
-      return '${difference.inDays} days ago';
+    if (diff.inDays > 0) {
+      return l10n.days_ago(diff.inDays);
     }
-    if (difference.inHours > 0) {
-      return '${difference.inHours} hours ago';
+    if (diff.inHours > 0) {
+      return l10n.hours_ago(diff.inHours);
     }
-    if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} minutes ago';
+    if (diff.inMinutes > 0) {
+      return l10n.minutes_ago(diff.inMinutes);
     }
-    return 'No';
+
+    return l10n.minutes_ago(0);
   }
 
   double scale(BuildContext context) {
@@ -245,5 +248,41 @@ class SportsFunction {
         title: v.title,
       ),
     );
+  }
+
+  String sanitizeArticleHtml(String html) {
+    var out = html;
+
+    // 1) scoate script-urile (instagram/twitter)
+    out = out.replaceAll(
+      RegExp(r"<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>",
+          caseSensitive: false, dotAll: true),
+      "",
+    );
+
+    // 2) scoate blocurile instagram embed (figure + blockquote)
+    out = out.replaceAll(
+      RegExp(r"<figure\b[^>]*>.*?instagram-media.*?<\/figure>",
+          caseSensitive: false, dotAll: true),
+      // păstrează un fallback simplu:
+      '<p><a href="https://www.instagram.com/" target="_blank">Open Instagram post</a></p>',
+    );
+
+    // 3) scoate blocurile twitter embed
+    out = out.replaceAll(
+      RegExp(r"<figure\b[^>]*>.*?twitter-tweet.*?<\/figure>",
+          caseSensitive: false, dotAll: true),
+      '<p><a href="https://x.com/" target="_blank">Open post on X</a></p>',
+    );
+
+    // 4) (opțional) șterge style inline care conține calc / -webkit-calc
+    // (reduce riscul de layout-uri ciudate)
+    out = out.replaceAll(
+      RegExp(r'style="[^"]*(calc|webkit-calc)[^"]*"',
+          caseSensitive: false),
+      "",
+    );
+
+    return out;
   }
 }

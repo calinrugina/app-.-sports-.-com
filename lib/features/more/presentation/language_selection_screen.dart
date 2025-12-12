@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sports_config_app/l10n/app_localizations.dart';
 
 import '../../../core/language/language_provider.dart';
 import '../../../core/widgets/back_header.dart';
@@ -31,20 +32,21 @@ class LanguageSelectionScreen extends ConsumerWidget {
         'asset': 'assets/images/flags/es.png',
       },
       {
-        'code': 'fr',
-        'label': 'Français',
-        'asset': 'assets/images/flags/fr.png',
+        'code': 'hi',
+        'label': 'हिंदी',
+        'asset': 'assets/images/flags/hi.png',
       },
       // {
       //   'code': 'de',
       //   'label': 'Deutsch',
       //   'asset': 'assets/images/flags/de.png',
       // },
-      {
-        'code': 'hi',
-        'label': 'हिंदी',
-        'asset': 'assets/images/flags/hi.png',
+      /*{
+        'code': 'fr',
+        'label': 'Français',
+        'asset': 'assets/images/flags/fr.png',
       },
+
       {
         'code': 'it',
         'label': 'Italiano',
@@ -65,6 +67,7 @@ class LanguageSelectionScreen extends ConsumerWidget {
         'label': 'Svenska',
         'asset': 'assets/images/flags/sv.png',
       },
+      */
     ];
 
     return Scaffold(
@@ -72,7 +75,7 @@ class LanguageSelectionScreen extends ConsumerWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          BackHeader(title: 'Select Language'),
+          BackHeader(title: AppLocalizations.of(context)!.select_language),
           Expanded(
             child: ListView.separated(
               padding:

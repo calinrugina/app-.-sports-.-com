@@ -1,3 +1,4 @@
+import 'package:sports_config_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
@@ -38,7 +39,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Login / Sign up'),
+        title:  Text(AppLocalizations.of(context)!.login_sign_up),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -55,8 +56,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
+                decoration:  InputDecoration(
+                  labelText: AppLocalizations.of(context)!.email,
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
@@ -70,8 +71,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               TextFormField(
                 controller: _passwordController,
                 obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
+                decoration:  InputDecoration(
+                  labelText: AppLocalizations.of(context)!.password,
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
@@ -93,12 +94,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('Login / Sign up'),
+                    :  Text(AppLocalizations.of(context)!.login_sign_up),
               ),
               const SizedBox(height: 8),
               TextButton(
                 onPressed: () => Navigator.of(context).maybePop(),
-                child: const Text('Cancel'),
+                child:  Text(AppLocalizations.of(context)!.cancel),
               ),
             ],
           ),

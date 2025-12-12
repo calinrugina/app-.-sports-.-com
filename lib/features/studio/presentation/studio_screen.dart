@@ -1,3 +1,4 @@
+import 'package:sports_config_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sports_config_app/core/app_config.dart';
@@ -83,7 +84,7 @@ class _StudioScreenState extends State<StudioScreen> {
     final areas = _studioAreas;
 
     if (areas.isEmpty) {
-      return const Center(child: Text('No Sports Studios configured'));
+      return  Center(child: Text(AppLocalizations.of(context)!.no_sports_studios_configured));
     }
 
     if (_selectedIndex >= areas.length) {
@@ -170,8 +171,8 @@ class _StudioScreenState extends State<StudioScreen> {
         const Divider(height: 1),
         Padding(padding: EdgeInsets.symmetric(horizontal:  AppConfig.appPadding), child: SectionHeader(
           title: _currentName,
-          moreLabel: 'See More',
-          titleRed: 'Latest Videos',
+          moreLabel: AppLocalizations.of(context)!.see_more,
+          titleRed: AppLocalizations.of(context)!.latest_videos,
           onMore: () {
             Navigator.of(context).push(
               MaterialPageRoute(

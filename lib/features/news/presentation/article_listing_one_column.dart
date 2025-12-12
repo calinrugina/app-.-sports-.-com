@@ -1,3 +1,4 @@
+import 'package:sports_config_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/colors.dart';
@@ -9,11 +10,12 @@ import 'article_detail_screen.dart';
 class ArticlesListOneColumn extends StatefulWidget {
   final Map<String, dynamic> sport; // nodul din config
   final String languageCode;
-
+  final String? q;
   const ArticlesListOneColumn({
     super.key,
     required this.sport,
     required this.languageCode,
+    this.q,
   });
 
   @override
@@ -65,6 +67,7 @@ class _ArticlesListOneColumnState extends State<ArticlesListOneColumn> {
       _offset,
       widget.languageCode,
       limit: _limit,
+      q: widget.q,
     );
 
     if (!mounted) return;
@@ -101,10 +104,10 @@ class _ArticlesListOneColumnState extends State<ArticlesListOneColumn> {
     }
 
     if (_articles.isEmpty) {
-      return const Center(
+      return  Center(
         child: Padding(
           padding: EdgeInsets.all(24),
-          child: Text('No news for this sport.'),
+          child: Text(AppLocalizations.of(context)!.no_news_for_this_sport),
         ),
       );
     }
@@ -144,7 +147,7 @@ class _ArticlesListOneColumnState extends State<ArticlesListOneColumn> {
                   color: Colors.white,
                 ),
               )
-                  : const Text('Load more'),
+                  :  Text(AppLocalizations.of(context)!.load_more, style: Theme.of(context).textTheme.labelSmall!.copyWith(color: Colors.white) ,),
             ),
           ),
         );

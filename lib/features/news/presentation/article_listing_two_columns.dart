@@ -1,3 +1,4 @@
+import 'package:sports_config_app/l10n/app_localizations.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -105,9 +106,9 @@ class _ArticlesGridTwoColumnsState extends State<ArticlesGridTwoColumns> {
     }
 
     if (_articles.isEmpty) {
-      return const Padding(
+      return  Padding(
         padding: EdgeInsets.all(24),
-        child: Text('No news for this sport.'),
+        child: Text(AppLocalizations.of(context)!.no_news_for_this_sport),
       );
     }
 

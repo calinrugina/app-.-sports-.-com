@@ -1,3 +1,4 @@
+import 'package:sports_config_app/l10n/app_localizations.dart';
 import 'dart:developer' as SportsAppLogger;
 import 'package:flutter/material.dart';
 import 'package:sports_config_app/core/app_config.dart';
@@ -94,9 +95,9 @@ class _VideoCaruselListState extends State<VideoCaruselList> {
       );
     }
     if (_videos.isEmpty) {
-      return const Padding(
+      return  Padding(
         padding: EdgeInsets.all(15),
-        child: Text('No videos.'),
+        child: Text(AppLocalizations.of(context)!.no_videos),
       );
     }
 

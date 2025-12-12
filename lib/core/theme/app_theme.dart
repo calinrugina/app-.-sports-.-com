@@ -14,9 +14,7 @@ class AppTheme {
         bodyColor: AppColors.lightTextPrimary,
       ),
       brightness: Brightness.light,
-      cardTheme: const CardThemeData(
-        color: AppColors.white
-      ),
+      cardTheme: const CardThemeData(color: AppColors.white),
       scaffoldBackgroundColor: AppColors.white,
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.primaryBlack,
@@ -43,11 +41,25 @@ class AppTheme {
           ),
         ),
       ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+        backgroundColor: AppColors.gray100,
+        foregroundColor: AppColors.gray100,
+        textStyle: const TextStyle(
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.5,
+        ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4.0),
+            ),
+      )),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.smoke,
-        hintStyle: TextStyle(color: AppColors.gray60, fontFamily:  defaultFont, fontSize: 11),
-        labelStyle: TextStyle(color: AppColors.gray60, fontFamily:  defaultFont, fontSize: 12),
+        hintStyle: const TextStyle(
+            color: AppColors.gray60, fontFamily: defaultFont, fontSize: 11),
+        labelStyle: const TextStyle(
+            color: AppColors.gray60, fontFamily: defaultFont, fontSize: 12),
         contentPadding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(4.0),
@@ -78,9 +90,7 @@ class AppTheme {
         bodyColor: AppColors.darkTextPrimary,
       ),
       brightness: Brightness.dark,
-      cardTheme: const CardThemeData(
-          color: Colors.black
-      ),
+      cardTheme: const CardThemeData(color: Colors.black),
       scaffoldBackgroundColor: Colors.black,
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.primaryBlack,
@@ -107,18 +117,39 @@ class AppTheme {
           ),
         ),
       ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            backgroundColor: AppColors.gray100,
+            foregroundColor: AppColors.gray100,
+            textStyle: const TextStyle(
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
+            side: const BorderSide(
+              color: AppColors.gray100,
+              width: 0
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4.0),
+
+            ),
+          )),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.darkTabs,
-        hintStyle: TextStyle(color: AppColors.gray60, fontFamily:  defaultFont, fontSize: 11),
-        labelStyle: TextStyle(color: AppColors.gray60, fontFamily:  defaultFont, fontSize: 12),
+        fillColor: AppColors.gray60,
+
+        hintStyle: const TextStyle(
+            color: AppColors.smoke, fontFamily: defaultFont, fontSize: 11),
+        labelStyle: const TextStyle(
+            color: AppColors.smoke, fontFamily: defaultFont, fontSize: 12),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(4.0),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(4.0),
-          borderSide: const BorderSide(color: AppColors.focusBlue, width: 2.0),
+          borderSide: const BorderSide(color: AppColors.smoke, width: 2.0),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(4.0),
@@ -129,13 +160,14 @@ class AppTheme {
     );
   }
 }
+
 class AppTextStyles {
   // Styles pentru tema LIGHT
   static TextTheme lightTextTheme(String? fontFamily) {
     return TextTheme(
       // 1. sectionTitle (Bebas Neue, ajustat de la 20 la 18 pentru dispozitive mici)
       headlineLarge: const TextStyle(
-        fontFamily:  'Bebas Neue',
+        fontFamily: 'Bebas Neue',
         fontSize: 20.0, // AJUSTAT PENTRU ECRANE MICI
         fontWeight: FontWeight.w400,
         color: AppColors.lightTextPrimary,
@@ -154,7 +186,7 @@ class AppTextStyles {
 
       // 3. itemDescription (bodyMedium - Condensat)
       bodyMedium: TextStyle(
-        fontFamily:  fontFamily,
+        fontFamily: fontFamily,
         fontSize: 14,
         fontWeight: FontWeight.w300,
         color: AppColors.lightTextPrimary,
@@ -179,7 +211,7 @@ class AppTextStyles {
     return TextTheme(
       // 1. sectionTitle
       headlineLarge: const TextStyle(
-        fontFamily:  'Bebas Neue',
+        fontFamily: 'Bebas Neue',
         fontSize: 20.0, // AJUSTAT PENTRU ECRANE MICI
         fontWeight: FontWeight.w400,
         color: AppColors.white,
@@ -198,7 +230,7 @@ class AppTextStyles {
 
       // 3. itemDescription (bodyMedium - Condensat)
       bodyMedium: TextStyle(
-        fontFamily:  fontFamily,
+        fontFamily: fontFamily,
         fontSize: 14,
         fontWeight: FontWeight.w300,
         color: AppColors.darkTextPrimary,

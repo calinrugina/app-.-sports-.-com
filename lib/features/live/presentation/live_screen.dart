@@ -1,3 +1,4 @@
+import 'package:sports_config_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -43,7 +44,7 @@ class LiveScreen extends ConsumerWidget {
   void _showVideoPlayer(BuildContext context, Map<String, dynamic> item) {
     if (item['stream_url'] == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('NO URL!')),
+         SnackBar(content: Text(AppLocalizations.of(context)!.no_url)),
       );
       return;
     }
@@ -75,7 +76,7 @@ class LiveScreen extends ConsumerWidget {
     return configAsync.when(
       data: (config) {
         if (config == null) {
-          return const Center(child: Text('No config loaded'));
+          return  Center(child: Text(AppLocalizations.of(context)!.no_config_loaded));
         }
         final sports = (config['sports'] as List?) ?? [];
         final List<Map<String, dynamic>> allStreams = [];
@@ -95,7 +96,7 @@ class LiveScreen extends ConsumerWidget {
         }
 
         if (allStreams.isEmpty) {
-          return const Center(child: Text('No live streams available'));
+          return  Center(child: Text(AppLocalizations.of(context)!.no_live_streams_available));
         }
         return ListView(
           children: [
@@ -139,7 +140,7 @@ class LiveScreen extends ConsumerWidget {
                       children: [
                         SectionHeader(
                           title: sportName,
-                          titleRed: 'Live NOW',
+                          titleRed: AppLocalizations.of(context)!.live_now,
                           moreLabel: null,
                           onMore: () {},
                         ),
@@ -254,7 +255,7 @@ class LiveScreen extends ConsumerWidget {
                   const EdgeInsets.symmetric(horizontal: AppConfig.appPadding),
               child: SectionHeader(
                 title: firstSport['name'],
-                moreLabel: 'See More',
+                moreLabel: AppLocalizations.of(context)!.see_more,
                 onMore: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -322,8 +323,7 @@ class LiveScreen extends ConsumerWidget {
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                  content: Text(
-                                      'Stream-ul va începe la ${countdownText.replaceAll("Start: ", "")}')),
+                                  content: Text(AppLocalizations.of(context)!.stream_start_at)),
                             );
                           }
                         },
@@ -456,7 +456,7 @@ class LiveScreen extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, st) => Center(child: Text('Error loading live: $e')),
+      error: (e, st) => Center(child: Text(AppLocalizations.of(context)!.error_loading_live_e(e.toString()))),
     );
   }
 }

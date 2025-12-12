@@ -39,7 +39,7 @@ class ArticleCard extends StatelessWidget {
     final mediaWithClamp = mq.copyWith(textScaleFactor: clampedTextScale);
 
     final formattedDate =
-        SportsFunction().formatDateRelative(article.publishDate);
+        SportsFunction().formatDateRelative(context,article.publishDate);
 
     return InkWell(
       onTap: onTap,

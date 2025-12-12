@@ -1,0 +1,87 @@
+{
+  "@@locale": "es",
+
+  "@error_loading_live_e": {
+    "description": "",
+    "placeholders": {
+      "e": { "type": "String" }
+    }
+  },
+  "@listing_articles_sport": { "description": "Named argument text" },
+  "@listing_videos_title": {
+    "description": "Named argument text",
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "@notifications": { "description": "Named argument text" },
+  "@privacy_policy": { "description": "Named argument text" },
+  "@select_language": { "description": "Named argument text" },
+  "@terms_conditions": { "description": "Named argument text" },
+  "@two": { "description": "Named argument text" },
+  "@welcome_to_sports_com": { "description": "Named argument text" },
+  "@you_now_have_access_to_personalized_cont": { "description": "Named argument text" },
+
+  "cancel": "Cancelar",
+  "close": "Cerrar",
+  "dark": "Oscuro",
+  "email": "Correo electrónico",
+  "enable_notifications": "Activar notificaciones",
+  "error_loading_config": "Error al cargar la configuración",
+  "error_loading_live_e": "Error al cargar el directo: {e}",
+  "light": "Claro",
+  "listing_articles_sport": "Listado de artículos",
+  "listing_videos_title": "Listado de vídeos {title}",
+  "load_more": "Cargar más",
+  "login_sign_up": "Iniciar sesión / Registrarse",
+  "logout": "Cerrar sesión",
+  "no_config_loaded": "No se cargó ninguna configuración",
+  "no_live_streams_available": "No hay transmisiones en vivo disponibles",
+  "no_news_for_this_sport": "No hay noticias para este deporte.",
+  "no_sports_configured": "No hay deportes configurados",
+  "no_sports_studios_configured": "No hay estudios Sports configurados",
+  "no_url": "¡SIN URL!",
+  "no_videos": "No hay vídeos.",
+  "no_videos_for_this_sport": "No hay vídeos para este deporte.",
+  "not_stored_demo_only": "No se guarda (solo demo)",
+  "notifications": "Notificaciones",
+  "password": "Contraseña",
+  "please_enter_email": "Por favor introduce el correo",
+  "please_enter_password": "Por favor introduce la contraseña",
+  "privacy_policy": "Política de privacidad",
+  "profile": "Perfil",
+  "search_articles_videos_teams": "Buscar artículos, vídeos, equipos...",
+  "select_language": "Seleccionar idioma",
+  "stream_start_at": "La transmisión en vivo comenzará ",
+  "system_default": "Predeterminado del sistema",
+  "terms_conditions": "Términos y condiciones",
+  "two": "dos",
+  "user_not_logged_in": "Usuario no autenticado.",
+  "welcome_to_sports_com": "Bienvenido a Sports.com",
+  "you_are_logged_in": "Has iniciado sesión.",
+  "you_now_have_access_to_personalized_cont": "Ahora tienes acceso a contenido personalizado y más.",
+  "unknown_date": "Fecha desconocida",
+
+  "years_ago": "{count, plural, =1{hace 1 año} other{hace {count} años}}",
+  "months_ago": "{count, plural, =1{hace 1 mes} other{hace {count} meses}}",
+  "days_ago": "{count, plural, =1{hace 1 día} other{hace {count} días}}",
+  "hours_ago": "{count, plural, =1{hace 1 hora} other{hace {count} horas}}",
+  "minutes_ago": "{count, plural, =1{hace 1 minuto} other{hace {count} minutos}}",
+
+  "@years_ago": { "placeholders": { "count": { "type": "int" } } },
+  "@months_ago": { "placeholders": { "count": { "type": "int" } } },
+  "@days_ago": { "placeholders": { "count": { "type": "int" } } },
+  "@hours_ago": { "placeholders": { "count": { "type": "int" } } },
+  "@minutes_ago": { "placeholders": { "count": { "type": "int" } } },
+
+  "other_options": "Otras opciones",
+  "language": "Idioma",
+  "version": "Versión",
+  "loading": "Cargando",
+
+  "see_more": "Ver más",
+  "latest_videos": "Últimos videos",
+  "live_now": "En vivo ahora",
+  "news": "Noticias",
+  "videos" : "Vídeos"
+}

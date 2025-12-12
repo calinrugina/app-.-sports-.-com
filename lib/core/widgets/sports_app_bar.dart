@@ -1,13 +1,17 @@
+import 'package:sports_config_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../features/config/providers/config_provider.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/auth/presentation/login_screen.dart';
+import '../../features/media/presentation/videos_listing.dart';
 import '../../features/more/presentation/notifications_settings_screen.dart';
+import '../../features/news/presentation/articles_listing.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../app_config.dart';
 import '../app_functions.dart';
+import '../language/language_provider.dart';
 import '../network/media_headers.dart';
 import '../theme/colors.dart';
 
@@ -20,6 +24,7 @@ class SportsAppBar extends ConsumerWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final configAsync = ref.watch(configProvider);
+    final selectedLanguage = ref.watch(languageProvider);
 
     return AppBar(
       automaticallyImplyLeading: false,
@@ -69,7 +74,7 @@ class SportsAppBar extends ConsumerWidget implements PreferredSizeWidget {
               showModalBottomSheet(
                 context: context,
                 isScrollControlled: true,
-                builder: (ctx) => const _SearchSheet(),
+                builder: (ctx) => _SearchSheet(sport: const {}, languageCode: selectedLanguage,),
               );
             },
           ),
@@ -112,42 +117,130 @@ class SportsAppBar extends ConsumerWidget implements PreferredSizeWidget {
   }
 }
 
-class _SearchSheet extends StatelessWidget {
-  const _SearchSheet();
+enum SearchTarget { videos, articles }
+
+class _SearchSheet extends StatefulWidget {
+  final Map<String, dynamic> sport;
+  final String languageCode;
+
+  const _SearchSheet({
+    required this.sport,
+    required this.languageCode,
+  });
+
+  @override
+  State<_SearchSheet> createState() => _SearchSheetState();
+}
+
+class _SearchSheetState extends State<_SearchSheet> {
+  final _ctrl = TextEditingController();
+  SearchTarget _target = SearchTarget.videos;
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  void _doSearch() {
+    final q = _ctrl.text.trim();
+    if (q.isEmpty) return;
+
+    Navigator.of(context).pop(); // închide sheet-ul
+
+    if (_target == SearchTarget.videos) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => VideosListing(
+            title: q,
+            mpids: '', // dacă e listing pe mpids, altfel folosește listing pe sport
+            languageCode: widget.languageCode,
+            q: q, // ✅
+          ),
+        ),
+      );
+    } else {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => ArticlesListing(
+            sport: widget.sport,
+            languageCode: widget.languageCode,
+            q: q, // ✅
+          ),
+        ),
+      );
+
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
-        left: 16,
-        right: 16,
-        top: 16,
+        left: AppConfig.bigSpace,
+        right:AppConfig.bigSpace,
+        top: AppConfig.bigSpace,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            'Search',
-            style: Theme.of(context).textTheme.titleLarge,
+          Text('Search', style: Theme.of(context).textTheme.titleLarge),
+
+          const SizedBox(height: 10),
+
+          Row(
+            children: [
+              Expanded(
+                child: RadioListTile<SearchTarget>(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(AppLocalizations.of(context)!.videos,style: Theme.of(context).textTheme.bodyMedium),
+                  value: SearchTarget.videos,
+                  groupValue: _target,
+                  onChanged: (v) => setState(() => _target = v!),
+                ),
+              ),
+              Expanded(
+                child: RadioListTile<SearchTarget>(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(AppLocalizations.of(context)!.news,style: Theme.of(context).textTheme.bodyMedium),
+                  value: SearchTarget.articles,
+                  groupValue: _target,
+                  onChanged: (v) => setState(() => _target = v!),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 5),
-          const TextField(
+
+          TextField(
+            controller: _ctrl,
+            textInputAction: TextInputAction.search,
+            onSubmitted: (_) => _doSearch(),
             decoration: InputDecoration(
-              hintText: 'Search articles, videos, teams...',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.search),
+              hintText: l10n.search_articles_videos_teams,
+              border: const OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.search),
             ),
           ),
-          const SizedBox(height: 16),
+
+          const SizedBox(height: AppConfig.smallSpace),
+
           ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text('Close', style: Theme.of(context).textTheme.labelSmall!.copyWith(color: Colors.white),),
+            onPressed: _doSearch,
+            child: Text(l10n.search_articles_videos_teams,style: Theme.of(context).textTheme.labelSmall!.copyWith(color: Colors.white)),
           ),
-          const SizedBox(height: 16),
+
+          const SizedBox(height: AppConfig.smallSpace),
+
+          OutlinedButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.close,style: Theme.of(context).textTheme.labelSmall!.copyWith(color: Colors.white)),
+          ),
+
+          const SizedBox(height: AppConfig.bigSpace),
         ],
       ),
     );
@@ -202,7 +295,7 @@ class _AccountSheet extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           if (!isLoggedIn) ...[
-            const Text('User not logged in.'),
+             Text(AppLocalizations.of(context)!.user_not_logged_in),
             const SizedBox(height: 12),
             ElevatedButton(
               onPressed: () {
@@ -212,10 +305,10 @@ class _AccountSheet extends ConsumerWidget {
                   ),
                 );
               },
-              child: const Text('Login / Sign up'),
+              child: Text(AppLocalizations.of(context)!.login_sign_up),
             ),
           ] else ...[
-            const Text('You are logged in.'),
+            Text(AppLocalizations.of(context)!.you_are_logged_in),
             const SizedBox(height: 12),
             ElevatedButton.icon(
               onPressed: () async {
@@ -225,7 +318,7 @@ class _AccountSheet extends ConsumerWidget {
                 }
               },
               icon: const Icon(Icons.logout),
-              label: const Text('Logout'),
+              label:  Text(AppLocalizations.of(context)!.logout),
             ),
           ],
           const SizedBox(height: 8),
@@ -233,7 +326,7 @@ class _AccountSheet extends ConsumerWidget {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: const Text('Close'),
+            child:  Text(AppLocalizations.of(context)!.close),
           ),
           const SizedBox(height: 16),
         ],

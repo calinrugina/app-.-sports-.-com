@@ -1,30 +1,17 @@
 import 'dart:convert';
 
-import 'package:auto_size_text/auto_size_text.dart';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:sports_config_app/core/app_config.dart';
-import 'package:sports_config_app/core/network/media_headers.dart';
-import 'package:sports_config_app/core/theme/colors.dart';
-import 'package:sports_config_app/core/widgets/sports_app_bar.dart';
-import 'package:http/http.dart' as http;
-import 'package:crypto/crypto.dart';
-import 'package:html/dom.dart' as dom;
+import 'package:sports_config_app/core/app_functions.dart';
 
-import '../data/article_item.dart';
-
-import 'dart:convert';
-import 'package:crypto/crypto.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_html/flutter_html.dart';
-import 'package:http/http.dart' as http;
-
-import '../../../core/widgets/sports_app_bar.dart';
-import '../../../core/widgets/back_header.dart';
-import '../../../core/network/media_headers.dart';
 import '../../../core/language/language_provider.dart';
+import '../../../core/network/media_headers.dart';
 import '../../../core/theme/colors.dart';
 import '../data/article_item.dart';
 
@@ -39,33 +26,44 @@ class ArticleDetailScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ArticleDetailScreen> createState() =>
-      _ArticleDetailScreenState();
+  ConsumerState<ArticleDetailScreen> createState() => _ArticleDetailScreenState();
 }
 
 class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
+  final ScrollController _scrollController = ScrollController();
+
   bool _loading = true;
   String _htmlContent = '';
-  String? _imageUrl;
   String? _publishDate;
   String? _category;
-String? _fullTitle;
+  String? _fullTitle;
+
+  bool _showToTop = false;
+  String? _error;
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     _fetchFullArticle();
+  }
+
+  void _onScroll() {
+    final shouldShow = _scrollController.offset > 420;
+    if (shouldShow != _showToTop) {
+      setState(() => _showToTop = shouldShow);
+    }
   }
 
   Future<void> _fetchFullArticle() async {
     const apiKey = '0b558c74198915cd8fad9cb8fbb5951a';
     const apiSecret = '3fa2a04361d0b808e4c5560fbffaf6b3';
+
     final id = widget.article.id;
     final lang = ref.read(languageProvider);
 
     final baseStr =
         'api_key=$apiKey&method=getNews&tbsec=$apiSecret&format=json&id=$id&sport_id=&limit=&offset=&lang=$lang';
-
     final hash = md5.convert(utf8.encode(baseStr)).toString();
 
     final url =
@@ -76,7 +74,7 @@ String? _fullTitle;
     try {
       final response = await http.post(
         Uri.parse(url),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        headers: const {'Content-Type': 'application/x-www-form-urlencoded'},
       );
 
       if (!mounted) return;
@@ -86,24 +84,28 @@ String? _fullTitle;
         final newsItem = json['news']?['newsItem']?[0];
 
         if (newsItem != null) {
+          final safeHtml = SportsFunction().sanitizeArticleHtml( (newsItem['description'] ?? '').toString());
+
           setState(() {
-            _htmlContent = newsItem['description'] ?? '';
+            _htmlContent = safeHtml;
             _fullTitle = newsItem['title']?.toString();
             _publishDate = newsItem['publishedDate']?.toString();
             _category = newsItem['sport']?['name']?.toString();
             _loading = false;
+            _error = null;
           });
         } else {
           setState(() {
             _htmlContent = '<p>Article not found.</p>';
             _loading = false;
+            _error = null;
           });
         }
       } else {
         setState(() {
-          _htmlContent =
-          '<p>Failed to load article (HTTP ${response.statusCode}).</p>';
+          _htmlContent = '<p>Failed to load article (HTTP ${response.statusCode}).</p>';
           _loading = false;
+          _error = null;
         });
       }
     } catch (e) {
@@ -111,26 +113,11 @@ String? _fullTitle;
       setState(() {
         _htmlContent = '<p>Failed to load article.</p>';
         _loading = false;
+        _error = e.toString();
       });
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Scaffold(
-      body: Column(
-        children: [
-          Expanded(
-            child: _loading
-                ? const Center(child: CircularProgressIndicator())
-                : _buildContent(theme),
-          ),
-        ],
-      ),
-    );
-  }
   String _formatDate(String? raw) {
     if (raw == null || raw.isEmpty) return '';
     try {
@@ -142,245 +129,293 @@ String? _fullTitle;
       return raw;
     }
   }
-  Widget _buildContent(ThemeData theme) {
+
+  Future<void> _scrollToTop() async {
+    await _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final textTheme = theme.textTheme;
-    final bodyColor = textTheme.bodyMedium?.color ?? Colors.white;
-    final heroTitle = widget.article.title;
+
     final heroImage = widget.article.mediaUrl;
+    final title = _fullTitle ?? widget.article.title;
 
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // 1. Imaginea mare de sus (media_url)
-          _ArticleHero(
-            imageUrl: heroImage,
-            // title: heroTitle,
-            headers: mediaHeaders,
-          ),
+    return Scaffold(
+      // backgroundColor: theme.scaffoldBackgroundColor,
+      floatingActionButton: AnimatedOpacity(
+        duration: const Duration(milliseconds: 180),
+        opacity: _showToTop ? 1 : 0,
+        child: _showToTop
+            ? FloatingActionButton.small(
 
-          Container(
-            color: theme.scaffoldBackgroundColor,
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 16,
-            ),
-            child: Column(
-              children: [
-                const SizedBox(height: 16),
+          backgroundColor: AppColors.redSports,
+          onPressed: _scrollToTop,
+          child: const Icon(Icons.keyboard_arrow_up, color: Colors.white),
+        )
+            : const SizedBox.shrink(),
+      ),
+      body: SafeArea(
+        top: false,
+        child: CustomScrollView(
 
-                // 2. Titlul articolului
-                Text(
-                  widget.article.title,
-                  style: textTheme.headlineLarge?.copyWith(
-                    fontSize: 22,
-                  ),
-                ),
+          controller: _scrollController,
+          slivers: [
+            SliverAppBar(
+              pinned: true,
+              stretch: true,
+              backgroundColor: Colors.black, //AppColors.darkTabs,
+              expandedHeight: 280,
+              collapsedHeight: kToolbarHeight + MediaQuery.of(context).padding.top,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              systemOverlayStyle: SystemUiOverlayStyle.light,
+              flexibleSpace: LayoutBuilder(
+                builder: (context, constraints) {
+                  // poți folosi asta dacă vrei să ajustezi overlay/gradient în funcție de cât e colapsat
+                  final t = (constraints.maxHeight - (kToolbarHeight + MediaQuery.of(context).padding.top)) /
+                      (280 - (kToolbarHeight + MediaQuery.of(context).padding.top));
+                  final collapseFactor = t.clamp(0.0, 1.0);
 
-                const SizedBox(height: 8),
-
-                // categorie + dată
-                if (_category != null || _publishDate != null)
-                  Padding(
-                    padding:
-                    const EdgeInsets.only(bottom: 12.0),
-                    child: Row(
+                  return FlexibleSpaceBar(
+                    collapseMode: CollapseMode.parallax,
+                    titlePadding: const EdgeInsetsDirectional.only(start: AppConfig.bigSpace, bottom: AppConfig.bigSpace, end: AppConfig.bigSpace),
+                    title: Text(
+                      title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: textTheme.titleLarge?.copyWith(color: Colors.white),
+                    ),
+                    background: Stack(
+                      fit: StackFit.expand,
                       children: [
-                        if (_category != null)
-                          Text(
-                            _category!,
-                            style: textTheme.labelSmall?.copyWith(
-                              color: AppColors.redSports,
+                        if (heroImage != null && heroImage.isNotEmpty)
+                          Image.network(
+                            heroImage,
+                            fit: BoxFit.cover,
+                            headers: mediaHeaders,
+                            errorBuilder: (_, __, ___) => Container(color: Colors.black26),
+                          )
+                        else
+                          Container(color: Colors.black26),
+
+                        // gradient
+                        const DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.topCenter,
+                              colors: [
+                                Colors.black87,
+                                Colors.transparent,
+                              ],
                             ),
                           ),
-                        if (_category != null &&
-                            _publishDate != null)
-                          Text(
-                            ' · ',
-                            style: textTheme.labelSmall,
-                          ),
-                        if (_publishDate != null)
-                          Text(
-                            _formatDate(_publishDate),
-                            style: textTheme.labelSmall,
-                          ),
+                        ),
+
+                        // titlul mare peste imagine (în expanded)
+                        // Positioned(
+                        //   left: 16,
+                        //   right: 16,
+                        //   bottom: 18,
+                        //   child: Opacity(
+                        //     opacity: collapseFactor,
+                        //     child: Text(
+                        //       title,
+                        //       maxLines: 3,
+                        //       overflow: TextOverflow.ellipsis,
+                        //       style: textTheme.headlineSmall?.copyWith(
+                        //         color: Colors.white,
+                        //         fontWeight: FontWeight.w700,
+                        //         height: 1.12,
+                        //       ),
+                        //     ),
+                        //   ),
+                        // ),
                       ],
                     ),
-                  ),
+                  );
+                },
+              ),
+            ),
 
-
-                const SizedBox(height: 16),
-
-                // 4. Conținut HTML complet (paragrafe + imagini inline)
-                Html(
-                  data: _htmlContent,
-                  shrinkWrap: true,
-                  style: {
-                    "body": Style(
-                      margin: Margins.zero,
-                      padding: HtmlPaddings.zero,
-                      color: bodyColor,
-                      fontStyle: textTheme.bodyMedium!.fontStyle,
-                      fontSize: FontSize(textTheme.bodyMedium?.fontSize ?? 14),
-                      // lineHeight: LineHeight.number(1.4),
-                    ),
-                    "p": Style(
-                      // margin: Margins.only(bottom: Margin(12, Unit.px)),
-                      fontStyle: textTheme.bodyMedium!.fontStyle,
-                      fontSize: FontSize(textTheme.bodyMedium?.fontSize ?? 14),
-                    ),
-                    "figure": Style(
-                      margin: Margins.symmetric(
-                        // vertical: Margin(12, Unit.px),
-                      ),
-                    ),
-                    "img": Style(
-                      margin: Margins.symmetric(
-                        // vertical: Margin(8, Unit.px),
-                      ),
-                      width: Width(100, Unit.percent),
-                      height: Height.auto(),
-                    ),
-                  },
-                  extensions: [
-                    // Render special pentru <img>, ca să prindem și src de tip //image...
-                    TagExtension(
-                      tagsToExtend: {"img"},
-                      builder: (ctx) {
-                        var src = ctx.attributes['src'] ?? '';
-                        if (src.isEmpty) {
-                          return const SizedBox.shrink();
-                        }
-
-                        // dacă vine //image.assets..., prefixăm cu https:
-                        if (src.startsWith('//')) {
-                          src = 'https:$src';
-                        }
-
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: Image.network(
-                            src,
-                            fit: BoxFit.cover,
-                            headers: mediaHeaders, // ok și pt host-urile tale
-                            errorBuilder: (_, __, ___) => Container(
-                              height: 180,
-                              color: AppColors.gray60,
-                              child: const Center(
-                                child: Icon(Icons.broken_image, size: 32),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                child: _loading
+                    ? const Padding(
+                  padding: EdgeInsets.only(top: 24),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+                    : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // categorie + dată
+                    if (_category != null || _publishDate != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Row(
+                          children: [
+                            if (_category != null)
+                              Flexible(
+                                child: Text(
+                                  _category!,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: textTheme.labelSmall?.copyWith(
+                                    color: AppColors.redSports,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
                               ),
+                            if (_category != null && _publishDate != null)
+                              Text(' · ', style: textTheme.labelSmall),
+                            if (_publishDate != null)
+                              Text(
+                                _formatDate(_publishDate),
+                                style: textTheme.labelSmall,
+                              ),
+                          ],
+                        ),
+                      ),
+
+                    // titlu în body (sub hero)
+                    Text(
+                      title,
+                      style: textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 14),
+
+                    if (_error != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Text(
+                          _error!,
+                          style: textTheme.bodySmall?.copyWith(color: Colors.redAccent),
+                        ),
+                      ),
+
+                    // IMPORTANT:
+                    // Fix pentru flutter_html 3 când ajunge în constrângeri ciudate:
+                    // forțăm lățime >= 1 și exact maxWidth din layout.
+                    LayoutBuilder(
+                      builder: (context, c) {
+                        final maxW = c.maxWidth.isFinite ? c.maxWidth : MediaQuery.of(context).size.width;
+                        final safeW = maxW <= 0 ? 1.0 : maxW;
+
+                        return ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minWidth: safeW,
+                            maxWidth: safeW,
+                          ),
+                          child: SizedBox(
+                            width: safeW,
+                            child: Html(
+                              data: _htmlContent,
+                              style: {
+                                "body": Style(
+                                  margin: Margins.zero,
+                                  padding: HtmlPaddings.zero,
+                                  fontSize: FontSize((textTheme.bodyMedium?.fontSize ?? 14)),
+                                  lineHeight: LineHeight.number(1.35),
+                                ),
+                                "p": Style(
+                                  margin: Margins.only(bottom: 12),
+                                ),
+                                "img": Style(
+                                  width: Width(100, Unit.percent),
+                                  height: Height.auto(),
+                                  display: Display.block,
+                                  margin: Margins.symmetric(vertical: 10),
+                                ),
+                                "figure": Style(
+                                  margin: Margins.symmetric(vertical: 10),
+                                ),
+                                "table": Style(
+                                  width: Width(100, Unit.percent),
+                                ),
+                              },
+                              extensions: [
+                                // img src inline (inclusiv //...)
+                                TagExtension(
+                                  tagsToExtend: {"img"},
+                                  builder: (ctx) {
+                                    var src = (ctx.attributes['src'] ?? '').trim();
+                                    if (src.isEmpty) return const SizedBox.shrink();
+                                    if (src.startsWith('//')) src = 'https:$src';
+
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 8),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(10),
+                                        child: Image.network(
+                                          src,
+                                          fit: BoxFit.cover,
+                                          headers: mediaHeaders,
+                                          errorBuilder: (_, __, ___) => Container(
+                                            height: 180,
+                                            color: AppColors.gray60,
+                                            child: const Center(
+                                              child: Icon(Icons.broken_image, size: 32, color: Colors.white),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+
+                                // tables: wrap horizontal scroll (evită layout “weird”)
+                                TagExtension(
+                                  tagsToExtend: {"table"},
+                                  builder: (ctx) {
+                                    // reconstruim doar table-ul ca HTML separat
+                                    final tableHtml = ctx.element?.outerHtml;
+                                    if (tableHtml == null || tableHtml.isEmpty) {
+                                      return const SizedBox.shrink();
+                                    }
+
+                                    return SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: ConstrainedBox(
+                                        constraints: const BoxConstraints(minWidth: 420),
+                                        child: Html(
+                                          data: tableHtml,
+                                          // IMPORTANT: ca să evităm recursion / extensii din nou pe table
+                                          extensions: const [],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
                             ),
                           ),
                         );
                       },
                     ),
+
+                    const SizedBox(height: 24),
                   ],
                 ),
-              ],
-            ),
-          )
-        ],
-      ),
-    );
-  }
-}
-
-class _ArticleHero extends StatelessWidget {
-  final String? imageUrl;
-  // final String title;
-  final Map<String, String> headers;
-
-  const _ArticleHero({
-    required this.imageUrl,
-    // required this.title,
-    required this.headers,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
-    return AspectRatio(
-      aspectRatio: 16 / 16,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-
-          // imaginea de fundal
-          if (imageUrl != null)
-            Image.network(
-              imageUrl!,
-              fit: BoxFit.cover,
-              headers: headers,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(color: Colors.black26);
-              },
-            )
-          else
-            Container(color: Colors.black26),
-
-          // gradient de jos în sus
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-                colors: [
-                  Colors.black87,
-                  Colors.transparent,
-                ],
               ),
             ),
-          ),
-
-          // buton Back + titlu
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 8,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Back
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        Icon(Icons.arrow_back,
-                            color: Colors.white, size: 20),
-                        SizedBox(width: 4),
-                        Text(
-                          'Back',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // const Spacer(),
-                  // // Titlu peste imagine
-                  // Padding(
-                  //   padding: const EdgeInsets.only(bottom: 12.0, right: 8),
-                  //   child: AutoSizeText(
-                  //     title,
-                  //     maxLines: 3,
-                  //     minFontSize: 14,
-                  //     overflow: TextOverflow.ellipsis,
-                  //     style: textTheme.headlineLarge?.copyWith(
-                  //       color: Colors.white,
-                  //     ),
-                  //   ),
-                  // ),
-                ],
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

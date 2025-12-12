@@ -99,9 +99,6 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
       );
       final controller = BetterPlayerController(config);
       controller.addEventsListener((event) {
-        // vezi exact ce se întâmplă
-        debugPrint(
-            "BetterPlayer event: ${event.betterPlayerEventType}  params=${event.parameters}");
 
         if (!mounted) return;
 
@@ -223,9 +220,6 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
     final controller = BetterPlayerController(config);
 
     controller.addEventsListener((event) {
-      debugPrint(
-        "BetterPlayer event: ${event.betterPlayerEventType} params=${event.parameters}",
-      );
 
       if (!mounted) return;
 

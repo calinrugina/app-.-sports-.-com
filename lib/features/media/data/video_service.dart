@@ -21,6 +21,7 @@ class VideoService {
     int offset,
     String languageCode, {
     int limit = 5,
+        String? q,
   }) async {
     final String mpid = sport['mpid'].toString();
     return fetchVideosForSets(mpid, offset, languageCode, limit: limit);
@@ -32,7 +33,8 @@ class VideoService {
     int offset,
     String languageCode, {
     int limit = 5,
-  }) async {
+        String? q,
+      }) async {
     const String method = 'list_contents';
     final int timestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
@@ -45,6 +47,10 @@ class VideoService {
       "width": 512,
       "get_sets": 1
     };
+
+    if (q != null && q.trim().isNotEmpty) {
+      checksumParams['q'] = q.trim();
+    }
 
     final Map<String, dynamic> nonChecksumParams = {"minify": 1};
 
