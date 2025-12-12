@@ -4,3 +4,4 @@ for: CN=SPORTS.COM, OU=SPORTS.COM MEDIA GROUP LTD, O=SPORTS.COM, L=LONDON, ST=LO
 [Storing upload-keystore.jks]
 
 ### FIXES
+flutter gen-l10n

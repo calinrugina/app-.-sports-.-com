@@ -126,3 +126,15 @@ app.*.symbols
 /.idea/misc.xml
 /.idea/modules.xml
 /.idea/sports-app.iml
+/android/.idea/caches/deviceStreaming.xml
+/android/.idea/.gitignore
+/android/.idea/AndroidProjectSystem.xml
+/android/.idea/appInsightsSettings.xml
+/android/.idea/compiler.xml
+/android/.idea/deploymentTargetSelector.xml
+/android/.idea/gradle.xml
+/android/.idea/kotlinc.xml
+/android/.idea/migrations.xml
+/android/.idea/misc.xml
+/android/.idea/runConfigurations.xml
+/android/.idea/vcs.xml
