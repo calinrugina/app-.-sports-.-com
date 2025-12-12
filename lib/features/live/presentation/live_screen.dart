@@ -43,7 +43,7 @@ class LiveScreen extends ConsumerWidget {
   void _showVideoPlayer(BuildContext context, Map<String, dynamic> item) {
     if (item['stream_url'] == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('URL-ul stream-ului lipsește!')),
+        const SnackBar(content: Text('NO URL!')),
       );
       return;
     }
@@ -99,26 +99,18 @@ class LiveScreen extends ConsumerWidget {
         }
         return ListView(
           children: [
-            Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: AppConfig.appPadding, vertical: AppConfig.appPadding),
-              child: SectionHeader(
-                title: firstSport['name'],
-                titleRed: 'Live NOW',
-                moreLabel: null,
-                onMore: () {},
-              ),
-            ),
             ListView.builder(
               shrinkWrap:
                   true, // ESENȚIAL: Ocupă doar spațiul necesar elementelor.
-              // physics: const NeverScrollableScrollPhysics(), // ESENȚIAL: Dezactivează scroll-ul intern.
+              physics: const NeverScrollableScrollPhysics(), // ESENȚIAL: Dezactivează scroll-ul intern.
               itemCount: allStreams.length,
               itemBuilder: (context, index) {
                 final item = allStreams[index];
 
                 final canPlay = _canPlay(item);
                 final title = item['title']?.toString() ?? 'Live Stream';
+                final sportName = item['sportName']?.toString() ?? '';
+
                 final description = item['description']?.toString() ??
                     item['sportName']?.toString() ??
                     '';
@@ -145,6 +137,12 @@ class LiveScreen extends ConsumerWidget {
                         horizontal: AppConfig.appPadding),
                     child: Column(
                       children: [
+                        SectionHeader(
+                          title: sportName,
+                          titleRed: 'Live NOW',
+                          moreLabel: null,
+                          onMore: () {},
+                        ),
                         InkWell(
                             onTap: () {
                               if (canPlay) {
@@ -153,7 +151,7 @@ class LiveScreen extends ConsumerWidget {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                       content: Text(
-                                          'Stream-ul va începe la ${countdownText.replaceAll("Start: ", "")}', style:  Theme.of(context)
+                                          'LiveStream will start ${countdownText.replaceAll("Start: ", "")}', style:  Theme.of(context)
                                           .textTheme
                                           .labelSmall!.copyWith(color: AppColors.redSports),)),
                                 );

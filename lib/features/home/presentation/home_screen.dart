@@ -44,7 +44,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         final hasLive = sports.any((s) {
           final m = s as Map<String, dynamic>;
           final ls = m['livestreams'] as List?;
-          return ls != null && ls.isNotEmpty;
+          final liveStreams = [];
+
+          if (ls != null && ls.isNotEmpty) {
+            // Iterăm prin fiecare element din lista 'ls'
+            for (final item in ls) {
+              final countdownActive = item["countdown_active"] == 1;
+              final countdownEndStr = item["countdown_end"]?.toString();
+
+              if (
+                !countdownActive || countdownEndStr == null
+              ) {
+                // Dacă nu e activ sau nu are dată de sfârșit, ar trebui să poată fi redat (Live Now)
+                liveStreams.add(item);
+              }else{
+                final countdownEnd = DateTime.parse(countdownEndStr).toLocal();
+                final now = DateTime.now();
+
+                if (countdownActive && countdownEnd.isAfter(now)){
+                  liveStreams.add(item);
+                }
+              }
+            }
+
+          }
+          return ls != null && ls.isNotEmpty && liveStreams.isNotEmpty;
         });
 
         final List<Widget> pages = [];

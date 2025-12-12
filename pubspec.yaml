@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations: # <-- Adăugat
+    sdk: flutter
   cupertino_icons: ^1.0.8
   flutter_riverpod: ^2.5.1
   dio: ^5.7.0
@@ -20,6 +22,7 @@ dependencies:
   flutter_html: ^3.0.0
   video_player: ^2.10.1
   chewie: ^1.13.0
+  better_player_plus: ^1.0.8
   webview_flutter: ^4.9.0
   package_info_plus: ^8.0.0
   upgrader: ^12.3.0
@@ -32,8 +35,10 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^4.0.0
 
+
 flutter:
   uses-material-design: true
+  generate: true
 
   assets:
     - assets/images/

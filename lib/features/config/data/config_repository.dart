@@ -42,7 +42,7 @@ class ConfigRepository {
   }
 
   Future<void> refresh() async {
-    SportsAppLogger.log('Config refresh');
+    SportsAppLogger.log('Config refresh !!!');
     final data = await _service.fetchConfig();
 
     if (data['config'] is Map<String, dynamic>) {

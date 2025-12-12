@@ -20,7 +20,7 @@ import unicodedata
 
 # --------- Config ---------
 USE_HASH_SUFFIX = True    # add _<hash> to key to avoid collisions
-ARB_LOCALE = "ro"
+ARB_LOCALE = "en"
 EXCLUDE_DIR_NAMES = {
     ".dart_tool", ".idea", ".git", "build", "ios", "android",
     "linux", "macos", "windows", "web", "test", "example",
