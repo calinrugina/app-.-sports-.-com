@@ -38,6 +38,8 @@ class _VideosListOneColumnState extends State<VideosListOneColumn> {
   int _offset = 0;
   final int _limit = 5;
 
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
@@ -87,6 +89,12 @@ class _VideosListOneColumnState extends State<VideosListOneColumn> {
   }
 
   @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (_initialLoading) {
       return const Center(
@@ -106,9 +114,14 @@ class _VideosListOneColumnState extends State<VideosListOneColumn> {
       );
     }
 
-    return Padding(
+    return Scrollbar(
+        controller: _scrollController,
+        thickness: 4.0, // Lățime ușor crescută
+        radius: const Radius.circular(10), // Colțuri mai rotunjite
+        child: Padding(
       padding: const EdgeInsets.symmetric( horizontal: AppConfig.appPadding),
       child: ListView.separated(
+        controller: _scrollController,
         padding: const EdgeInsets.symmetric(
           horizontal: 0,
           vertical: 2,
@@ -119,38 +132,32 @@ class _VideosListOneColumnState extends State<VideosListOneColumn> {
           if (index < _videos.length) {
             final video = _videos[index];
             return VideoCard(
-                video: video, 
-                onTap: () => SportsFunction().openPlayer(video, context),
+              video: video,
+              onTap: () => SportsFunction().openPlayer(video, context),
               pictureRatio: 16/9,
             );
           }
 
           // butonul Load more
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-            child: Center(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.redSports,
-                  foregroundColor: Colors.white,
+          return
+            _loadingMore
+                ? SportsFunction().customLoading()
+                :
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+              child: Center(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.redSports,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: _loadingMore ? null : () => _load(reset: false),
+                  child:Text('Load more'.toUpperCase(), style: Theme.of(context).textTheme.labelSmall!.copyWith(color: Colors.white, fontSize: 14),),
                 ),
-                onPressed: _loadingMore ? null : () => _load(reset: false),
-                child: _loadingMore
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                          backgroundColor: AppColors.redSports,
-                        ),
-                      )
-                    : Text('Load more'.toUpperCase(), style: Theme.of(context).textTheme.labelSmall!.copyWith(color: Colors.white, fontSize: 14),),
               ),
-            ),
-          );
+            );
         },
       ),
-    );
+    ));
   }
 }

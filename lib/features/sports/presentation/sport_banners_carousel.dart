@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:sports_config_app/core/network/media_headers.dart';
 
 import '../../../core/app_config.dart';
+import '../../../core/network/app_image_cache.dart';
 
 class SportBannersCarousel extends StatefulWidget {
   final Map<String, dynamic> sport;
@@ -149,10 +150,10 @@ class _SportBannersCarouselState extends State<SportBannersCarousel> {
       );
     }
 
-    return Image.network(
-      url,
+    return AppNetworkImage(
+      url: url,
       fit: BoxFit.contain,
-      headers: mediaHeaders,
+      // headers: mediaHeaders,
     );
   }
 

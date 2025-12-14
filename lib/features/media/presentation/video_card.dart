@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:sports_config_app/core/app_config.dart';
 import '../../../core/app_functions.dart';
+import '../../../core/network/app_image_cache.dart';
 import '../../../core/network/media_headers.dart';
 import '../../../core/theme/colors.dart';
 import '../data/video_item.dart';
@@ -15,7 +16,7 @@ class VideoCard extends StatelessWidget {
     super.key,
     required this.video,
     required this.onTap,
-    this.pictureRatio = 16 / 12
+    this.pictureRatio = 16 / 11
   });
 
   @override
@@ -56,13 +57,13 @@ class VideoCard extends StatelessWidget {
                       fit: StackFit.expand,
                       children: [
                         if (video.thumbUrl != null)
-                          Image.network(
-                            video.thumbUrl!,
+                          AppNetworkImage(
+                            url: video.thumbUrl!,
                             fit: BoxFit.cover,
-                            headers: mediaHeaders,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(color: AppColors.gray60);
-                            },
+                            // headers: mediaHeaders,
+                            // errorBuilder: (context, error, stackTrace) {
+                            //   return Container(color: AppColors.gray60);
+                            // },
                           )
                         else
                           Container(color: AppColors.gray60),

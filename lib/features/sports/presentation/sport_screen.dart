@@ -17,11 +17,12 @@ class SportScreen extends ConsumerWidget {
   final List<dynamic> sports;
   final String languageCode;
 
-  const SportScreen({
+   SportScreen({
     super.key,
     required this.sports,
     required this.languageCode,
   });
+  final ScrollController _scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -35,23 +36,30 @@ class SportScreen extends ConsumerWidget {
     final name = sport['name']?.toString() ?? 'Sport';
     final sportKey = (sport['id'] ?? sport['mpid'] ?? safeIndex).toString();
 
+
     return Column(
       children: [
         // lista de sporturi sus, fixa în tabul Sports
         SportsOnTop(sports: sports),
         const Divider(height: 1),
         Expanded(
-          child: SingleChildScrollView(
+          child:Scrollbar(
+            controller: _scrollController,
+              thickness: 4.0, // Lățime ușor crescută
+              radius: const Radius.circular(10), // Colțuri mai rotunjite
+              child:  SingleChildScrollView(
+                controller: _scrollController,
             child: Padding(
               padding:
-                  const EdgeInsets.symmetric(horizontal: AppConfig.appPadding),
+              const EdgeInsets.symmetric(horizontal: AppConfig.appPadding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // const SizedBox(height: 16),
                   SportBannersCarousel(sport: sport),
                   // const SizedBox(height: 12),
-                  SectionHeader(
+                  if (sport['mpid'] != null && sport['mpid'].toString().isNotEmpty)
+                    SectionHeader(
                     title: name,
                     titleRed: AppLocalizations.of(context)!.latest_videos,
                     moreLabel: AppLocalizations.of(context)!.see_more,
@@ -67,7 +75,8 @@ class SportScreen extends ConsumerWidget {
                       );
                     },
                   ),
-                  Padding(
+                  if (sport['mpid'] != null && sport['mpid'].toString().isNotEmpty)
+                    Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 0),
                     child: VideosGridTwoColumns(
                       title: sport['name'],
@@ -78,7 +87,8 @@ class SportScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  SectionHeader(
+                  if (sport['lpid'] != null && sport['lpid'].toString().isNotEmpty)
+                    SectionHeader(
                     title: name,
                     moreLabel: AppLocalizations.of(context)!.see_more,
                     titleRed: AppLocalizations.of(context)!.news,
@@ -93,7 +103,8 @@ class SportScreen extends ConsumerWidget {
                       );
                     },
                   ),
-                  Padding(
+                  if (sport['lpid'] != null && sport['lpid'].toString().isNotEmpty)
+                    Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 0),
                     child: ArticlesGridTwoColumns(
                       sport: sport,
@@ -106,7 +117,7 @@ class SportScreen extends ConsumerWidget {
                 ],
               ),
             ),
-          ),
+          )),
         ),
       ],
     );

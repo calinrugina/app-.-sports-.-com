@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:http/http.dart' as http;
@@ -5,6 +7,7 @@ import 'package:http/http.dart' as http;
 import '../features/media/data/video_item.dart';
 import '../features/media/presentation/video_player_dialog.dart';
 import '../l10n/app_localizations.dart';
+import 'app_config.dart';
 
 // Calea către iconița SVG implicită din assets
 const String kDefaultSvgAsset = 'assets/images/default.svg';
@@ -195,6 +198,14 @@ class _SvgIconLoaderState extends State<SvgIconLoader> {
 }
 
 class SportsFunction {
+
+  Widget customLoading(){
+    return const Padding(
+      padding: EdgeInsetsDirectional.symmetric(vertical: AppConfig.bigSpace, horizontal: AppConfig.bigSpace),
+      child: Center(child: CircularProgressIndicator()),
+    );
+  }
+
   String formatDateRelative(
       BuildContext context,
       String dateString,
@@ -249,7 +260,40 @@ class SportsFunction {
       ),
     );
   }
+  String fixMojibake(String input) {
+    if (input.isEmpty) return input;
 
+    // Heuristic: dacă nu conține secvențe problematice, nu atingem stringul
+    final hasMojibake = RegExp(r'[ÃÂÅÄâ€™â€“â€œâ€˜]').hasMatch(input);
+    if (!hasMojibake) return input;
+
+    String result = input;
+
+    // 1️⃣ încercare: latin1 -> utf8
+    try {
+      result = utf8.decode(latin1.encode(result));
+    } catch (_) {
+      // ignorăm, mergem mai departe
+    }
+
+    // 2️⃣ normalizare smart quotes & dashes (Windows-1252 leftovers)
+    const replacements = {
+      'â€™': '’',
+      'â€˜': '‘',
+      'â€œ': '“',
+      'â€�': '”',
+      'â€“': '–',
+      'â€”': '—',
+      'â€¦': '…',
+      'Â': '',
+    };
+
+    replacements.forEach((bad, good) {
+      result = result.replaceAll(bad, good);
+    });
+
+    return result;
+  }
   String sanitizeArticleHtml(String html) {
     var out = html;
 

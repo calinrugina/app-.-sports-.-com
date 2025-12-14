@@ -1,6 +1,8 @@
 import 'package:sports_config_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/app_config.dart';
+import '../../../core/app_functions.dart';
 import '../../../core/theme/colors.dart';
 import '../data/article_item.dart';
 import '../data/article_service.dart';
@@ -33,10 +35,18 @@ class _ArticlesListOneColumnState extends State<ArticlesListOneColumn> {
   int _offset = 0;
   final int _limit = 5;
 
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     _load(reset: true);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -104,7 +114,7 @@ class _ArticlesListOneColumnState extends State<ArticlesListOneColumn> {
     }
 
     if (_articles.isEmpty) {
-      return  Center(
+      return Center(
         child: Padding(
           padding: EdgeInsets.all(24),
           child: Text(AppLocalizations.of(context)!.no_news_for_this_sport),
@@ -113,45 +123,52 @@ class _ArticlesListOneColumnState extends State<ArticlesListOneColumn> {
     }
 
     // 👇 Acum widgetul este direct un ListView scroll-abil
-    return ListView.separated(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      itemCount: _articles.length + (_hasMore ? 1 : 0),
-      separatorBuilder: (_, __) => const SizedBox(height: 16),
-      itemBuilder: (context, index) {
-        if (index < _articles.length) {
-          final article = _articles[index];
-          return ArticleCard(
-            article: article,
-            compact: false,
-            onTap: () => _openDetails(article),
-            pictureRatio: 16/9,
-          );
-        }
+    return Scrollbar(
+        controller: _scrollController,
+        thickness: 4.0, // Lățime ușor crescută
+        radius: const Radius.circular(10),
+        child: Padding(
+            padding: const EdgeInsets.symmetric( horizontal: AppConfig.appPadding),
+            child: ListView.separated(
+          controller: _scrollController,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          itemCount: _articles.length + (_hasMore ? 1 : 0),
+          separatorBuilder: (_, __) => const SizedBox(height: 16),
+          itemBuilder: (context, index) {
+            if (index < _articles.length) {
+              final article = _articles[index];
+              return ArticleCard(
+                article: article,
+                compact: false,
+                onTap: () => _openDetails(article),
+                pictureRatio: 16 / 9,
+              );
+            }
 
-        // Ultimul item = butonul "Load more"
-        return Padding(
-          padding: const EdgeInsets.only(top: 8, bottom: 24),
-          child: Center(
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.redSports,
-                foregroundColor: Colors.white,
-              ),
-              onPressed: _loadingMore ? null : () => _load(reset: false),
-              child: _loadingMore
-                  ? const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
+            // Ultimul item = butonul "Load more"
+            return _loadingMore
+                ? SportsFunction().customLoading()
+                : Padding(
+              padding: const EdgeInsets.only(top: 8, bottom: 24),
+              child: Center(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.redSports,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed:
+                  _loadingMore ? null : () => _load(reset: false),
+                  child: Text(
+                    AppLocalizations.of(context)!.load_more,
+                    style: Theme.of(context)
+                        .textTheme
+                        .labelSmall!
+                        .copyWith(color: Colors.white),
+                  ),
                 ),
-              )
-                  :  Text(AppLocalizations.of(context)!.load_more, style: Theme.of(context).textTheme.labelSmall!.copyWith(color: Colors.white) ,),
-            ),
-          ),
-        );
-      },
-    );
+              ),
+            );
+          },
+        )),);
   }
 }

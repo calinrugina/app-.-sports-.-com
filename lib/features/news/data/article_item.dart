@@ -1,3 +1,5 @@
+import '../../../core/app_functions.dart';
+
 class ArticleItem {
   final String id;
   final String title;
@@ -18,8 +20,8 @@ class ArticleItem {
   factory ArticleItem.fromJson(Map<String, dynamic> json) {
     return ArticleItem(
       id: json['@id']?.toString() ?? '',
-      title: json['title']?.toString() ?? '',
-      description: json['description']?.toString() ?? '',
+      title: SportsFunction().fixMojibake(json['title']?.toString() ?? ''),
+      description: SportsFunction().fixMojibake(json['description']?.toString() ?? ''),
       mediaUrl: json['media_url']?.toString(),
       publishDate: json['publishedDate']?.toString() ?? '',
     );

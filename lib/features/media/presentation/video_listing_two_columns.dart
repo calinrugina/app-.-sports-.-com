@@ -138,6 +138,9 @@ class _VideosGridTwoColumnsState extends State<VideosGridTwoColumns> {
           },
         ),
         if ( widget.showMore && _hasMore)
+          _loadingMore
+              ? SportsFunction().customLoading()
+              :
           Padding(
             padding: const EdgeInsets.only(bottom: 24),
             child: ElevatedButton(
@@ -146,17 +149,7 @@ class _VideosGridTwoColumnsState extends State<VideosGridTwoColumns> {
                 foregroundColor: Colors.white,
               ),
               onPressed: _loadingMore ? null : () => _load(reset: false),
-              child: _loadingMore
-                  ? const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                  backgroundColor: AppColors.redSports,
-                ),
-              )
-                  : Text('Load more'.toUpperCase(), style: Theme.of(context).textTheme.labelSmall!.copyWith(color: Colors.white, fontSize: 14),),
+              child: Text('Load more'.toUpperCase(), style: Theme.of(context).textTheme.labelSmall!.copyWith(color: Colors.white, fontSize: 14),),
             ),
           ),
       ],

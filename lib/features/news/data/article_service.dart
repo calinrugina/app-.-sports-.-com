@@ -43,7 +43,10 @@ class ArticleService {
       );
 
       if (response.statusCode == 200) {
-        final json = jsonDecode(response.body);
+        // final json = jsonDecode(response.body);
+        final decoded = utf8.decode(response.bodyBytes);
+        final json = jsonDecode(decoded) as Map<String, dynamic>;
+
         final List<dynamic> items = json['news']?['newsItem'] ?? [];
         return items
             .map((e) => ArticleItem.fromJson(e as Map<String, dynamic>))

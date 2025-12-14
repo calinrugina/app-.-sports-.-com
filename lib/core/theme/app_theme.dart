@@ -11,7 +11,7 @@ class AppTheme {
       fontFamily: defaultFont,
       textTheme: baseTextTheme.apply(
         displayColor: AppColors.lightTextPrimary,
-        bodyColor: AppColors.lightTextPrimary,
+        // bodyColor: AppColors.lightTextPrimary,
       ),
       brightness: Brightness.light,
       cardTheme: const CardThemeData(color: AppColors.white),
@@ -56,21 +56,32 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.smoke,
-        hintStyle: const TextStyle(
-            color: AppColors.gray60, fontFamily: defaultFont, fontSize: 11),
-        labelStyle: const TextStyle(
-            color: AppColors.gray60, fontFamily: defaultFont, fontSize: 12),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+        // MODIFICAT: Setează culoarea hint/label la negru
+        hintStyle: const TextStyle(color: AppColors.primaryBlack, fontSize: 16),
+        labelStyle: const TextStyle(color: AppColors.primaryBlack, fontSize: 16),
+        // Padding vertical crescut pentru a face câmpul mai înalt
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        // Colțuri mai rotunjite (8.0)
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4.0),
+          borderRadius: BorderRadius.circular(8.0),
           borderSide: BorderSide.none,
         ),
+        // Definirea explicită a enabledBorder pentru a arăta stilul default (fără chenar)
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: BorderSide.none,
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: BorderSide.none,
+        ),
+        // Focused border (chenar albastru conform imaginii)
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4.0),
-          borderSide: const BorderSide(color: AppColors.gray60, width: 2.0),
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: const BorderSide(color: AppColors.focusBlue, width: 2.0),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4.0),
+          borderRadius: BorderRadius.circular(8.0),
           borderSide: const BorderSide(color: AppColors.errorRed, width: 2.0),
         ),
       ),
@@ -87,9 +98,10 @@ class AppTheme {
       fontFamily: defaultFont,
       textTheme: baseTextTheme.apply(
         displayColor: AppColors.darkTextPrimary,
-        bodyColor: AppColors.darkTextPrimary,
+        // bodyColor: AppColors.darkTextPrimary,
       ),
       brightness: Brightness.dark,
+      dividerTheme: const DividerThemeData(color: Colors.black),
       cardTheme: const CardThemeData(color: Colors.black),
       scaffoldBackgroundColor: Colors.black,
       appBarTheme: const AppBarTheme(
@@ -136,23 +148,32 @@ class AppTheme {
           )),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.gray60,
-
-        hintStyle: const TextStyle(
-            color: AppColors.smoke, fontFamily: defaultFont, fontSize: 11),
-        labelStyle: const TextStyle(
-            color: AppColors.smoke, fontFamily: defaultFont, fontSize: 12),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+        fillColor: AppColors.darkTabs, // Culoare de umplere mai închisă
+        hintStyle: const TextStyle(color: AppColors.gray60, fontSize: 16),
+        labelStyle: const TextStyle(color: AppColors.gray60, fontSize: 16),
+        // Padding vertical crescut pentru a face câmpul mai înalt
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        // Colțuri mai rotunjite (8.0)
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4.0),
+          borderRadius: BorderRadius.circular(8.0),
           borderSide: BorderSide.none,
         ),
+        // Definirea explicită a enabledBorder pentru a arăta stilul default (fără chenar)
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: BorderSide.none,
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: BorderSide.none,
+        ),
+        // Focused border (chenar albastru conform imaginii)
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4.0),
-          borderSide: const BorderSide(color: AppColors.smoke, width: 2.0),
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: const BorderSide(color: AppColors.focusBlue, width: 2.0),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4.0),
+          borderRadius: BorderRadius.circular(8.0),
           borderSide: const BorderSide(color: AppColors.errorRed, width: 2.0),
         ),
       ),
@@ -168,10 +189,10 @@ class AppTextStyles {
       // 1. sectionTitle (Bebas Neue, ajustat de la 20 la 18 pentru dispozitive mici)
       headlineLarge: const TextStyle(
         fontFamily: 'Bebas Neue',
-        fontSize: 20.0, // AJUSTAT PENTRU ECRANE MICI
+        fontSize: 22.0, // AJUSTAT PENTRU ECRANE MICI
         fontWeight: FontWeight.w400,
         color: AppColors.lightTextPrimary,
-        letterSpacing: -0.1,
+        letterSpacing: 0.2,
       ),
 
       // 2. itemTitle (Bebas Neue, 18px)
@@ -180,28 +201,28 @@ class AppTextStyles {
         fontSize: 16,
         fontWeight: FontWeight.w100,
         color: AppColors.lightTextPrimary,
-        letterSpacing: -0.2,
+        letterSpacing: 0.1,
         // height: 1,
       ),
 
       // 3. itemDescription (bodyMedium - Condensat)
       bodyMedium: TextStyle(
         fontFamily: fontFamily,
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: FontWeight.w300,
         color: AppColors.lightTextPrimary,
-        height: 1.1,
-        letterSpacing: -0.3, // CONDENSARE
+        height: 1.2,
+        letterSpacing: -0.1, // CONDENSARE
       ),
 
       // 4. itemDate (labelSmall)
       labelSmall: const TextStyle(
         fontFamily: 'Bebas Neue',
-        fontSize: 13,
+        fontSize: 14,
         fontWeight: FontWeight.w400,
-        color: AppColors.gray20,
+        color: AppColors.gray60,
         // letterSpacing: 0.5,
-        height: .9,
+        height: 1,
       ),
     );
   }
@@ -212,10 +233,10 @@ class AppTextStyles {
       // 1. sectionTitle
       headlineLarge: const TextStyle(
         fontFamily: 'Bebas Neue',
-        fontSize: 20.0, // AJUSTAT PENTRU ECRANE MICI
+        fontSize: 22.0, // AJUSTAT PENTRU ECRANE MICI
         fontWeight: FontWeight.w400,
         color: AppColors.white,
-        letterSpacing: -0.1,
+        letterSpacing: 0.2,
       ),
 
       // 2. itemTitle
@@ -224,18 +245,18 @@ class AppTextStyles {
         fontSize: 16,
         fontWeight: FontWeight.w100,
         color: AppColors.darkTextPrimary,
-        letterSpacing: -0.2,
+        letterSpacing: 0.1,
         // height: 1,
       ),
 
       // 3. itemDescription (bodyMedium - Condensat)
       bodyMedium: TextStyle(
         fontFamily: fontFamily,
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: FontWeight.w300,
         color: AppColors.darkTextPrimary,
-        height: 1.1,
-        letterSpacing: -0.3, // CONDENSARE
+        height: 1.2,
+        letterSpacing: -0.1, // CONDENSARE
       ),
 
       // 4. itemDate

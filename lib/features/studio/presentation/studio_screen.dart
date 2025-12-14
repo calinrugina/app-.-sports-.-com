@@ -29,6 +29,7 @@ class StudioScreen extends StatefulWidget {
 
 class _StudioScreenState extends State<StudioScreen> {
   int _selectedIndex = 0;
+  final ScrollController _scrollController = ScrollController();
 
   /// Returnează lista de areas de sub "Sports Studios".
   List<Map<String, dynamic>> get _studioAreas {
@@ -63,6 +64,12 @@ class _StudioScreenState extends State<StudioScreen> {
   }
 
   @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   void didUpdateWidget(covariant StudioScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     // dacă s-a schimbat limba din setări, refacem lista pentru primul studio
@@ -80,11 +87,14 @@ class _StudioScreenState extends State<StudioScreen> {
 
   @override
   Widget build(BuildContext context) {
+    const String languageCode = 'en';
 
     final areas = _studioAreas;
 
     if (areas.isEmpty) {
-      return  Center(child: Text(AppLocalizations.of(context)!.no_sports_studios_configured));
+      return Center(
+          child:
+              Text(AppLocalizations.of(context)!.no_sports_studios_configured));
     }
 
     if (_selectedIndex >= areas.length) {
@@ -103,7 +113,7 @@ class _StudioScreenState extends State<StudioScreen> {
           color: AppColors.darkTabs,
           // padding: const EdgeInsets.symmetric(vertical: AppConfig.paddingInside),
           child: SizedBox(
-            height: 60,
+            height: 80,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               // padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -138,7 +148,7 @@ class _StudioScreenState extends State<StudioScreen> {
                       children: [
                         if (iconUrl != null && iconUrl.isNotEmpty)
                           SizedBox(
-                            height: 24,
+                            height: 35,
                             child: SvgIconLoader(
                               iconUrl: iconUrl,
                               headers: mediaHeaders,
@@ -149,7 +159,7 @@ class _StudioScreenState extends State<StudioScreen> {
                           const Icon(
                             Icons.sports,
                             color: Colors.white,
-                            size: 24,
+                            size: 35,
                           ),
                         const SizedBox(height: 2),
                         Text(name,
@@ -169,38 +179,47 @@ class _StudioScreenState extends State<StudioScreen> {
           ),
         ),
         const Divider(height: 1),
-        Padding(padding: EdgeInsets.symmetric(horizontal:  AppConfig.appPadding), child: SectionHeader(
-          title: _currentName,
-          moreLabel: AppLocalizations.of(context)!.see_more,
-          titleRed: AppLocalizations.of(context)!.latest_videos,
-          onMore: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => VideosListing(
-                  languageCode: 'en',
-                  mpids: _currentMpids ?? '',
-                  title: _currentName,
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppConfig.appPadding),
+          child: SectionHeader(
+            title: _currentName,
+            moreLabel: AppLocalizations.of(context)!.see_more,
+            titleRed: AppLocalizations.of(context)!.latest_videos,
+            onMore: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => VideosListing(
+                    languageCode: 'en',
+                    mpids: _currentMpids ?? '',
+                    title: _currentName,
+                  ),
                 ),
-              ),
-            );
-          },
-        ),),
-        Expanded(
-            child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.symmetric( horizontal: AppConfig.appPadding),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 0),
-              child: VideosGridTwoColumns(
-                title: _currentName,
-                mpids: _currentMpids ?? '',
-                languageCode: 'en',
-                shrinkWrap: true,
-                showMore: true,
-              ),
-            ),
+              );
+            },
           ),
-        ))
+        ),
+        Expanded(
+            child: Scrollbar(
+                controller: _scrollController,
+    thickness: 4.0, // Lățime ușor crescută
+    radius: const Radius.circular(10),
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  child: Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: AppConfig.appPadding),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 0),
+                      child: VideosGridTwoColumns(
+                        title: _currentName,
+                        mpids: _currentMpids ?? '',
+                        languageCode: languageCode,
+                        shrinkWrap: true,
+                        showMore: true,
+                      ),
+                    ),
+                  ),
+                )))
         // Expanded(
         //   child: SingleChildScrollView(
         //     child: Padding(

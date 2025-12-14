@@ -137,7 +137,9 @@ class _ArticlesGridTwoColumnsState extends State<ArticlesGridTwoColumns> {
           },
         ),
         if (widget.showMore && _hasMore)
-          Padding(
+          _loadingMore
+              ? SportsFunction().customLoading()
+              : Padding(
             padding: const EdgeInsets.only(bottom: 24),
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -145,17 +147,7 @@ class _ArticlesGridTwoColumnsState extends State<ArticlesGridTwoColumns> {
                 foregroundColor: Colors.white,
               ),
               onPressed: _loadingMore ? null : () => _load(reset: false),
-              child: _loadingMore
-                  ? const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                  backgroundColor: AppColors.redSports,
-                ),
-              )
-                  : Text('Load more'.toUpperCase(), style: Theme.of(context).textTheme.labelSmall!.copyWith(color: Colors.white, fontSize: 14),),
+              child: Text('Load more'.toUpperCase(), style: Theme.of(context).textTheme.labelSmall!.copyWith(color: Colors.white, fontSize: 14),),
             ),
           ),
       ],

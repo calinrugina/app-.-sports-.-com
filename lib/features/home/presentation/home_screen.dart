@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sports_config_app/core/app_config.dart';
+import '../../../core/app_functions.dart';
 import '../../../core/widgets/custom_bottom_bar.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../../core/theme/colors.dart';
@@ -27,6 +28,13 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _selectedIndex = 0;
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +102,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
         // Live (optional)
         if (hasLive) {
-          pages.add(const LiveScreen());
+          pages.add( LiveScreen());
         }
 
         // Sports
@@ -133,12 +141,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         );
       },
-      loading: () => const Scaffold(
-        appBar: SportsAppBar(),
-        body: Center(child: CircularProgressIndicator()),
+      loading: () => Scaffold(
+        appBar: const SportsAppBar(),
+        body: SportsFunction().customLoading(),
       ),
       error: (e, st) =>  Scaffold(
-        appBar: SportsAppBar(),
+        appBar: const  SportsAppBar(),
         body: Center(child: Text(AppLocalizations.of(context)!.error_loading_config)),
       ),
     );
@@ -164,8 +172,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Padding(
             padding:
             const EdgeInsets.symmetric(horizontal: AppConfig.appPadding),
-            child: CustomScrollView(
-              slivers: [
+            child: Scrollbar( controller: _scrollController,
+                thickness: 4.0, // Lățime ușor crescută
+                radius: const Radius.circular(10), // Colțuri mai rotunjite
+                child: CustomScrollView(
+                  controller: _scrollController,
+                  slivers: [
                 ...menuAreas.expand((area) {
                   final map = area as Map<String, dynamic>;
                   final String name = map['name']?.toString() ?? '';
@@ -264,7 +276,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   return sectionWidgets;
                 }),
               ],
-            ),
+            )),
           ),
         ),
       ],

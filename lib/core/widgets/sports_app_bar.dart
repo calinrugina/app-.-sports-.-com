@@ -32,55 +32,77 @@ class SportsAppBar extends ConsumerWidget implements PreferredSizeWidget {
       titleSpacing: 16,
       title: Row(
         children: [
-          configAsync.when(
-            data: (cfg) {
-              final logoUrl = cfg?['design']?['logo']?.toString();
-              if (logoUrl != null && logoUrl.isNotEmpty) {
-                return SvgPicture.network(
-                  logoUrl,
-                  height: 25,
-                  headers: mediaHeaders,
-
-                );
-              }
-              return const Text(
-                AppConfig.appName,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              );
-            },
-            loading: () => const SizedBox(
-              height: 24,
-              width: 100,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: CircularProgressIndicator(strokeWidth: 1),
-              ),
-            ),
-            error: (e, st) => const Text(
-              AppConfig.appName,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
+          // configAsync.when(
+          //   data: (cfg) {
+          //     final logoUrl = cfg?['design']?['logo']?.toString();
+          //     if (logoUrl != null && logoUrl.isNotEmpty) {
+          //       return SvgPicture.network(
+          //         logoUrl,
+          //         height: 20,
+          //         headers: mediaHeaders,
+          //
+          //       );
+          //     }
+          //     return const Text(
+          //       AppConfig.appName,
+          //       style: TextStyle(
+          //         fontWeight: FontWeight.bold,
+          //         color: Colors.white,
+          //       ),
+          //     );
+          //   },
+          //   loading: () => const SizedBox(
+          //     height: 24,
+          //     width: 100,
+          //     child: Align(
+          //       alignment: Alignment.centerLeft,
+          //       child: CircularProgressIndicator(strokeWidth: 1),
+          //     ),
+          //   ),
+          //   error: (e, st) => const Text(
+          //     AppConfig.appName,
+          //     style: TextStyle(
+          //       fontWeight: FontWeight.bold,
+          //       color: Colors.white,
+          //     ),
+          //   ),
+          // ),
+          SvgPicture.asset(
+            'assets/images/logo-top.svg',
+            height: 24,
           ),
+
           const Spacer(),
           IconButton(
-            icon: const Icon(Icons.search, color: Colors.white),
+            icon: SvgPicture.asset(
+              'assets/images/search.svg',
+              height: 24,
+              colorFilter: const ColorFilter.mode(
+                Colors.white,
+                BlendMode.srcIn,
+              ),
+            ),
             onPressed: () {
               showModalBottomSheet(
                 context: context,
                 isScrollControlled: true,
-                builder: (ctx) => _SearchSheet(sport: const {}, languageCode: selectedLanguage,),
+                builder: (ctx) => _SearchSheet(
+                  sport: const {},
+                  languageCode: selectedLanguage,
+                ),
               );
             },
           ),
 
           IconButton(
-            icon: const Icon(Icons.notifications_none, color: Colors.white),
+            icon: SvgPicture.asset(
+              'assets/images/bell.svg',
+              height: 24,
+              colorFilter: const ColorFilter.mode(
+                Colors.white,
+                BlendMode.srcIn,
+              ),
+            ),
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -153,7 +175,8 @@ class _SearchSheetState extends State<_SearchSheet> {
         MaterialPageRoute(
           builder: (_) => VideosListing(
             title: q,
-            mpids: '', // dacă e listing pe mpids, altfel folosește listing pe sport
+            mpids:
+                '', // dacă e listing pe mpids, altfel folosește listing pe sport
             languageCode: widget.languageCode,
             q: q, // ✅
           ),
@@ -169,7 +192,6 @@ class _SearchSheetState extends State<_SearchSheet> {
           ),
         ),
       );
-
     }
   }
 
@@ -181,23 +203,22 @@ class _SearchSheetState extends State<_SearchSheet> {
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
         left: AppConfig.bigSpace,
-        right:AppConfig.bigSpace,
+        right: AppConfig.bigSpace,
         top: AppConfig.bigSpace,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Search', style: Theme.of(context).textTheme.titleLarge),
-
+          Text('Search', style: Theme.of(context).textTheme.headlineLarge),
           const SizedBox(height: 10),
-
           Row(
             children: [
               Expanded(
                 child: RadioListTile<SearchTarget>(
                   contentPadding: EdgeInsets.zero,
-                  title: Text(AppLocalizations.of(context)!.videos,style: Theme.of(context).textTheme.bodyMedium),
+                  title: Text(AppLocalizations.of(context)!.videos,
+                      style: Theme.of(context).textTheme.bodyMedium),
                   value: SearchTarget.videos,
                   groupValue: _target,
                   onChanged: (v) => setState(() => _target = v!),
@@ -206,7 +227,8 @@ class _SearchSheetState extends State<_SearchSheet> {
               Expanded(
                 child: RadioListTile<SearchTarget>(
                   contentPadding: EdgeInsets.zero,
-                  title: Text(AppLocalizations.of(context)!.news,style: Theme.of(context).textTheme.bodyMedium),
+                  title: Text(AppLocalizations.of(context)!.news,
+                      style: Theme.of(context).textTheme.bodyMedium),
                   value: SearchTarget.articles,
                   groupValue: _target,
                   onChanged: (v) => setState(() => _target = v!),
@@ -214,7 +236,6 @@ class _SearchSheetState extends State<_SearchSheet> {
               ),
             ],
           ),
-
           TextField(
             controller: _ctrl,
             textInputAction: TextInputAction.search,
@@ -225,21 +246,24 @@ class _SearchSheetState extends State<_SearchSheet> {
               prefixIcon: const Icon(Icons.search),
             ),
           ),
-
           const SizedBox(height: AppConfig.smallSpace),
-
           ElevatedButton(
             onPressed: _doSearch,
-            child: Text(l10n.search_articles_videos_teams,style: Theme.of(context).textTheme.labelSmall!.copyWith(color: Colors.white)),
+            child: Text(l10n.search_articles_videos_teams,
+                style: Theme.of(context)
+                    .textTheme
+                    .labelSmall!
+                    .copyWith(color: Colors.white)),
           ),
-
           const SizedBox(height: AppConfig.smallSpace),
-
           OutlinedButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.close,style: Theme.of(context).textTheme.labelSmall!.copyWith(color: Colors.white)),
+            child: Text(l10n.close,
+                style: Theme.of(context)
+                    .textTheme
+                    .labelSmall!
+                    .copyWith(color: Colors.white)),
           ),
-
           const SizedBox(height: AppConfig.bigSpace),
         ],
       ),
@@ -257,13 +281,16 @@ class _NotificationsSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children:  [
+        children: [
           Text(
             'Notifications',
             style: Theme.of(context).textTheme.titleLarge,
           ),
           SizedBox(height: 10),
-          Text('No notifications yet. (TODO: implement real notifications)', style: Theme.of(context).textTheme.bodyMedium,),
+          Text(
+            'No notifications yet. (TODO: implement real notifications)',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
           SizedBox(height: 10),
         ],
       ),
@@ -295,7 +322,7 @@ class _AccountSheet extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           if (!isLoggedIn) ...[
-             Text(AppLocalizations.of(context)!.user_not_logged_in),
+            Text(AppLocalizations.of(context)!.user_not_logged_in),
             const SizedBox(height: 12),
             ElevatedButton(
               onPressed: () {
@@ -318,7 +345,7 @@ class _AccountSheet extends ConsumerWidget {
                 }
               },
               icon: const Icon(Icons.logout),
-              label:  Text(AppLocalizations.of(context)!.logout),
+              label: Text(AppLocalizations.of(context)!.logout),
             ),
           ],
           const SizedBox(height: 8),
@@ -326,7 +353,7 @@ class _AccountSheet extends ConsumerWidget {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child:  Text(AppLocalizations.of(context)!.close),
+            child: Text(AppLocalizations.of(context)!.close),
           ),
           const SizedBox(height: 16),
         ],
@@ -334,4 +361,3 @@ class _AccountSheet extends ConsumerWidget {
     );
   }
 }
-

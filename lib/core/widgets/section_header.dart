@@ -50,10 +50,9 @@ class SectionHeader extends StatelessWidget {
                     AutoSizeText(moreLabel!,
                         minFontSize: 10,
                         style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                            fontSize: 12,
-
-                            color: AppColors.redSports)), // Textul dorit
-                     SizedBox(width: 2), // Spațiu mic între text și icon
+                            color: AppColors.redSports,
+                            fontSize: 14)), // Textul dorit
+                     const SizedBox(width: 2), // Spațiu mic între text și icon
                      const Icon(Icons.arrow_forward_ios,
                         size: 14, color: AppColors.redSports,), // Iconul săgeată mic
                   ],

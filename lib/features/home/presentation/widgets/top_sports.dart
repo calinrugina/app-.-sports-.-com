@@ -31,7 +31,7 @@ class SportsOnTop extends ConsumerWidget {
       color: Colors.black,
       // padding: const EdgeInsets.symmetric(vertical: AppConfig.paddingInside),
       child: SizedBox(
-        height: 60,
+        height: 80,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           // padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -61,18 +61,18 @@ class SportsOnTop extends ConsumerWidget {
                   children: [
                     if (iconUrl != null && iconUrl.isNotEmpty)
                       SizedBox(
-                        height: 24,
+                        height: 35,
                         child: SvgIconLoader(
                           iconUrl: iconUrl,
                           headers: mediaHeaders,
-                          size: 40,
+                          size: 35,
                         ),
                       )
                     else
                       const Icon(
                         Icons.sports,
                         color: Colors.white,
-                        size: 24,
+                        size: 35,
                       ),
                     const SizedBox(height: 1),
                     Text(

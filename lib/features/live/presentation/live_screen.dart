@@ -15,7 +15,8 @@ import '../../media/presentation/video_player_dialog.dart';
 import '../../media/presentation/videos_listing.dart';
 
 class LiveScreen extends ConsumerWidget {
-  const LiveScreen({super.key});
+  LiveScreen({super.key});
+  final ScrollController _scrollController = ScrollController();
 
   // Funcție utilitară pentru a verifica dacă stream-ul poate fi redat
   bool _canPlay(Map<String, dynamic> item) {
@@ -44,7 +45,7 @@ class LiveScreen extends ConsumerWidget {
   void _showVideoPlayer(BuildContext context, Map<String, dynamic> item) {
     if (item['stream_url'] == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text(AppLocalizations.of(context)!.no_url)),
+        SnackBar(content: Text(AppLocalizations.of(context)!.no_url)),
       );
       return;
     }
@@ -58,8 +59,6 @@ class LiveScreen extends ConsumerWidget {
       ),
     );
   }
-
-
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -76,7 +75,8 @@ class LiveScreen extends ConsumerWidget {
     return configAsync.when(
       data: (config) {
         if (config == null) {
-          return  Center(child: Text(AppLocalizations.of(context)!.no_config_loaded));
+          return Center(
+              child: Text(AppLocalizations.of(context)!.no_config_loaded));
         }
         final sports = (config['sports'] as List?) ?? [];
         final List<Map<String, dynamic>> allStreams = [];
@@ -96,14 +96,24 @@ class LiveScreen extends ConsumerWidget {
         }
 
         if (allStreams.isEmpty) {
-          return  Center(child: Text(AppLocalizations.of(context)!.no_live_streams_available));
+          return Center(
+              child: Text(
+                  AppLocalizations.of(context)!.no_live_streams_available));
         }
-        return ListView(
-          children: [
+        return Scrollbar(
+            controller: _scrollController,
+            thickness: 4.0, // Lățime ușor crescută
+            radius: const Radius.circular(10),
+
+            child: ListView(
+              controller: _scrollController,
+
+              children: [
             ListView.builder(
               shrinkWrap:
                   true, // ESENȚIAL: Ocupă doar spațiul necesar elementelor.
-              physics: const NeverScrollableScrollPhysics(), // ESENȚIAL: Dezactivează scroll-ul intern.
+              physics:
+                  const NeverScrollableScrollPhysics(), // ESENȚIAL: Dezactivează scroll-ul intern.
               itemCount: allStreams.length,
               itemBuilder: (context, index) {
                 final item = allStreams[index];
@@ -152,9 +162,12 @@ class LiveScreen extends ConsumerWidget {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                       content: Text(
-                                          'LiveStream will start ${countdownText.replaceAll("Start: ", "")}', style:  Theme.of(context)
-                                          .textTheme
-                                          .labelSmall!.copyWith(color: AppColors.redSports),)),
+                                    'LiveStream will start ${countdownText.replaceAll("Start: ", "")}',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelSmall!
+                                        .copyWith(color: AppColors.redSports),
+                                  )),
                                 );
                               }
                             },
@@ -186,21 +199,29 @@ class LiveScreen extends ConsumerWidget {
                                                 headers: mediaHeaders,
                                                 errorBuilder: (context, error,
                                                         stackTrace) =>
-                                                    Image.asset('assets/images/smaail.png', fit: BoxFit.cover,),
+                                                    Image.asset(
+                                                  'assets/images/smaail.png',
+                                                  fit: BoxFit.cover,
+                                                ),
                                               )
                                             else
-                                              Image.asset('assets/images/smaail.png', fit: BoxFit.cover,),
+                                              Image.asset(
+                                                'assets/images/smaail.png',
+                                                fit: BoxFit.cover,
+                                              ),
 
                                             // 3. Iconița Play/Ceas (Centrală)
                                             Align(
                                               alignment: Alignment.center,
                                               child: SvgIconLoader(
                                                 iconUrl: '',
-                                                localAssetPath: 'assets/images/play_icon.svg',
+                                                localAssetPath:
+                                                    'assets/images/play_icon.svg',
                                                 size: 48,
                                                 headers: mediaHeaders,
                                                 color: Colors.white,
-                                                backgroundColor: Colors.black.withOpacity(0.2),
+                                                backgroundColor: Colors.black
+                                                    .withOpacity(0.2),
                                               ),
                                             ),
                                           ],
@@ -215,13 +236,15 @@ class LiveScreen extends ConsumerWidget {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            const SizedBox(height: AppConfig.bigSpace),
+                                            const SizedBox(
+                                                height: AppConfig.bigSpace),
                                             Text(
                                               title,
                                               overflow: TextOverflow.ellipsis,
                                               style: textTheme.titleLarge,
                                             ),
-                                            const SizedBox(height: AppConfig.smallSpace),
+                                            const SizedBox(
+                                                height: AppConfig.smallSpace),
                                             Text(
                                               description,
                                               style: textTheme.bodyMedium,
@@ -234,8 +257,11 @@ class LiveScreen extends ConsumerWidget {
                                                 child: Text(
                                                   countdownText,
                                                   style: Theme.of(context)
-                                                    .textTheme
-                                                    .titleLarge!.copyWith(color: AppColors.redSports),
+                                                      .textTheme
+                                                      .titleLarge!
+                                                      .copyWith(
+                                                          color: AppColors
+                                                              .redSports),
                                                 ),
                                               ),
                                           ],
@@ -250,7 +276,8 @@ class LiveScreen extends ConsumerWidget {
                     ));
               },
             ),
-            Padding(
+                if (firstSport['mpid'] != null && firstSport['mpid'].toString().isNotEmpty)
+                  Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: AppConfig.appPadding),
               child: SectionHeader(
@@ -269,20 +296,25 @@ class LiveScreen extends ConsumerWidget {
                 },
               ),
             ),
-            Padding(
+                if (firstSport['mpid'] != null && firstSport['mpid'].toString().isNotEmpty)
+
+                  Padding(
                 padding: const EdgeInsets.symmetric(
                     horizontal: AppConfig.appPadding),
-                child: VideosGridTwoColumns(
-                  title: firstSport['name'],
-                  mpids: firstSport['mpid'],
-                  languageCode: languageCode,
-                  shrinkWrap: true,
-                  showMore: true,
-                  // physics: const NeverScrollableScrollPhysics(),
-                  // physics: const BouncingScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 0),
+                  child: VideosGridTwoColumns(
+                    title: firstSport['name'],
+                    mpids: firstSport['mpid'],
+                    languageCode: languageCode,
+                    shrinkWrap: true,
+                    showMore: true,
+                    // physics: const NeverScrollableScrollPhysics(),
+                    // physics: const BouncingScrollPhysics(),
+                  ),
                 ))
           ],
-        );
+        ));
         return ListView.builder(
           itemCount: allStreams.length,
           itemBuilder: (context, index) {
@@ -323,7 +355,8 @@ class LiveScreen extends ConsumerWidget {
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                  content: Text(AppLocalizations.of(context)!.stream_start_at)),
+                                  content: Text(AppLocalizations.of(context)!
+                                      .stream_start_at)),
                             );
                           }
                         },
@@ -456,7 +489,9 @@ class LiveScreen extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, st) => Center(child: Text(AppLocalizations.of(context)!.error_loading_live_e(e.toString()))),
+      error: (e, st) => Center(
+          child: Text(AppLocalizations.of(context)!
+              .error_loading_live_e(e.toString()))),
     );
   }
 }

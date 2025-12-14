@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:sports_config_app/core/app_functions.dart';
 
+import '../../../core/network/app_image_cache.dart';
 import '../../../core/network/media_headers.dart';
 import '../../../core/theme/colors.dart';
 import '../data/article_item.dart';
@@ -20,7 +21,7 @@ class ArticleCard extends StatelessWidget {
     required this.article,
     this.onTap,
     this.compact = false,
-    this.pictureRatio = 16 / 12
+    this.pictureRatio = 16 / 11
   });
 
   @override
@@ -59,12 +60,12 @@ class ArticleCard extends StatelessWidget {
                   child: ClipRRect(
                     child:
                         article.mediaUrl != null && article.mediaUrl!.isNotEmpty
-                            ? Image.network(
-                                article.mediaUrl!,
+                            ? AppNetworkImage(
+                                url: article.mediaUrl!,
                                 fit: BoxFit.cover,
-                                headers: mediaHeaders, // ai deja headerul ăsta
-                                errorBuilder: (_, __, ___) =>
-                                    Container(color: AppColors.gray60),
+                                // headers: mediaHeaders, // ai deja headerul ăsta
+                                // errorBuilder: (_, __, ___) =>
+                                //     Container(color: AppColors.gray60),
                               )
                             : Container(
                                 color: AppColors.gray60,
