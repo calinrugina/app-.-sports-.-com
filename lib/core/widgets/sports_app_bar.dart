@@ -93,24 +93,26 @@ class SportsAppBar extends ConsumerWidget implements PreferredSizeWidget {
               );
             },
           ),
+          // V1.1.0 - no notifications
+          // IconButton(
+          //   icon: SvgPicture.asset(
+          //     'assets/images/bell.svg',
+          //     height: 24,
+          //     colorFilter: const ColorFilter.mode(
+          //       Colors.white,
+          //       BlendMode.srcIn,
+          //     ),
+          //   ),
+          //   onPressed: () {
+          //     Navigator.of(context).push(
+          //       MaterialPageRoute(
+          //         builder: (_) => const NotificationsSettingsScreen(),
+          //       ),
+          //     );
+          //   },
+          // ),
 
-          IconButton(
-            icon: SvgPicture.asset(
-              'assets/images/bell.svg',
-              height: 24,
-              colorFilter: const ColorFilter.mode(
-                Colors.white,
-                BlendMode.srcIn,
-              ),
-            ),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const NotificationsSettingsScreen(),
-                ),
-              );
-            },
-          ),
+
           // IconButton(
           //   onPressed: () {
           //     Navigator.of(context).push(

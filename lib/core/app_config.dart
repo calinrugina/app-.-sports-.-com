@@ -6,10 +6,10 @@ class AppConfig {
   // Starea de Debug.
   // În Flutter, kDebugMode este o constantă booleană care este true
   // doar în modurile Debug și Profile. Este cea mai bună practică.
-  static const bool isDebugMode = true ; // kDebugMode;
+  static const bool isDebugMode = false ; // kDebugMode;
 
   // URL-urile API
-  static const String baseUrlProduction = 'https://sports.com';
+  static const String baseUrlProduction = 'https://sports-api.alpha.sports.com';
   static const String baseUrlDevelopment = 'https://beta.sports.com'; // Adresa locală tipică pentru emulator
 
   // Selectează URL-ul corect în funcție de starea de debug

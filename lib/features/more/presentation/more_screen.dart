@@ -19,12 +19,18 @@ class MoreScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeProvider);
     final languageCode = ref.watch(languageProvider);
     final versionAsyncValue = ref.watch(appVersionProvider);
+    final themeMode = ref.watch(themeProvider); // ThemeMode.light/dark/system
 
-    final isLight = themeMode == ThemeMode.light;
-    final isDark = themeMode == ThemeMode.dark;
+    final brightness = MediaQuery.of(context).platformBrightness; // sau Theme.of(context).brightness
+    final effectiveBrightness = themeMode == ThemeMode.system
+        ? brightness
+        : (themeMode == ThemeMode.dark ? Brightness.dark : Brightness.light);
+
+    final isDark = effectiveBrightness == Brightness.dark;
+    final isLight = !isDark;
+
 
     return Center(
       child: UpgradeAlert(
@@ -42,20 +48,21 @@ class MoreScreen extends ConsumerWidget {
                 style: Theme.of(context).textTheme.headlineLarge,
 
               ),),
-              ListTile(
-                title:  Text(AppLocalizations.of(context)!.notifications,
-                  style: Theme.of(context).textTheme.bodyLarge,
-
-                ),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const NotificationsSettingsScreen(),
-                    ),
-                  );
-                },
-              ),
+              // V1.1.0 - no notifications
+              // ListTile(
+              //   title:  Text(AppLocalizations.of(context)!.notifications,
+              //     style: Theme.of(context).textTheme.bodyLarge,
+              //
+              //   ),
+              //   trailing: const Icon(Icons.chevron_right),
+              //   onTap: () {
+              //     Navigator.of(context).push(
+              //       MaterialPageRoute(
+              //         builder: (_) => const NotificationsSettingsScreen(),
+              //       ),
+              //     );
+              //   },
+              // ),
               ListTile(
                 title:  Text(AppLocalizations.of(context)!.terms_conditions,
                   style: Theme.of(context).textTheme.bodyLarge,
