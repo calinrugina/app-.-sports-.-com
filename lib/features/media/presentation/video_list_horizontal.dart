@@ -121,7 +121,8 @@ class _VideoCaruselListState extends State<VideoCaruselList> {
     final scale = cardWidth / referenceWidth;
 
     // înălțime aproximativă pt card + padding
-    final listHeight = cardWidth * .9;
+
+    final listHeight = cardWidth * .9 ; // *(screenWidth>800?0.8:1.0);
 
     return SizedBox(
       height: listHeight, // înălțime suficientă pentru thumb + titlu
@@ -137,7 +138,7 @@ class _VideoCaruselListState extends State<VideoCaruselList> {
             child: VideoCard(
               video: v,
               onTap: () => SportsFunction().openPlayer(v, context),
-              pictureRatio: 16/9,
+              pictureRatio: 16/9 * (screenWidth>800?0.8:1),
             ),
           );
         },

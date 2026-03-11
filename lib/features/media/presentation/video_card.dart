@@ -41,6 +41,7 @@ class VideoCard extends StatelessWidget {
         child: MediaQuery(
           data: mediaWithClamp,
           child: Card(
+
             clipBehavior: Clip.antiAlias,
             surfaceTintColor: Colors.transparent, // Material 3 fix
             shadowColor: Colors.transparent,
@@ -51,7 +52,7 @@ class VideoCard extends StatelessWidget {
               children: [
                 // THUMB 16:9
                 AspectRatio(
-                  aspectRatio:pictureRatio,
+                  aspectRatio:pictureRatio ,
                   child: ClipRRect(
                     child: Stack(
                       fit: StackFit.expand,

@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import '../../../core/app_config.dart';
 import '../../../core/app_functions.dart';
 import '../../../core/theme/colors.dart';
+import '../../asset/data/media_platform_client.dart';
+import '../../asset/models/asset.dart';
+import '../../asset/presentation/asset_card.dart';
 import '../data/article_item.dart';
 import '../data/article_service.dart';
 import 'article_card.dart';
@@ -25,8 +28,16 @@ class ArticlesListOneColumn extends StatefulWidget {
 }
 
 class _ArticlesListOneColumnState extends State<ArticlesListOneColumn> {
-  final ArticleService _service = const ArticleService();
-  final List<ArticleItem> _articles = [];
+
+  final client = MediaPlatformClient(
+    baseUrl: 'https://platforms.alpha.sports.com/api',
+    apiKey: 'demo_api_key_a__',
+  );
+  final List<Asset> _newArticles = [];
+
+
+  // final ArticleService _service = const ArticleService();
+  // final List<ArticleItem> _articles = [];
 
   bool _initialLoading = true;
   bool _loadingMore = false;
@@ -59,33 +70,39 @@ class _ArticlesListOneColumnState extends State<ArticlesListOneColumn> {
   }
 
   Future<void> _load({bool reset = false}) async {
+
     if (reset) {
       setState(() {
         _initialLoading = true;
         _loadingMore = false;
         _hasMore = true;
         _offset = 0;
-        _articles.clear();
+        _newArticles.clear();
       });
     } else {
       if (_loadingMore || !_hasMore) return;
       setState(() => _loadingMore = true);
     }
 
-    final list = await _service.fetchArticles(
-      widget.sport,
-      _offset,
-      widget.languageCode,
-      limit: _limit,
-      q: widget.q,
+    final newList = await client.fetchAssets(
+        FetchAssetsParams(
+          source: ContentSource.latest,
+          contentType: ContentType.article,
+          filters: AssetFilters(categories: ['${widget.sport}']),
+          query: widget.q,
+          perPage: _limit,
+          page: _offset,
+        )
     );
+
+
 
     if (!mounted) return;
 
     setState(() {
-      _articles.addAll(list);
-      _offset += list.length;
-      if (list.length < _limit) _hasMore = false;
+      _newArticles.addAll(newList.assets);
+      _offset += newList.assets.length;
+      if (newList.assets.length < _limit) _hasMore = false;
       _initialLoading = false;
       _loadingMore = false;
     });
@@ -113,7 +130,7 @@ class _ArticlesListOneColumnState extends State<ArticlesListOneColumn> {
       );
     }
 
-    if (_articles.isEmpty) {
+    if (_newArticles.isEmpty) {
       return Center(
         child: Padding(
           padding: EdgeInsets.all(24),
@@ -132,15 +149,15 @@ class _ArticlesListOneColumnState extends State<ArticlesListOneColumn> {
             child: ListView.separated(
           controller: _scrollController,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          itemCount: _articles.length + (_hasMore ? 1 : 0),
+          itemCount: _newArticles.length + (_hasMore ? 1 : 0),
           separatorBuilder: (_, __) => const SizedBox(height: 16),
           itemBuilder: (context, index) {
-            if (index < _articles.length) {
-              final article = _articles[index];
-              return ArticleCard(
-                article: article,
+            if (index < _newArticles.length) {
+              final article = _newArticles[index];
+              return AssetCard(
+                asset: article,
                 compact: false,
-                onTap: () => _openDetails(article),
+                // onTap: () => _openDetails(as),
                 pictureRatio: 16 / 9,
               );
             }

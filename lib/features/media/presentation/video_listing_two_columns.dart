@@ -111,7 +111,7 @@ class _VideosGridTwoColumnsState extends State<VideosGridTwoColumns> {
       );
     }
     final scale = SportsFunction().scale(context);
-
+    final screenWidth = MediaQuery.of(context).size.width;
     return Column(
       children: [
         GridView.builder(
@@ -132,8 +132,10 @@ class _VideosGridTwoColumnsState extends State<VideosGridTwoColumns> {
           itemBuilder: (context, index) {
             final video = _videos[index];
             return VideoCard(
+              pictureRatio: 16/9* (screenWidth>800?2:1),
               video: video,
                 onTap: () => SportsFunction().openPlayer(video, context),
+
             );
           },
         ),

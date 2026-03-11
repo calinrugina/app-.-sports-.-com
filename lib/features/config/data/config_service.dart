@@ -3,7 +3,7 @@ import '../../../core/network/dio_client.dart';
 
 class ConfigService {
   Future<Map<String, dynamic>> fetchConfig() async {
-    print('${AppConfig.baseUrl}/api/config');
+    print('${AppConfig.baseUrl}/config');
 
     final res = await dio.get('/config',);
 

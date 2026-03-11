@@ -113,7 +113,7 @@ class _VideosListOneColumnState extends State<VideosListOneColumn> {
         ),
       );
     }
-
+    final screenWidth = MediaQuery.of(context).size.width;
     return Scrollbar(
         controller: _scrollController,
         thickness: 4.0, // Lățime ușor crescută
@@ -134,7 +134,7 @@ class _VideosListOneColumnState extends State<VideosListOneColumn> {
             return VideoCard(
               video: video,
               onTap: () => SportsFunction().openPlayer(video, context),
-              pictureRatio: 16/9,
+              pictureRatio: 16/9* (screenWidth>800?1.8:1),
             );
           }
 

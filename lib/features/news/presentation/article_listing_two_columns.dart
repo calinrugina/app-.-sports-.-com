@@ -113,7 +113,7 @@ class _ArticlesGridTwoColumnsState extends State<ArticlesGridTwoColumns> {
     }
 
     final scale = SportsFunction().scale(context);
-
+    final screenWidth = MediaQuery.of(context).size.width;
     return Column(
       children: [
         GridView.builder(
@@ -130,6 +130,7 @@ class _ArticlesGridTwoColumnsState extends State<ArticlesGridTwoColumns> {
           itemBuilder: (context, index) {
             final article = _articles[index];
             return ArticleCard(
+              pictureRatio: 16/9* (screenWidth>800?2:1),
               article: article,
               compact: true,
               onTap: () => _openDetails(article),

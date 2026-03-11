@@ -5,6 +5,10 @@ import 'package:sports_config_app/features/media/presentation/video_listing_two_
 import 'package:sports_config_app/features/sports/presentation/sport_banners_carousel.dart';
 import '../../../core/app_config.dart';
 import '../../../core/widgets/section_header.dart';
+import '../../../widgets/block_assets_section.dart';
+import '../../asset/data/media_platform_client.dart';
+import '../../asset/presentation/asset_card.dart';
+import '../../config/models/config_models.dart';
 import '../../media/presentation/videos_listing.dart';
 import '../../news/presentation/article_detail_screen.dart';
 import '../../news/presentation/articles_listing.dart';
@@ -37,6 +41,11 @@ class SportScreen extends ConsumerWidget {
     final sportKey = (sport['id'] ?? sport['mpid'] ?? safeIndex).toString();
 
 
+    final config = CategoryConfig.fromJson(sport);
+    final mediaPlatformClient = MediaPlatformClient(
+      baseUrl: 'https://platforms.alpha.sports.com/api',
+      apiKey: 'demo_api_key_a__',
+    );
     return Column(
       children: [
         // lista de sporturi sus, fixa în tabul Sports
@@ -57,62 +66,75 @@ class SportScreen extends ConsumerWidget {
                 children: [
                   // const SizedBox(height: 16),
                   SportBannersCarousel(sport: sport),
+
+
+                  BlockAssetsList(
+                    blocks: config.blocks,
+                    client: mediaPlatformClient,
+                    lang: 'en',
+                    // country: 'GB',
+                      redTitle : name,
+                    assetBuilder: (context, assets) =>
+                    AssetCard(asset: assets,)
+
+                  ),
+
                   // const SizedBox(height: 12),
-                  if (sport['mpid'] != null && sport['mpid'].toString().isNotEmpty)
-                    SectionHeader(
-                    title: name,
-                    titleRed: AppLocalizations.of(context)!.latest_videos,
-                    moreLabel: AppLocalizations.of(context)!.see_more,
-                    onMore: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => VideosListing(
-                            languageCode: languageCode,
-                            mpids: sport['mpid'],
-                            title: sport['name'],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  if (sport['mpid'] != null && sport['mpid'].toString().isNotEmpty)
-                    Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 0),
-                    child: VideosGridTwoColumns(
-                      title: sport['name'],
-                      mpids: sport['mpid'],
-                      languageCode: languageCode,
-                      shrinkWrap: true,
-                      showMore: true,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  if (sport['lpid'] != null && sport['lpid'].toString().isNotEmpty)
-                    SectionHeader(
-                    title: name,
-                    moreLabel: AppLocalizations.of(context)!.see_more,
-                    titleRed: AppLocalizations.of(context)!.news,
-                    onMore: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => ArticlesListing(
-                            sport: sport,
-                            languageCode: languageCode,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  if (sport['lpid'] != null && sport['lpid'].toString().isNotEmpty)
-                    Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 0),
-                    child: ArticlesGridTwoColumns(
-                      sport: sport,
-                      languageCode: languageCode,
-                      shrinkWrap: true,
-                      showMore: true,
-                    ),
-                  ),
+                  // if (sport['mpid'] != null && sport['mpid'].toString().isNotEmpty)
+                  //   SectionHeader(
+                  //   title: name,
+                  //   titleRed: AppLocalizations.of(context)!.latest_videos,
+                  //   moreLabel: AppLocalizations.of(context)!.see_more,
+                  //   onMore: () {
+                  //     Navigator.of(context).push(
+                  //       MaterialPageRoute(
+                  //         builder: (_) => VideosListing(
+                  //           languageCode: languageCode,
+                  //           mpids: sport['mpid'],
+                  //           title: sport['name'],
+                  //         ),
+                  //       ),
+                  //     );
+                  //   },
+                  // ),
+                  // if (sport['mpid'] != null && sport['mpid'].toString().isNotEmpty)
+                  //   Padding(
+                  //   padding: const EdgeInsets.symmetric(horizontal: 0),
+                  //   child: VideosGridTwoColumns(
+                  //     title: sport['name'],
+                  //     mpids: sport['mpid'],
+                  //     languageCode: languageCode,
+                  //     shrinkWrap: true,
+                  //     showMore: true,
+                  //   ),
+                  // ),
+                  // const SizedBox(height: 16),
+                  // if (sport['lpid'] != null && sport['lpid'].toString().isNotEmpty)
+                  //   SectionHeader(
+                  //   title: name,
+                  //   moreLabel: AppLocalizations.of(context)!.see_more,
+                  //   titleRed: AppLocalizations.of(context)!.news,
+                  //   onMore: () {
+                  //     Navigator.of(context).push(
+                  //       MaterialPageRoute(
+                  //         builder: (_) => ArticlesListing(
+                  //           sport: sport,
+                  //           languageCode: languageCode,
+                  //         ),
+                  //       ),
+                  //     );
+                  //   },
+                  // ),
+                  // if (sport['lpid'] != null && sport['lpid'].toString().isNotEmpty)
+                  //   Padding(
+                  //   padding: const EdgeInsets.symmetric(horizontal: 0),
+                  //   child: ArticlesGridTwoColumns(
+                  //     sport: sport,
+                  //     languageCode: languageCode,
+                  //     shrinkWrap: true,
+                  //     showMore: true,
+                  //   ),
+                  // ),
                   const SizedBox(height: 24),
                 ],
               ),

@@ -1,5 +1,10 @@
+
+import 'dart:ui';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_svg/svg.dart';
+
 import '../theme/colors.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
@@ -51,11 +56,22 @@ class CustomBottomNavBar extends StatelessWidget {
     final int clampedIndex =
     selectedIndex.clamp(0, items.length - 1).toInt();
 
+    // 🚀 MODIFICARE: Calculăm manual padding-ul de jos (pentru bara de sistem)
+    final double bottomPadding = MediaQuery.of(context).padding.bottom;
+
+    // Înlocuim SafeArea cu un Container care setează culoarea de fundal
+    // (inclusiv sub bara de navigare a sistemului) la negru.
     return Container(
       width: double.infinity,
-      height: 80.0,
-      color: Colors.black,
-      // padding: const EdgeInsets.only(bottom: 4, top: 6),
+      // Înălțimea vizibilă a barei (80.0) + înălțimea barei de navigare a sistemului
+      height: 65.0 + bottomPadding,
+      color: Colors.black, // 🚀 SOLUȚIE: Fundalul este forțat la negru
+
+      // Aplicăm padding-ul necesar pentru a împinge conținutul barei deasupra
+      // zonei de navigare a sistemului (gesturi/butoane).
+      padding: EdgeInsets.only(bottom: bottomPadding),
+
+      // Conținutul barei de navigare rămâne neschimbat
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: List.generate(items.length, (index) {
@@ -69,8 +85,9 @@ class CustomBottomNavBar extends StatelessWidget {
             onTap: () => onItemTapped(index),
             behavior: HitTestBehavior.opaque,
             child: SizedBox(
-              // width: 70,
-              height: 80,
+              // Înălțimea acestui SizedBox este acum fixă la 80,
+              // deoarece padding-ul este aplicat pe părintele Container.
+              height: 70,
               child: Stack(
                 alignment: Alignment.topCenter,
                 children: [
@@ -86,7 +103,7 @@ class CustomBottomNavBar extends StatelessWidget {
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(height: 5,),
+                      const SizedBox(height: 5,),
                       SvgPicture.asset(
                         svgPath,
                         height: 55,

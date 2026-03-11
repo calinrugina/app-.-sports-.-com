@@ -20,6 +20,11 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Header: title (first word red) + See more
+    final parts = title.split(RegExp(r'\s+'));
+    final firstWord = parts.isNotEmpty ? parts.first : '';
+    final rest = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppConfig.smallSpace, horizontal: AppConfig.smallSpace),
       child: Row(
@@ -27,17 +32,22 @@ class SectionHeader extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text(
-                title,
-                style: Theme.of(context).textTheme.headlineLarge,
-              ),
-              if (titleRed.isNotEmpty)
-                SizedBox( width: 8,),
-              if (titleRed.isNotEmpty)
+              if (titleRed.isNotEmpty) ...[
+
                 Text(
                   titleRed,
                   style: Theme.of(context).textTheme.headlineLarge!.copyWith(color: AppColors.redSports),
                 ),
+                SizedBox( width: 8,),
+              ],
+
+
+              Text(
+                title,
+                style: Theme.of(context).textTheme.headlineLarge,
+              ),
+
+
             ],
           ),
           if (onMore != null && moreLabel != null )

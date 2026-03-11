@@ -58,6 +58,16 @@ class LiveScreen extends ConsumerWidget {
         title: item['title'] ?? 'Stream Live',
       ),
     );
+    // Navigator.of(context).push(
+    //   MaterialPageRoute(
+    //     fullscreenDialog: true,
+    //     builder: (_) => VideoPlayerDialog(
+    //           videoUrl: item['stream_url'],
+    //           title: item['title'] ?? 'Stream Live',
+    //         ),
+    //   ),
+    // );
+
   }
 
   @override

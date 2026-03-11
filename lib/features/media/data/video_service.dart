@@ -40,7 +40,7 @@ class VideoService {
 
     final Map<String, dynamic> checksumParams = {
       "from_sets": fromSets,
-      "format_ids": 32,
+      "format_ids": '32,47',
       "offset": offset,
       "limit": limit,
       "get_thumbs": 1,

@@ -5,7 +5,7 @@ import 'media_headers.dart';
 
 final Dio dio = Dio(
   BaseOptions(
-    baseUrl: '${AppConfig.baseUrl}/api',
+    baseUrl: '${AppConfig.baseUrl}',
     connectTimeout: const Duration(seconds: 10),
     receiveTimeout: const Duration(seconds: 10),
     headers: mediaHeaders
