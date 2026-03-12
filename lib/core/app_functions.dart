@@ -3,11 +3,16 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 
+import '../features/asset/data/media_platform_client.dart';
+import '../features/asset/models/asset.dart';
+import '../features/asset/presentation/asset_details.dart';
 import '../features/media/data/video_item.dart';
 import '../features/media/presentation/video_player_dialog.dart';
 import '../l10n/app_localizations.dart';
 import 'app_config.dart';
+import 'network/media_headers.dart';
 
 // Calea către iconița SVG implicită din assets
 const String kDefaultSvgAsset = 'assets/images/default.svg';
@@ -259,6 +264,31 @@ class SportsFunction {
         title: v.title,
       ),
     );
+  }
+  void openAssetDetails(Asset asset, BuildContext context) {
+
+    print('CLICK on ${asset.id} - ${asset.type} ');
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => AssetDetailsPage(
+          asset: asset,
+                   client: mediaPlatformClient,
+                   // onPlayVideo: (a) => _playVideo(a.media),
+                   // articleBody: asset.isArticle ? WebView(initialUrl: asset.articleUrl) : null,
+                   // onAssetTap: _openAssetDetails,
+        ),
+      ),
+    );
+
+    // Navigator.of(context).push(
+    //   MaterialPageRoute(
+    //     builder: (_) => ArticleDetailScreen(
+    //       article: article,
+    //       lang: widget.languageCode,
+    //     ),
+    //   ),
+    // );
   }
   String fixMojibake(String input) {
     if (input.isEmpty) return input;

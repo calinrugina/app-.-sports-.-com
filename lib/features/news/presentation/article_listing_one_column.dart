@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/app_config.dart';
 import '../../../core/app_functions.dart';
+import '../../../core/network/media_headers.dart';
 import '../../../core/theme/colors.dart';
 import '../../asset/data/media_platform_client.dart';
 import '../../asset/models/asset.dart';
@@ -29,10 +30,7 @@ class ArticlesListOneColumn extends StatefulWidget {
 
 class _ArticlesListOneColumnState extends State<ArticlesListOneColumn> {
 
-  final client = MediaPlatformClient(
-    baseUrl: 'https://platforms.alpha.sports.com/api',
-    apiKey: 'demo_api_key_a__',
-  );
+
   final List<Asset> _newArticles = [];
 
 
@@ -84,7 +82,7 @@ class _ArticlesListOneColumnState extends State<ArticlesListOneColumn> {
       setState(() => _loadingMore = true);
     }
 
-    final newList = await client.fetchAssets(
+    final newList = await mediaPlatformClient.fetchAssets(
         FetchAssetsParams(
           source: ContentSource.latest,
           contentType: ContentType.article,

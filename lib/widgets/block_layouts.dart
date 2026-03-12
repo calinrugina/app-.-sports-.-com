@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:sports_config_app/features/asset/presentation/asset_card.dart';
+import 'package:sports_config_app/features/home/presentation/home_screen.dart';
 
+import '../core/app_config.dart';
+import '../core/app_functions.dart';
 import '../core/network/app_image_cache.dart';
+import '../core/network/media_headers.dart';
 import '../core/theme/colors.dart';
 import '../core/widgets/section_header.dart';
+import '../features/asset/data/media_platform_client.dart';
 import '../features/asset/models/asset.dart';
+import '../features/asset/presentation/listing_assets.dart';
+import '../features/config/models/config_models.dart';
 import '../l10n/app_localizations.dart';
+import 'block_assets_section.dart';
 
 /// Builds a section layout from [layoutType]: title + list/grid of assets.
 class BlockLayoutBuilder extends StatelessWidget {
@@ -15,6 +24,8 @@ class BlockLayoutBuilder extends StatelessWidget {
     required this.assets,
     this.assetBuilder,
     this.redTitle,
+    this.block,
+    this.hasMore,
   });
 
   final int layoutType;
@@ -23,11 +34,13 @@ class BlockLayoutBuilder extends StatelessWidget {
 
   final List<Asset> assets;
   final Widget Function(BuildContext context, Asset asset)? assetBuilder;
+  final Block? block;
+  final bool? hasMore;
 
   @override
   Widget build(BuildContext context) {
     final effectiveBuilder =
-        assetBuilder ?? (context, asset) => DefaultAssetTile(asset: asset);
+        assetBuilder ?? (context, asset) => AssetCard(asset: asset);
 
     switch (layoutType) {
       case 1:
@@ -36,6 +49,7 @@ class BlockLayoutBuilder extends StatelessWidget {
           redTitle: redTitle,
           assets: assets,
           assetBuilder: effectiveBuilder,
+          block: block,
         );
       case 2:
         return _TwoColumnLayout(
@@ -43,6 +57,8 @@ class BlockLayoutBuilder extends StatelessWidget {
           redTitle: redTitle,
           assets: assets,
           assetBuilder: effectiveBuilder,
+          block: block,
+          hasMore: hasMore,
         );
       case 3:
         return _ListWithGrayBackgroundLayout(
@@ -50,6 +66,7 @@ class BlockLayoutBuilder extends StatelessWidget {
           redTitle: redTitle,
           assets: assets,
           assetBuilder: effectiveBuilder,
+          block: block,
         );
       case 4:
         return _FullWidthLayout(
@@ -57,6 +74,7 @@ class BlockLayoutBuilder extends StatelessWidget {
           redTitle: redTitle,
           assets: assets,
           assetBuilder: effectiveBuilder,
+          block: block,
         );
       case 5:
         return _ListWithWhiteBackgroundLayout(
@@ -64,6 +82,7 @@ class BlockLayoutBuilder extends StatelessWidget {
           redTitle: redTitle,
           assets: assets,
           assetBuilder: effectiveBuilder,
+          block: block,
         );
       case 6:
         // 2x2 grid carousel: horizontal scroll, each page = 4 cards (2 rows x 2 cols), chevrons
@@ -72,50 +91,23 @@ class BlockLayoutBuilder extends StatelessWidget {
           redTitle: redTitle,
           assets: assets,
           assetBuilder: effectiveBuilder,
+          block: block,
+        );
+      case 8:
+      // More section: horizontal row of up to 4 cards (e.g. same category).
+        return _MoreSectionLayout(
+          title: title,
+          assets: assets,
+          assetBuilder: effectiveBuilder,
         );
       default:
-        return _DefaultListLayout(
+        return _TwoColumnLayout(
           title: title,
           redTitle: redTitle,
           assets: assets,
           assetBuilder: effectiveBuilder,
         );
     }
-  }
-}
-
-class _DefaultListLayout extends StatelessWidget {
-  const _DefaultListLayout({
-    required this.title,
-    required this.assets,
-    required this.assetBuilder,
-    this.redTitle,
-  });
-
-  final String title;
-  final String? redTitle;
-  final List<Asset> assets;
-  final Widget Function(BuildContext context, Asset asset) assetBuilder;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (title.isNotEmpty)
-          SectionHeader(title: title, moreLabel: '',
-            titleRed: redTitle!,),
-
-        ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: assets.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 8),
-          itemBuilder: (context, i) => assetBuilder(context, assets[i]),
-        ),
-      ],
-    );
   }
 }
 
@@ -126,7 +118,9 @@ class _HighlightsCarouselLayout extends StatefulWidget {
     required this.assets,
     required this.assetBuilder,
     this.seeMoreText,
-    this.onSeeMore, this.redTitle,
+    this.onSeeMore,
+    this.redTitle,
+    this.block,
   });
 
   final String title;
@@ -135,6 +129,7 @@ class _HighlightsCarouselLayout extends StatefulWidget {
   final String? seeMoreText;
   final String? redTitle;
   final VoidCallback? onSeeMore;
+final Block? block;
 
   @override
   State<_HighlightsCarouselLayout> createState() =>
@@ -180,76 +175,74 @@ class _HighlightsCarouselLayoutState extends State<_HighlightsCarouselLayout> {
     final firstWord = parts.isNotEmpty ? parts.first : '';
     final rest = parts.length > 1 ? parts.sublist(1).join(' ') : '';
     final textTheme = Theme.of(context).textTheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (widget.title.isNotEmpty)
-          SectionHeader(
-            title: widget.title,
-            titleRed: widget.redTitle!,
-            moreLabel: AppLocalizations.of(context)!.see_more,
-              onMore:null
-          ),
-        // Horizontal list of cards
-        SizedBox(
-          height: 120,
-          child: ListView.separated(
-            controller: _scrollController,
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 0),
-            itemCount: widget.assets.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 10),
-            itemBuilder: (context, i) => SizedBox(
-              width: 280,
-              child: InkWell(
-                onTap: () {},
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    if (widget.assets[i].thumb != null &&
-                        widget.assets[i].thumb!.isNotEmpty)
-                      AppNetworkImage(
-                        url: widget.assets[i].thumb!,
-                        width: 150,
-                        fit: BoxFit.cover,
-                      ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        widget.assets[i].title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: textTheme.titleLarge,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: AppConfig.appPadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (widget.title.isNotEmpty)
+            SectionHeader(
+              title: widget.title,
+              titleRed: widget.redTitle!,
+              moreLabel: AppLocalizations.of(context)!.see_more,
+              onMore: () {
+
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => AssetsListingPage(
+                      client: mediaPlatformClient,
+                      block: widget.block!,
+                      title:
+                      widget.block!.title, // opțional; dacă lipsește se folosește block.title
+                      assetBuilder: (context, asset) => AssetCard(
+                        asset: asset,
+                        // onTap: () => openAsset(asset),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                );
+              },
+            ),
+          // Horizontal list of cards
+          SizedBox(
+            height: 120,
+            child: ListView.separated(
+              controller: _scrollController,
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 0),
+              itemCount: widget.assets.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 10),
+              itemBuilder: (context, i) => AssetCard2Columns(
+                asset: widget.assets[i],
+                onTap: () => SportsFunction()
+                    .openAssetDetails(widget.assets[i], context),
               ),
             ),
           ),
-        ),
-        // Page indicator dots
-        if (widget.assets.length > 1) ...[
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(
-              widget.assets.length,
-              (i) => Container(
-                margin: const EdgeInsets.symmetric(horizontal: 3),
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: i == _currentIndex ? dotActiveColor : dotInactiveColor,
+          // Page indicator dots
+          if (widget.assets.length > 1) ...[
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                widget.assets.length,
+                (i) => Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color:
+                        i == _currentIndex ? dotActiveColor : dotInactiveColor,
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 8),
+            const SizedBox(height: 8),
+          ],
         ],
-      ],
+      ),
     );
   }
 }
@@ -350,30 +343,57 @@ class _TwoColumnLayout extends StatelessWidget {
   const _TwoColumnLayout({
     required this.title,
     required this.assets,
-    required this.assetBuilder, this.redTitle,
+    required this.assetBuilder,
+    this.redTitle,
+    this.block,
+    this.hasMore,
   });
 
   final String title;
   final String? redTitle;
   final List<Asset> assets;
   final Widget Function(BuildContext context, Asset asset) assetBuilder;
+  final Block? block;
+  final bool? hasMore;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (title.isNotEmpty)
-          SectionHeader(
-              title: title,
-              titleRed: redTitle!,
-              moreLabel: AppLocalizations.of(context)!.see_more,
-              onMore:null
-          ),
-        Padding(
-          padding: const EdgeInsets.all(0),
-          child: GridView.builder(
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: AppConfig.appPadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (title.isNotEmpty)
+            SectionHeader(
+                title: title??'',
+                titleRed: redTitle??'',
+                moreLabel: hasMore==false?'':AppLocalizations.of(context)!.see_more,
+              onMore: hasMore==false ? null: () {
+
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => AssetsListingPage(
+                      client: mediaPlatformClient,
+                      block: block!,
+                      title:
+                      block!.title, // opțional; dacă lipsește se folosește block.title
+                      assetBuilder: (context, asset) => AssetCard(
+                        asset: asset,
+                      ),
+                    ),
+                  ),
+                );
+                // Navigator.of(context).push(
+                //   MaterialPageRoute(
+                //     builder: (_) => BlockAssetsSection(
+                //       block: null,
+                //       client: mediaPlatformClient,),
+                //   ),
+                // );
+              },
+                ),
+          GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -385,8 +405,8 @@ class _TwoColumnLayout extends StatelessWidget {
             itemCount: assets.length,
             itemBuilder: (context, i) => assetBuilder(context, assets[i]),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -395,68 +415,126 @@ class _FullWidthLayout extends StatelessWidget {
   const _FullWidthLayout({
     required this.title,
     required this.assets,
-    required this.assetBuilder, this.redTitle,
+    required this.assetBuilder,
+    this.redTitle,
+    this.block,
   });
 
   final String title;
   final String? redTitle;
   final List<Asset> assets;
   final Widget Function(BuildContext context, Asset asset) assetBuilder;
+  final Block? block;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (title.isNotEmpty)
-          SectionHeader(title: title, moreLabel: '', titleRed: redTitle!,),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: AppConfig.appPadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (title.isNotEmpty)
+            SectionHeader(
+              title: title,
+              titleRed: redTitle!,
+              moreLabel: AppLocalizations.of(context)!.see_more,
+              onMore: () {
 
-        ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: assets.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 8),
-          itemBuilder: (context, i) => assetBuilder(context, assets[i]),
-        ),
-      ],
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => AssetsListingPage(
+                      client: mediaPlatformClient,
+                      block: block!,
+                      title:
+                      block!.title, // opțional; dacă lipsește se folosește block.title
+                      assetBuilder: (context, asset) => AssetCard(
+                        asset: asset,
+                        // onTap: () => openAsset(asset),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: assets.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            itemBuilder: (context, i) => AssetCardFull(
+              asset: assets[i],
+              topLabel: 'Top news',
+              topLabelIcon: '🔥',
+              onTap: () =>
+                  SportsFunction().openAssetDetails(assets[i], context),
+            ),
+            // assetBuilder(context, assets[i]),
+          ),
+        ],
+      ),
     );
   }
 }
 
 /// layout_type 3: list with gray background.
 class _ListWithGrayBackgroundLayout extends StatelessWidget {
-  const _ListWithGrayBackgroundLayout({
+  _ListWithGrayBackgroundLayout({
     required this.title,
     required this.assets,
-    required this.assetBuilder, this.redTitle,
+    required this.assetBuilder,
+    this.redTitle,
+    this.block,
   });
 
   final String title;
   final String? redTitle;
   final List<Asset> assets;
   final Widget Function(BuildContext context, Asset asset) assetBuilder;
-
+  final Block? block;
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (title.isNotEmpty)
-          SectionHeader(title: title, moreLabel: '', titleRed: redTitle!,),
-        Container(
-          color: Colors.green,
-          padding: const EdgeInsets.all(0),
-          child: ListView.separated(
+    return Container(
+      color: Theme.of(context).brightness == Brightness.dark
+          ? AppColors.type3BackgroundDark
+          : AppColors.type3BackgroundLight,
+      padding: const EdgeInsets.symmetric(horizontal: AppConfig.appPadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (title.isNotEmpty)
+            SectionHeader(
+              title: title,
+              titleRed: redTitle!,
+              moreLabel: AppLocalizations.of(context)!.see_more,
+              onMore: () {
+
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => AssetsListingPage(
+                      client: mediaPlatformClient,
+                      block: block!,
+                      title:
+                      block!.title, // opțional; dacă lipsește se folosește block.title
+                      assetBuilder: (context, asset) => AssetCard(
+                        asset: asset,
+                        // onTap: () => openAsset(asset),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: assets.length,
             separatorBuilder: (_, __) => const SizedBox(height: 12),
             itemBuilder: (context, i) => assetBuilder(context, assets[i]),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -466,34 +544,57 @@ class _ListWithWhiteBackgroundLayout extends StatelessWidget {
   const _ListWithWhiteBackgroundLayout({
     required this.title,
     required this.assets,
-    required this.assetBuilder, this.redTitle,
+    required this.assetBuilder,
+    this.redTitle,
+    this.block,
   });
 
   final String title;
   final String? redTitle;
   final List<Asset> assets;
   final Widget Function(BuildContext context, Asset asset) assetBuilder;
-
+  final Block? block;
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (title.isNotEmpty)
-          SectionHeader(title: title, moreLabel: '', titleRed: redTitle!,),
-        Container(
-          color: Colors.red,
-          padding: const EdgeInsets.all(0),
-          child: ListView.separated(
+    return Container(
+      // color: Colors.red,
+      padding: const EdgeInsets.symmetric(horizontal: AppConfig.appPadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (title.isNotEmpty)
+            SectionHeader(
+              title: title,
+              titleRed: redTitle!,
+              moreLabel: AppLocalizations.of(context)!.see_more,
+              onMore: () {
+
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => AssetsListingPage(
+                      client: mediaPlatformClient,
+                      block: block!,
+                      title:
+                      block!.title, // opțional; dacă lipsește se folosește block.title
+                      assetBuilder: (context, asset) => AssetCard(
+                        asset: asset,
+                        // onTap: () => openAsset(asset),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: assets.length,
             separatorBuilder: (_, __) => const SizedBox(height: 12),
             itemBuilder: (context, i) => assetBuilder(context, assets[i]),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -503,13 +604,16 @@ class _TwoByTwoCarouselLayout extends StatefulWidget {
   const _TwoByTwoCarouselLayout({
     required this.title,
     required this.assets,
-    required this.assetBuilder, String? redTitle,
+    required this.assetBuilder,
+    this.redTitle,
+    this.block,
   });
 
   final String title;
   final List<Asset> assets;
   final Widget Function(BuildContext context, Asset asset) assetBuilder;
-
+  final String? redTitle;
+  final Block? block;
   @override
   State<_TwoByTwoCarouselLayout> createState() =>
       _TwoByTwoCarouselLayoutState();
@@ -533,7 +637,6 @@ class _TwoByTwoCarouselLayoutState extends State<_TwoByTwoCarouselLayout> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-
     final parts = widget.title.split(RegExp(r'\s+'));
     final firstWord = parts.isNotEmpty ? parts.first : '';
     final rest = parts.length > 1 ? parts.sublist(1).join(' ') : '';
@@ -542,69 +645,101 @@ class _TwoByTwoCarouselLayoutState extends State<_TwoByTwoCarouselLayout> {
       return const SizedBox.shrink();
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Header: first word red, rest white/black
-        if (widget.title.isNotEmpty)
-          SectionHeader(title: widget.title, moreLabel: ''),
-        // Horizontal PageView: each page = 2x2 grid
-        SizedBox(
-          height: 420,
-          child: PageView.builder(
-            controller: _pageController,
-            onPageChanged: (i) => setState(() => _currentPage = i),
-            itemCount: _pageCount,
-            itemBuilder: (context, pageIndex) {
-              final start = pageIndex * _perPage;
-              final pageAssets =
-                  widget.assets.skip(start).take(_perPage).toList();
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: GridView.builder(
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.82,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 5,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: AppConfig.appPadding),
+      color: AppColors.type6Background,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Header: first word red, rest white/black
+          if (widget.title.isNotEmpty)
+            SectionHeader(
+              title: widget.title,
+              titleRed: widget.redTitle!,
+              forceWhite: true,
+              moreLabel: AppLocalizations.of(context)!.see_more,
+              onMore: () {
+
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => AssetsListingPage(
+                      client: mediaPlatformClient,
+                      block: widget.block!,
+                      title:
+                      widget.block!.title, // opțional; dacă lipsește se folosește block.title
+                      assetBuilder: (context, asset) => AssetCard(
+                        asset: asset,
+                        // onTap: () => openAsset(asset),
+                      ),
+                    ),
                   ),
-                  itemCount: pageAssets.length,
-                  itemBuilder: (context, i) =>
-                      widget.assetBuilder(context, pageAssets[i]),
+                );
+              },
+            ),
+          // Horizontal PageView: each page = 2x2 grid
+          SizedBox(
+            height: 420,
+            child: PageView.builder(
+              controller: _pageController,
+              onPageChanged: (i) => setState(() => _currentPage = i),
+              itemCount: _pageCount,
+              itemBuilder: (context, pageIndex) {
+                final start = pageIndex * _perPage;
+                final pageAssets =
+                    widget.assets.skip(start).take(_perPage).toList();
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: GridView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.82,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 5,
+                      ),
+                      itemCount: pageAssets.length,
+                      itemBuilder: (context, i) =>
+                          AssetCardDark(asset: pageAssets[i], onTap: () => SportsFunction()
+                              .openAssetDetails(widget.assets[i], context),)
+                      //    widget.assetBuilder(context, pageAssets[i]),
+
+                      ),
+                );
+              },
+            ),
+          ),
+          // Chevrons
+          if (_pageCount > 1) ...[
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.chevron_left,
+                      color: AppColors.redSports, size: 32),
+                  onPressed: _currentPage > 0
+                      ? () => _pageController.previousPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeOut)
+                      : null,
                 ),
-              );
-            },
-          ),
-        ),
-        // Chevrons
-        if (_pageCount > 1) ...[
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                icon: Icon(Icons.chevron_left, color: AppColors.redSports, size: 32),
-                onPressed: _currentPage > 0
-                    ? () => _pageController.previousPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeOut)
-                    : null,
-              ),
-              IconButton(
-                icon: Icon(Icons.chevron_right, color: AppColors.redSports, size: 32),
-                onPressed: _currentPage < _pageCount - 1
-                    ? () => _pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeOut)
-                    : null,
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
+                IconButton(
+                  icon: Icon(Icons.chevron_right,
+                      color: AppColors.redSports, size: 32),
+                  onPressed: _currentPage < _pageCount - 1
+                      ? () => _pageController.nextPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeOut)
+                      : null,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+          ],
         ],
-      ],
+      ),
     );
   }
 }
@@ -646,6 +781,64 @@ class DefaultAssetTile extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+class _MoreSectionLayout extends StatelessWidget {
+  const _MoreSectionLayout({
+    required this.title,
+    required this.assets,
+    required this.assetBuilder,
+  });
+
+  final String title;
+  final List<Asset> assets;
+  final Widget Function(BuildContext context, Asset asset) assetBuilder;
+
+  @override
+  Widget build(BuildContext context) {
+    if (assets.isEmpty) return const SizedBox.shrink();
+    final list = assets.take(4).toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (title.isNotEmpty)
+          SectionHeader(
+            title: title,
+            moreLabel: AppLocalizations.of(context)!.see_more,
+            // onMore: () {
+
+            //   Navigator.of(context).push(
+            //     MaterialPageRoute(
+            //       builder: (_) => AssetsListingPage(
+            //         client: mediaPlatformClient,
+            //         block: widget.block!,
+            //         title:
+            //         widget.block!.title, // opțional; dacă lipsește se folosește block.title
+            //         assetBuilder: (context, asset) => AssetCard(
+            //           asset: asset,
+            //           // onTap: () => openAsset(asset),
+            //         ),
+            //       ),
+            //     ),
+            //   );
+            // },
+          ),
+        SizedBox(
+          height: 140,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: list.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (context, i) => SizedBox(
+              width: 200,
+              child: assetBuilder(context, list[i]),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

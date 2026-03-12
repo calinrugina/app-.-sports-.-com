@@ -43,6 +43,9 @@ class _SimpleWebViewScreenState extends State<SimpleWebViewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print(widget.url);
+
+
     return Scaffold(
       appBar: const SportsAppBar(),
       body: Column(

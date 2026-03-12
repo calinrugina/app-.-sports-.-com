@@ -5,7 +5,7 @@ class ConfigService {
   Future<Map<String, dynamic>> fetchConfig() async {
     print('${AppConfig.baseUrl}/config');
 
-    final res = await dio.get('/config',);
+    final res = await dio.get('/api/v1/config',);
 
     if (res.data is Map<String, dynamic>) {
       return res.data as Map<String, dynamic>;

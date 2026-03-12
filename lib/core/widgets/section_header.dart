@@ -9,13 +9,14 @@ class SectionHeader extends StatelessWidget {
   final VoidCallback? onMore;
   final String? moreLabel;
   final String titleRed;
-
+final bool forceWhite;
   const SectionHeader({
     super.key,
     required this.title,
     this.onMore,
     required this.moreLabel ,
     this.titleRed = '',
+    this.forceWhite = false,
   });
 
   @override
@@ -26,25 +27,25 @@ class SectionHeader extends StatelessWidget {
     final rest = parts.length > 1 ? parts.sublist(1).join(' ') : '';
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppConfig.smallSpace, horizontal: AppConfig.smallSpace),
+      padding: const EdgeInsets.only(left: AppConfig.smallSpace, right: AppConfig.smallSpace,
+          bottom: AppConfig.smallSpace,
+          top: AppConfig.bigSpace),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
               if (titleRed.isNotEmpty) ...[
-
                 Text(
                   titleRed,
                   style: Theme.of(context).textTheme.headlineLarge!.copyWith(color: AppColors.redSports),
                 ),
                 SizedBox( width: 8,),
               ],
-
-
               Text(
                 title,
-                style: Theme.of(context).textTheme.headlineLarge,
+                style: forceWhite==true? Theme.of(context).textTheme.headlineLarge?.copyWith(color: Colors.white):
+                Theme.of(context).textTheme.headlineLarge,
               ),
 
 

@@ -31,7 +31,7 @@ class SportsOnTop extends ConsumerWidget {
       color: Colors.black,
       // padding: const EdgeInsets.symmetric(vertical: AppConfig.paddingInside),
       child: SizedBox(
-        height: 80,
+        height: 60,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           // padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -49,7 +49,7 @@ class SportsOnTop extends ConsumerWidget {
                 }
               },
               child: Container(
-                width: 90,
+                width: 80,
                decoration: BoxDecoration(
                   color: isSelected ? AppColors.redSports : AppColors.darkTabs,
                   // borderRadius: BorderRadius.circular(10),
@@ -61,18 +61,18 @@ class SportsOnTop extends ConsumerWidget {
                   children: [
                     if (iconUrl != null && iconUrl.isNotEmpty)
                       SizedBox(
-                        height: 35,
+                        height: 30,
                         child: SvgIconLoader(
                           iconUrl: iconUrl,
                           headers: mediaHeaders,
-                          size: 35,
+                          size: 30,
                         ),
                       )
                     else
                       const Icon(
                         Icons.sports,
                         color: Colors.white,
-                        size: 35,
+                        size: 30,
                       ),
                     const SizedBox(height: 1),
                     Text(
@@ -80,7 +80,7 @@ class SportsOnTop extends ConsumerWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.headlineLarge!.copyWith(fontSize: 14, color: Colors.white)
+                        style: Theme.of(context).textTheme.headlineLarge!.copyWith(fontSize: 13, color: Colors.white)
                       // const TextStyle(
                       //   fontSize: 10,
                       //   color: Colors.white,

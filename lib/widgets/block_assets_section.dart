@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 
+import '../core/app_config.dart';
 import '../core/widgets/section_header.dart';
 import '../features/asset/data/api_response.dart';
 import '../features/asset/data/media_platform_client.dart';
@@ -158,8 +159,14 @@ class _BlockAssetsSectionState extends State<BlockAssetsSection> {
       redTitle: widget.redTitle,
       assets: assets,
       assetBuilder: widget.assetBuilder,
+      block: widget.block
     );
-    return layout;
+    return Column(
+      children: [
+        layout,
+        const SizedBox(height: AppConfig.smallSpace),
+      ],
+    );
   }
 }
 

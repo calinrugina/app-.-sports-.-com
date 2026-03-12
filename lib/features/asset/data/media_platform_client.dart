@@ -293,6 +293,33 @@ class MediaPlatformClient {
     return _parseSearch(res, params.perPage);
   }
 
+  /// Records a view for the asset. Call when the user opens the asset details.
+  /// POST /v1/assets/{id}/view
+  Future<void> recordAssetView(int assetId) async {
+    final uri = Uri.parse('${_base}v1/assets/$assetId/view');
+    await _post(uri);
+  }
+  Future<Map<String, dynamic>> _post(Uri uri) async {
+    final requestHeaders = <String, String>{
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'X-API-Key': apiKey,
+      ...headers,
+    };
+    final u = uri.replace(
+      queryParameters: {...uri.queryParameters, 'api_key': apiKey},
+    );
+    final r = await _client.post(u, headers: requestHeaders, body: '{}');
+    if (r.statusCode < 200 || r.statusCode >= 300) {
+      throw MediaPlatformException(
+        statusCode: r.statusCode,
+        body: r.body,
+      );
+    }
+    if (r.body.isEmpty) return {};
+    final decoded = json.decode(r.body) as Map<String, dynamic>?;
+    return decoded ?? {};
+  }
   Future<Map<String, dynamic>> _get(Uri uri) async {
     final requestHeaders = <String, String>{
       'Accept': 'application/json',

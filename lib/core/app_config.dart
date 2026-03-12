@@ -9,8 +9,8 @@ class AppConfig {
   static const bool isDebugMode = true ; // kDebugMode;
 
   // URL-urile API
-  static const String baseUrlProduction = 'https://sports-api.alpha.sports.com/api/v1';
-  static const String baseUrlDevelopment = 'https://beta.sports.com/api/v1'; // Adresa locală tipică pentru emulator
+  static const String baseUrlProduction = 'https://sports-api.alpha.sports.com';
+  static const String baseUrlDevelopment = 'https://beta.sports.com'; // Adresa locală tipică pentru emulator
 
   // Selectează URL-ul corect în funcție de starea de debug
   static String get baseUrl {
@@ -25,6 +25,9 @@ class AppConfig {
   static const double smallSpace = 5;
 
   static const double appPadding = 10;
+  static const double zeroPadding = 0;
+
+  static const double radiusApp = 8;
 
   // padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
   // padding: EdgeInsets.all(15),

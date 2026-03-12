@@ -37,4 +37,8 @@ class AppColors {
   static const darkBackground = Color(0xFF191919);
   static const Color darkTextPrimary = Colors.white;
   static const Color darkTextSecondary = gray60;
+
+  static const type6Background = Color(0xFF202020);
+  static const type3BackgroundLight = Color(0xFFEEEEEE);
+  static const type3BackgroundDark = Color(0xFF282828);
 }
