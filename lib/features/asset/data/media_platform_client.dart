@@ -47,6 +47,7 @@ class AssetFilters {
   const AssetFilters({
     this.categories = const [],
     this.tags = const [],
+    this.period = const [],
     this.excludeCategories = const [],
     this.excludeTags = const [],
     this.excludeIds = const [],
@@ -57,6 +58,7 @@ class AssetFilters {
     if (map == null) return const AssetFilters();
     final cat = map['categories'];
     final tag = map['tags'];
+    final period = map['period'];
     List<String> excCat = [];
     List<String> excTag = [];
     List<int> excId = [];
@@ -74,6 +76,7 @@ class AssetFilters {
     return AssetFilters(
       categories: _parseList(cat),
       tags: _parseList(tag),
+      period: _parseList(period),
       excludeCategories: excCat.toSet().toList(),
       excludeTags: excTag.toSet().toList(),
       excludeIds: excId.toSet().toList(),
@@ -98,16 +101,18 @@ class AssetFilters {
 
   final List<String> categories;
   final List<String> tags;
+  final List<String> period;
   final List<String> excludeCategories;
   final List<String> excludeTags;
   final List<int> excludeIds;
 
-  bool get hasFilters => categories.isNotEmpty || tags.isNotEmpty;
+  bool get hasFilters => categories.isNotEmpty || tags.isNotEmpty || period.isNotEmpty;
   bool get hasExclude => excludeCategories.isNotEmpty || excludeTags.isNotEmpty || excludeIds.isNotEmpty;
 
   Map<String, dynamic> toJson() => {
     'categories': categories,
     'tags': tags,
+    'period': period,
     'excludeCategories': excludeCategories,
     'excludeTags': excludeTags,
     'excludeIds': excludeIds,
@@ -152,7 +157,7 @@ class FetchAssetsParams {
   /// Optional lang/country for API.
   final String? lang;
   final String? country;
-final String? sectionName;
+  final String? sectionName;
 
   Map<String, dynamic> toJson() => {
     'source': source.name,
@@ -188,7 +193,7 @@ class MediaPlatformClient {
   ///
   /// Returns [AssetsResponse] with [Asset] list and [AssetsResponse.hasMore].
   Future<AssetsResponse> fetchAssets(FetchAssetsParams params) async {
-    print('Sectiunea: ${params.sectionName}');
+    // print('Sectiunea: ${params.sectionName}');
 
     switch (params.source) {
       case ContentSource.latest:
@@ -225,7 +230,7 @@ class MediaPlatformClient {
     if (params.lang != null && params.lang!.isNotEmpty) q['lang'] = params.lang!;
     if (params.country != null && params.country!.isNotEmpty) q['country'] = params.country!;
 
-    print('_fetchLatest ${params.toJson()}');
+    // print('_fetchLatest ${params.toJson()}');
 
     final uri = Uri.parse('${_base}v1/latest').replace(queryParameters: q);
     final res = await _get(uri);
@@ -236,12 +241,14 @@ class MediaPlatformClient {
     final type = params.contentType == ContentType.video ? 'video' : 'article';
     final q = <String, String>{
       'type': type,
-      'period': '7d',
       'page': params.page.toString(),
       'per_page': params.perPage.toString(),
     };
     if (params.filters.categories.isNotEmpty) {
       q['categories'] = params.filters.categories.join(',');
+    }
+    if (params.filters.period.isNotEmpty) {
+      q['period'] = params.filters.period.join(',');
     }
     if (params.filters.excludeCategories.isNotEmpty) {
       q['exclude[categories]'] = params.filters.excludeCategories.join(',');
@@ -255,7 +262,7 @@ class MediaPlatformClient {
     if (params.lang != null && params.lang!.isNotEmpty) q['lang'] = params.lang!;
     if (params.country != null && params.country!.isNotEmpty) q['country'] = params.country!;
 
-    print('_fetchTrending ${params.toJson()}');
+    // print('_fetchTrending ${params.toJson()}');
 
     final uri = Uri.parse('${_base}v1/trending').replace(queryParameters: q);
     final res = await _get(uri);

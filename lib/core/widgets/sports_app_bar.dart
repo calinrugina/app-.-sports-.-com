@@ -67,9 +67,14 @@ class SportsAppBar extends ConsumerWidget implements PreferredSizeWidget {
           //     ),
           //   ),
           // ),
-          SvgPicture.asset(
-            'assets/images/logo-top.svg',
-            height: 24,
+          InkWell(
+            onTap: () {
+              Navigator.of(context).popUntil((route) => route.isFirst);
+            },
+            child: SvgPicture.asset(
+              'assets/images/logo-top.svg',
+              height: 24,
+            ),
           ),
 
           const Spacer(),

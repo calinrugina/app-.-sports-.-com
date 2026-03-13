@@ -89,6 +89,7 @@ class _AssetsListingPageState extends State<AssetsListingPage> {
       final filters = AssetFilters(
         categories: widget.block.filters.categories,
         tags: widget.block.filters.tags,
+        period: widget.block.filters.period,
         excludeCategories: widget.block.filters.excludeCategories,
         excludeTags: widget.block.filters.excludeTags,
         excludeIds: widget.block.filters.excludeIds,
@@ -102,6 +103,19 @@ class _AssetsListingPageState extends State<AssetsListingPage> {
         lang: widget.lang,
         country: widget.country,
       ));
+
+      print(
+        {
+          "source": source,
+          "contentType": contentType,
+          "filters": filters.toJson(),
+          "perPage": widget.perPage,
+          "page": page,
+          "lang": widget.lang,
+          "country": widget.country,
+        }
+      );
+      print('Lungime: ${res.assets.length}');
 
       if (!mounted) return;
       setState(() {
@@ -168,7 +182,7 @@ class _AssetsListingPageState extends State<AssetsListingPage> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          BackHeader(title: AppLocalizations.of(context)!.listing_videos_title(title)),
+          BackHeader(title: title),
           Expanded(child: CustomScrollView(
             controller: _scrollController,
             slivers: [
@@ -189,9 +203,23 @@ class _AssetsListingPageState extends State<AssetsListingPage> {
                     child: Center(child: CircularProgressIndicator()),
                   ),
                 ),
+              if (!_hasMore && _assets.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Center(
+                      child: Text(
+                        'No more contents',
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                    ),
+                  ),
+                ),
               if (_assets.isEmpty && !_loading)
-                const SliverFillRemaining(
-                  child: Center(child: Text('No assets')),
+                 SliverFillRemaining(
+                  child: Center(
+                      child: Text('No assets',style: Theme.of(context).textTheme.titleSmall,)
+                  ),
                 ),
             ],
           ))

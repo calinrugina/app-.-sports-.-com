@@ -92,6 +92,7 @@ class BlockLayoutBuilder extends StatelessWidget {
           assets: assets,
           assetBuilder: effectiveBuilder,
           block: block,
+          hasMore: hasMore,
         );
       case 8:
       // More section: horizontal row of up to 4 cards (e.g. same category).
@@ -184,7 +185,7 @@ class _HighlightsCarouselLayoutState extends State<_HighlightsCarouselLayout> {
           if (widget.title.isNotEmpty)
             SectionHeader(
               title: widget.title,
-              titleRed: widget.redTitle!,
+              titleRed: widget.redTitle??'',
               moreLabel: AppLocalizations.of(context)!.see_more,
               onMore: () {
 
@@ -607,6 +608,7 @@ class _TwoByTwoCarouselLayout extends StatefulWidget {
     required this.assetBuilder,
     this.redTitle,
     this.block,
+    this.hasMore
   });
 
   final String title;
@@ -614,6 +616,7 @@ class _TwoByTwoCarouselLayout extends StatefulWidget {
   final Widget Function(BuildContext context, Asset asset) assetBuilder;
   final String? redTitle;
   final Block? block;
+  final bool? hasMore;
   @override
   State<_TwoByTwoCarouselLayout> createState() =>
       _TwoByTwoCarouselLayoutState();
@@ -656,9 +659,9 @@ class _TwoByTwoCarouselLayoutState extends State<_TwoByTwoCarouselLayout> {
           if (widget.title.isNotEmpty)
             SectionHeader(
               title: widget.title,
-              titleRed: widget.redTitle!,
+              titleRed: widget.redTitle??'',
               forceWhite: true,
-              moreLabel: AppLocalizations.of(context)!.see_more,
+              moreLabel: widget.hasMore==false?null:AppLocalizations.of(context)!.see_more,
               onMore: () {
 
                 Navigator.of(context).push(
@@ -738,6 +741,7 @@ class _TwoByTwoCarouselLayoutState extends State<_TwoByTwoCarouselLayout> {
             ),
             const SizedBox(height: 8),
           ],
+          SizedBox(height: AppConfig.appPadding,)
         ],
       ),
     );
@@ -829,7 +833,7 @@ class _MoreSectionLayout extends StatelessWidget {
           height: 140,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            // padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: list.length,
             separatorBuilder: (_, __) => const SizedBox(width: 12),
             itemBuilder: (context, i) => SizedBox(
@@ -838,6 +842,7 @@ class _MoreSectionLayout extends StatelessWidget {
             ),
           ),
         ),
+        SizedBox(height: 100,)
       ],
     );
   }

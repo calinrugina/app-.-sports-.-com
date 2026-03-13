@@ -73,6 +73,7 @@ class _BlockAssetsSectionState extends State<BlockAssetsSection> {
       final filters = AssetFilters(
         categories: widget.block.filters.categories,
         tags: widget.block.filters.tags,
+        period: widget.block.filters.period,
         excludeCategories: widget.block.filters.excludeCategories,
         excludeTags: widget.block.filters.excludeTags,
         excludeIds: widget.block.filters.excludeIds,

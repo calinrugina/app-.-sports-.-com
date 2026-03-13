@@ -123,6 +123,7 @@ class BlockFilters {
   const BlockFilters({
     this.categories = const [],
     this.tags = const [],
+    this.period = const [],
     this.excludeCategories = const [],
     this.excludeTags = const [],
     this.excludeIds = const [],
@@ -132,6 +133,7 @@ class BlockFilters {
     if (map == null) return const BlockFilters();
     final cat = map['categories'];
     final tag = map['tags'];
+    final period = map['period'];
     final excludeRaw = map['exclude'];
     List<String> excludeCat = [];
     List<String> excludeTag = [];
@@ -152,6 +154,7 @@ class BlockFilters {
     return BlockFilters(
       categories: _parseList(cat),
       tags: _parseList(tag),
+      period: _parseList(period),
       excludeCategories: excludeCat,
       excludeTags: excludeTag,
       excludeIds: excludeId,
@@ -176,6 +179,7 @@ class BlockFilters {
 
   final List<String> categories;
   final List<String> tags;
+  final List<String> period;
   /// Merged from filters.exclude[].categories.
   final List<String> excludeCategories;
   /// Merged from filters.exclude[].tags.

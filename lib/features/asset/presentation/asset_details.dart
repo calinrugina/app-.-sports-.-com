@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:video_player/video_player.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../../../core/app_config.dart';
 import '../../../core/app_functions.dart';
 import '../../../core/network/app_image_cache.dart';
 import '../../../core/network/media_headers.dart';
@@ -18,6 +19,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../widgets/block_layouts.dart';
 import '../data/media_platform_client.dart';
 import '../models/asset.dart';
+import 'asset_card.dart';
 
 /// Full-page asset details: video (thumb + play) or article (thumb + title + description + HTML),
 /// plus a "More" section with 4 assets from the same category (layoutType 6).
@@ -220,18 +222,25 @@ class _AssetDetailsPageState extends State<AssetDetailsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            BackHeader(
-                title: AppLocalizations.of(context)!
-                    .listing_videos_title(widget.asset.categories[0])),
-            if (widget.asset.isVideo) ...[
-              _buildVideoSection(),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                child: _buildTitleDescriptionAndShareBar(theme),
-              ),
+            BackHeader(title: widget.asset.categories[0]),
+            Padding(padding: EdgeInsets.symmetric(
+                horizontal: AppConfig.appPadding, vertical: 0), child: Column(
+              children: [
+                if (widget.asset.isVideo) ...[
+                  _buildVideoSection(),
+                  const SizedBox(height: AppConfig.appPadding),
+                  _buildTitleDescriptionAndShareBar(theme),
+                ],
+                if (widget.asset.isArticle) _buildArticleSection(theme),
+              ],
+            ),),
+
+
+            if (widget.asset.categories.isNotEmpty) ...[
+              const SizedBox(height: AppConfig.appPadding),
+              _buildMoreSection(theme),
             ],
-            if (widget.asset.isArticle) _buildArticleSection(theme),
-            if (widget.asset.categories.isNotEmpty) _buildMoreSection(theme),
+            const SizedBox(height: AppConfig.appPadding),
           ],
         ),
       ),
@@ -239,7 +248,7 @@ class _AssetDetailsPageState extends State<AssetDetailsPage> {
           ? FloatingActionButton.small(
               onPressed: _scrollToTop,
               heroTag: 'back_to_top',
-              child: const Icon(Icons.arrow_upward),
+              child: const Icon(Icons.arrow_upward, color: Colors.white,),
             )
           : null,
     );
@@ -248,25 +257,40 @@ class _AssetDetailsPageState extends State<AssetDetailsPage> {
   String get _shareUrl => widget.asset.articleUrl ?? widget.asset.media ?? '';
 
   Widget _buildTitleDescriptionAndShareBar(ThemeData theme) {
+    final textTheme = Theme.of(context).textTheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           widget.asset.title,
-          style: theme.textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: textTheme.titleLarge,
         ),
         if (widget.asset.description != null &&
             widget.asset.description!.isNotEmpty) ...[
           const SizedBox(height: 12),
           Text(
             widget.asset.description!,
-            style: theme.textTheme.bodyLarge,
+            maxLines: 4,
+            overflow: TextOverflow.ellipsis,
+            style: textTheme.bodyMedium,
           ),
         ],
-        const SizedBox(height: 12),
+        if (widget.asset.publishedAt != null &&
+            widget.asset.publishedAt!.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          Text(
+            SportsFunction()
+                .formatDateRelative(context, widget.asset.publishedAt!),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: textTheme.labelSmall,
+          ),
+        ],
+        const SizedBox(height: AppConfig.appPadding),
         _buildShareBar(theme),
       ],
     );
@@ -290,9 +314,12 @@ class _AssetDetailsPageState extends State<AssetDetailsPage> {
         children: platforms
             .map(
               (p) => IconButton(
-                onPressed: _shareUrl.isEmpty
-                    ? null
-                    : () => widget.onShare?.call(p.$1, _shareUrl),
+                onPressed: (){
+                  print('${p.$1} ${_shareUrl}');
+                  _shareUrl.isEmpty
+                      ? null
+                      : () => widget.onShare?.call(p.$1, _shareUrl);
+                },
                 icon: Icon(p.$2, color: Colors.white, size: 24),
                 tooltip: p.$1,
               ),
@@ -410,19 +437,21 @@ class _AssetDetailsPageState extends State<AssetDetailsPage> {
               width: double.infinity,
             ),
           ),
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildTitleDescriptionAndShareBar(theme),
-              const SizedBox(height: 20),
-              if (widget.articleBody != null)
-                widget.articleBody!
-              else if (articleUrl != null && articleUrl.isNotEmpty)
-                ArticleHtmlBody(articleUrl: articleUrl),
-            ],
-          ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: AppConfig.appPadding),
+            _buildTitleDescriptionAndShareBar(theme),
+            const SizedBox(height: AppConfig.appPadding),
+            if (widget.articleBody != null)
+              widget.articleBody!
+            else if (articleUrl != null && articleUrl.isNotEmpty)
+              ArticleHtmlBody(
+                articleUrl: articleUrl,
+                isDark: theme.brightness == Brightness.dark,
+              ),
+            const SizedBox(height: AppConfig.appPadding),
+          ],
         ),
       ],
     );
@@ -431,23 +460,25 @@ class _AssetDetailsPageState extends State<AssetDetailsPage> {
   Widget _buildMoreSection(ThemeData theme) {
     if (_moreLoading) {
       return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 24),
+        padding: EdgeInsets.symmetric(vertical: AppConfig.appPadding),
         child: Center(child: CircularProgressIndicator()),
       );
     }
     if (_moreError != null || _moreAssets.isEmpty) {
       return const SizedBox.shrink();
     }
-    final effectiveBuilder = widget.moreItemBuilder ??
-        (context, asset) => _MoreItemCard(
-              asset: asset,
-              onTap: () => widget.onAssetTap?.call(asset),
-            );
+    final effectiveBuilder =
+        widget.moreItemBuilder ?? (context, asset) => AssetCard(asset: asset);
+    // (context, asset) => _MoreItemCard(
+    //       asset: asset,
+    //       onTap: () => widget.onAssetTap?.call(asset),
+    //     );
     return BlockLayoutBuilder(
-      layoutType: 8,
+      layoutType: 6,
       title: 'More',
       assets: _moreAssets,
       assetBuilder: effectiveBuilder,
+      hasMore: false,
     );
   }
 }
@@ -456,9 +487,14 @@ class _AssetDetailsPageState extends State<AssetDetailsPage> {
 /// embed scripts injected so blockquotes become full embeds. Used by [AssetDetailsPage]
 /// for articles when [AssetDetailsPage.articleBody] is null.
 class ArticleHtmlBody extends StatefulWidget {
-  const ArticleHtmlBody({super.key, required this.articleUrl});
+  const ArticleHtmlBody({
+    super.key,
+    required this.articleUrl,
+    required this.isDark,
+  });
 
   final String articleUrl;
+  final bool isDark;
 
   @override
   State<ArticleHtmlBody> createState() => _ArticleHtmlBodyState();
@@ -482,6 +518,7 @@ class _ArticleHtmlBodyState extends State<ArticleHtmlBody> {
     if (_useWebView) {
       _webController = WebViewController()
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..setBackgroundColor(Colors.transparent)
         ..addJavaScriptChannel(
           'HeightChannel',
           onMessageReceived: (JavaScriptMessage m) {
@@ -494,6 +531,18 @@ class _ArticleHtmlBodyState extends State<ArticleHtmlBody> {
         );
     }
     _loadHtml();
+  }
+
+  @override
+  void didUpdateWidget(covariant ArticleHtmlBody oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isDark != widget.isDark &&
+        _useWebView &&
+        _html != null &&
+        _webController != null) {
+      _webViewLoaded = false;
+      _loadHtmlInWebView();
+    }
   }
 
   Future<void> _loadHtml() async {
@@ -540,12 +589,30 @@ class _ArticleHtmlBodyState extends State<ArticleHtmlBody> {
   String _buildFullHtml(String bodyHtml) {
     // Avoid breaking the parser if article contains </script>
     final safeBody = bodyHtml.replaceAll('</script>', r'<\/script>');
+    final textColor = widget.isDark ? '#ffffff' : '#000000';
     return '''
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400&display=swap" rel="stylesheet">
+  <style>
+    html, body, .article-body {
+      font-family: 'Open Sans', sans-serif;
+      font-weight: 400;
+      font-style: normal;
+      background: transparent !important;
+      color: $textColor;
+    }
+    .article-body * {
+      color: inherit;
+    }
+    .article-body a {
+      color: inherit;
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
   <div class="article-body">$safeBody</div>
@@ -610,13 +677,13 @@ class _ArticleHtmlBodyState extends State<ArticleHtmlBody> {
   Widget build(BuildContext context) {
     if (_loading) {
       return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 24),
+        padding: EdgeInsets.symmetric(vertical: AppConfig.appPadding),
         child: Center(child: CircularProgressIndicator()),
       );
     }
     if (_error != null) {
       return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.symmetric(vertical: AppConfig.appPadding),
         child: Text(
           'Error: $_error',
           style: TextStyle(color: Theme.of(context).colorScheme.error),
@@ -627,9 +694,35 @@ class _ArticleHtmlBodyState extends State<ArticleHtmlBody> {
       return const SizedBox.shrink();
     }
     if (!_useWebView) {
-      return Html(data: _html!);
+      final color = Theme.of(context).colorScheme.onSurface;
+      return Html(
+        data: _html!,
+        style: {
+          'body': Style(
+            color: color,
+            backgroundColor: Colors.transparent,
+          ),
+          'p': Style(
+            color: color,
+            backgroundColor: Colors.transparent,
+          ),
+          'div': Style(
+            color: color,
+            backgroundColor: Colors.transparent,
+          ),
+          'span': Style(
+            color: color,
+            backgroundColor: Colors.transparent,
+          ),
+          'a': Style(
+            color: color,
+            backgroundColor: Colors.transparent,
+          ),
+        },
+      );
     }
-    final height = _webContentHeight ?? _defaultWebHeight;
+    final height =
+        _webContentHeight != null ? _webContentHeight! + 20 : _defaultWebHeight;
     return SizedBox(
       height: height,
       child: WebViewWidget(controller: _webController!),
