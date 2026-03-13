@@ -161,6 +161,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ) {
     return Column(
       children: [
+
         // bara de sporturi, fixă sus, la fel ca în tabul Sports
         SportsOnTop(
           sports: sports,
