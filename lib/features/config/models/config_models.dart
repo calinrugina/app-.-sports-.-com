@@ -71,12 +71,15 @@ class Block {
     this.cacheTtl = 120,
     this.createdAt,
     this.updatedAt,
+    this.logo,
+    this.showHighlights = false,
+    this.showPublishedAt = true
   });
 
   factory Block.fromJson(Map<String, dynamic> json) {
     final filters = json['filters'];
     return Block(
-      id: (json['id'] as num).toInt(),
+      id: (json['id'] as num?)?.toInt() ?? 0,
       sportId: (json['sport_id'] as num?)?.toInt() ?? 0,
       key: json['key'] as String? ?? '',
       title: json['title'] as String? ?? '',
@@ -90,6 +93,9 @@ class Block {
       cacheTtl: (json['cache_ttl'] as num?)?.toInt() ?? 120,
       createdAt: json['created_at'] as String?,
       updatedAt: json['updated_at'] as String?,
+      logo: json['logo'] as String?,
+      showHighlights: json['key'] == "highlights" ? true  : false,
+      showPublishedAt: (json['show_date'] as bool?) ?? true,
     );
   }
 
@@ -108,6 +114,11 @@ class Block {
   final int cacheTtl;
   final String? createdAt;
   final String? updatedAt;
+  /// Optional logo URL (e.g. for studio blocks carousel).
+  final String? logo;
+  /// When true, highlights carousel cards show a "Highlights" label.
+  final bool showHighlights;
+  final bool showPublishedAt;
 }
 
 /// Filters for a block: include (categories, tags) and exclude (from "exclude" array).

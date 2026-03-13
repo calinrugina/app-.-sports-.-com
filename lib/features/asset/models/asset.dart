@@ -83,6 +83,41 @@ class Asset {
   /// Alias for [thumb] (smallest thumbnail or raw).
   String? get bestThumbUrl => thumb;
 
+  /// Sentinel to allow [copyWith(publishedAt: null)] to clear the field.
+  static const _undefined = Object();
+
+  Asset copyWith({
+    int? id,
+    String? title,
+    String? description,
+    String? type,
+    List<String>? categories,
+    List<String>? tags,
+    Object? publishedAt = _undefined,
+    String? rawThumb,
+    List<Thumbnail>? thumbnails,
+    List<ContentItem>? content,
+    String? author,
+    String? articleUrl,
+    int? viewCount,
+  }) {
+    return Asset(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      type: type ?? this.type,
+      categories: categories ?? this.categories,
+      tags: tags ?? this.tags,
+      publishedAt: publishedAt == _undefined ? this.publishedAt : publishedAt as String?,
+      rawThumb: rawThumb ?? this.rawThumb,
+      thumbnails: thumbnails ?? this.thumbnails,
+      content: content ?? this.content,
+      author: author ?? this.author,
+      articleUrl: articleUrl ?? this.articleUrl,
+      viewCount: viewCount ?? this.viewCount,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,

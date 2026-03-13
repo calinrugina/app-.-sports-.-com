@@ -2,12 +2,11 @@ import 'package:sports_config_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../features/asset/presentation/listing_assets.dart';
 import '../../features/config/providers/config_provider.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/auth/presentation/login_screen.dart';
-import '../../features/media/presentation/videos_listing.dart';
 import '../../features/more/presentation/notifications_settings_screen.dart';
-import '../../features/news/presentation/articles_listing.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../app_config.dart';
 import '../app_functions.dart';
@@ -146,7 +145,7 @@ class SportsAppBar extends ConsumerWidget implements PreferredSizeWidget {
   }
 }
 
-enum SearchTarget { videos, articles }
+enum SearchTarget { videos, articles, both }
 
 class _SearchSheet extends StatefulWidget {
   final Map<String, dynamic> sport;
@@ -177,29 +176,24 @@ class _SearchSheetState extends State<_SearchSheet> {
 
     Navigator.of(context).pop(); // închide sheet-ul
 
-    if (_target == SearchTarget.videos) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => VideosListing(
-            title: q,
-            mpids:
-                '', // dacă e listing pe mpids, altfel folosește listing pe sport
-            languageCode: widget.languageCode,
-            q: q, // ✅
-          ),
+    final isBoth = _target == SearchTarget.both;
+    final contentType = _target == SearchTarget.videos
+        ? 'video'
+        : _target == SearchTarget.articles
+            ? 'article'
+            : 'video'; // block default when both
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => AssetsListingPage(
+          client: mediaPlatformClient,
+          block: createSearchBlock(q, contentType: contentType),
+          title: q,
+          searchQuery: q,
+          searchBothTypes: isBoth,
+          lang: widget.languageCode,
         ),
-      );
-    } else {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => ArticlesListing(
-            sport: widget.sport,
-            languageCode: widget.languageCode,
-            q: q, // ✅
-          ),
-        ),
-      );
-    }
+      ),
+    );
   }
 
   @override
@@ -237,6 +231,15 @@ class _SearchSheetState extends State<_SearchSheet> {
                   title: Text(AppLocalizations.of(context)!.news,
                       style: Theme.of(context).textTheme.bodyMedium),
                   value: SearchTarget.articles,
+                  groupValue: _target,
+                  onChanged: (v) => setState(() => _target = v!),
+                ),
+              ),
+              Expanded(
+                child: RadioListTile<SearchTarget>(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text('Both', style: Theme.of(context).textTheme.bodyMedium),
+                  value: SearchTarget.both,
                   groupValue: _target,
                   onChanged: (v) => setState(() => _target = v!),
                 ),

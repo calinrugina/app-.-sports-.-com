@@ -272,10 +272,12 @@ class MediaPlatformClient {
   Future<AssetsResponse> _fetchSearch(FetchAssetsParams params) async {
     final q = params.query?.trim() ?? '';
     final type = params.contentType == ContentType.video ? 'video' : 'article';
+    final offset = (params.page - 1) * params.perPage;
     final queryParams = <String, String>{
       'q': q,
       'type': type,
       'limit': params.perPage.toString(),
+      'offset': offset.toString(),
     };
     if (params.filters.categories.isNotEmpty) {
       queryParams['categories'] = params.filters.categories.join(',');
@@ -294,6 +296,8 @@ class MediaPlatformClient {
     }
     if (params.lang != null && params.lang!.isNotEmpty) queryParams['lang'] = params.lang!;
     if (params.country != null && params.country!.isNotEmpty) queryParams['country'] = params.country!;
+
+    print('_fetchSearch ${params.toJson()}');
 
     final uri = Uri.parse('${_base}v1/search').replace(queryParameters: queryParams);
     final res = await _get(uri);

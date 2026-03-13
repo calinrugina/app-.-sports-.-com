@@ -16,16 +16,19 @@ class AssetCard extends StatelessWidget {
   /// compact = false => pentru listă (1 coloană)
   final bool compact;
   final double pictureRatio;
+  final bool showPublishedAt;
 
   const AssetCard(
       {super.key,
       required this.asset,
       this.onTap,
       this.compact = false,
-      this.pictureRatio = 16 / 11});
+      this.pictureRatio = 16 / 11,
+      this.showPublishedAt = true });
 
   @override
   Widget build(BuildContext context) {
+
     final textTheme = Theme.of(context).textTheme;
     final aspectRatio = SportsFunction().scale(context);
 
@@ -42,9 +45,12 @@ class AssetCard extends StatelessWidget {
     final formattedDate =
         SportsFunction().formatDateRelative(context, asset.publishedAt!);
 
-    return InkWell(
-      onTap: onTap,
-      child: MediaQuery(
+
+    return Material(
+      type: MaterialType.transparency,
+      child: InkWell(
+        onTap: onTap,
+        child: MediaQuery(
           data: mediaWithClamp,
           child: Card(
             clipBehavior: Clip.antiAlias,
@@ -121,7 +127,8 @@ class AssetCard extends StatelessWidget {
                         style: textTheme.bodyMedium,
                       ),
                     ),
-                    Text(
+                    if (showPublishedAt == false )
+                      Text(
                       formattedDate.toUpperCase(),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -132,6 +139,7 @@ class AssetCard extends StatelessWidget {
               ],
             ),
           )),
+      ),
     );
   }
 }
@@ -170,9 +178,11 @@ class AssetCardDark extends StatelessWidget {
     final formattedDate =
         SportsFunction().formatDateRelative(context, asset.publishedAt!);
 
-    return InkWell(
-      onTap: onTap,
-      child: MediaQuery(
+    return Material(
+      type: MaterialType.transparency,
+      child: InkWell(
+        onTap: onTap,
+        child: MediaQuery(
           data: mediaWithClamp,
           child: Card(
             clipBehavior: Clip.antiAlias,
@@ -262,6 +272,7 @@ class AssetCardDark extends StatelessWidget {
               ],
             ),
           )),
+      ),
     );
   }
 }
@@ -293,21 +304,23 @@ class AssetCardFull extends StatelessWidget {
     final theme = Theme.of(context);
     final thumb = asset.thumb;
 
-    return InkWell(
-      onTap: onTap,
-      child: Card(
-        clipBehavior: Clip.antiAlias,
-        margin: EdgeInsets.zero,
-        surfaceTintColor: Colors.transparent,
-        shadowColor: Colors.transparent,
-        color: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-        child: Stack(
-          alignment: Alignment.bottomCenter,
-          children: [
-            AspectRatio(
-              aspectRatio: 16 / 11,
-              child: ClipRRect(
+    return Material(
+      type: MaterialType.transparency,
+      child: InkWell(
+        onTap: onTap,
+        child: Card(
+          clipBehavior: Clip.antiAlias,
+          margin: EdgeInsets.zero,
+          surfaceTintColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          color: Colors.transparent,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+          child: Stack(
+            alignment: Alignment.bottomCenter,
+            children: [
+              AspectRatio(
+                aspectRatio: 16 / 11,
+                child: ClipRRect(
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(AppConfig.radiusApp),
                   topRight: Radius.circular(AppConfig.radiusApp),
@@ -389,10 +402,11 @@ class AssetCardFull extends StatelessWidget {
                         foregroundColor: Colors.white,
                       ),
                       onPressed: onTap,
-                      child:  Text(buttonLabel.toUpperCase(), style: Theme.of(context)
-                          .textTheme
-                          .labelSmall!
-                          .copyWith(color: Colors.white),),
+                      child:  Text(buttonLabel.toUpperCase(),
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),),
                     ),
 
 
@@ -402,6 +416,7 @@ class AssetCardFull extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -415,13 +430,17 @@ class AssetCard2Columns extends StatelessWidget {
   /// compact = false => pentru listă (1 coloană)
   final bool compact;
   final double pictureRatio;
+  /// When true, shows "Highlights" label on the card (e.g. for layout_type 1).
+  final bool showHighlights;
+
 
   const AssetCard2Columns(
       {super.key,
       required this.asset,
       this.onTap,
       this.compact = false,
-      this.pictureRatio = 16 / 11});
+      this.pictureRatio = 16 / 11,
+      this.showHighlights = false});
 
   @override
   Widget build(BuildContext context) {
@@ -490,11 +509,39 @@ class AssetCard2Columns extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text(
-                      asset.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleLarge,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (showHighlights)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.redSports,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'HIGHLIGHTS',
+                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        Text(
+                          asset.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                      ],
                     ),
                   ),
                 ],

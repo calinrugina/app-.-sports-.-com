@@ -1,7 +1,6 @@
 import 'package:sports_config_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sports_config_app/features/media/presentation/video_listing_two_columns.dart';
 import 'package:sports_config_app/features/sports/presentation/sport_banners_carousel.dart';
 import '../../../core/app_config.dart';
 import '../../../core/app_functions.dart';
@@ -12,36 +11,63 @@ import '../../asset/data/media_platform_client.dart';
 import '../../asset/models/asset.dart';
 import '../../asset/presentation/asset_card.dart';
 import '../../config/models/config_models.dart';
-import '../../media/presentation/videos_listing.dart';
-import '../../news/presentation/article_detail_screen.dart';
-import '../../news/presentation/articles_listing.dart';
-import '../../news/presentation/article_listing_one_column.dart';
-import '../../news/presentation/article_listing_two_columns.dart';
 import '../providers/selected_sport_provider.dart';
 import '../../home/presentation/widgets/top_sports.dart';
 
-class SportScreen extends ConsumerWidget {
+class SportScreen extends ConsumerStatefulWidget {
   final List<dynamic> sports;
   final String languageCode;
+  final int? initialIndex;
 
-  SportScreen({
+  const SportScreen({
     super.key,
     required this.sports,
     required this.languageCode,
+    this.initialIndex,
   });
-  final ScrollController _scrollController = ScrollController();
-
-
-
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SportScreen> createState() => _SportScreenState();
+}
+
+class _SportScreenState extends ConsumerState<SportScreen> {
+  final ScrollController _scrollController = ScrollController();
+  bool _initialIndexSynced = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialIndex != null && widget.sports.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final index = widget.initialIndex!.clamp(0, widget.sports.length - 1);
+        ref.read(selectedSportIndexProvider.notifier).state = index;
+        setState(() => _initialIndexSynced = true);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ref = this.ref;
+    final sports = widget.sports;
+    final languageCode = widget.languageCode;
+
     if (sports.isEmpty) {
       return Center(
           child: Text(AppLocalizations.of(context)!.no_sports_configured));
     }
 
-    final selectedIndex = ref.watch(selectedSportIndexProvider);
+    // Use initialIndex for first frame so correct sport shows before provider is synced
+    final selectedIndex = (widget.initialIndex != null && !_initialIndexSynced)
+        ? widget.initialIndex!.clamp(0, sports.length - 1)
+        : ref.watch(selectedSportIndexProvider);
     final safeIndex = selectedIndex.clamp(0, sports.length - 1);
     final sport = sports[safeIndex] as Map<String, dynamic>;
     final name = sport['name']?.toString() ?? 'Sport';
@@ -78,65 +104,10 @@ class SportScreen extends ConsumerWidget {
                           redTitle: name,
                           assetBuilder: (context, assets) => AssetCard(
                                 asset: assets,
-                            onTap: () => SportsFunction().openAssetDetails(assets, context),
-                              )),
-
-                      // const SizedBox(height: 12),
-                      // if (sport['mpid'] != null && sport['mpid'].toString().isNotEmpty)
-                      //   SectionHeader(
-                      //   title: name,
-                      //   titleRed: AppLocalizations.of(context)!.latest_videos,
-                      //   moreLabel: AppLocalizations.of(context)!.see_more,
-                      //   onMore: () {
-                      //     Navigator.of(context).push(
-                      //       MaterialPageRoute(
-                      //         builder: (_) => VideosListing(
-                      //           languageCode: languageCode,
-                      //           mpids: sport['mpid'],
-                      //           title: sport['name'],
-                      //         ),
-                      //       ),
-                      //     );
-                      //   },
-                      // ),
-                      // if (sport['mpid'] != null && sport['mpid'].toString().isNotEmpty)
-                      //   Padding(
-                      //   padding: const EdgeInsets.symmetric(horizontal: 0),
-                      //   child: VideosGridTwoColumns(
-                      //     title: sport['name'],
-                      //     mpids: sport['mpid'],
-                      //     languageCode: languageCode,
-                      //     shrinkWrap: true,
-                      //     showMore: true,
-                      //   ),
-                      // ),
-                      // const SizedBox(height: 16),
-                      // if (sport['lpid'] != null && sport['lpid'].toString().isNotEmpty)
-                      //   SectionHeader(
-                      //   title: name,
-                      //   moreLabel: AppLocalizations.of(context)!.see_more,
-                      //   titleRed: AppLocalizations.of(context)!.news,
-                      //   onMore: () {
-                      //     Navigator.of(context).push(
-                      //       MaterialPageRoute(
-                      //         builder: (_) => ArticlesListing(
-                      //           sport: sport,
-                      //           languageCode: languageCode,
-                      //         ),
-                      //       ),
-                      //     );
-                      //   },
-                      // ),
-                      // if (sport['lpid'] != null && sport['lpid'].toString().isNotEmpty)
-                      //   Padding(
-                      //   padding: const EdgeInsets.symmetric(horizontal: 0),
-                      //   child: ArticlesGridTwoColumns(
-                      //     sport: sport,
-                      //     languageCode: languageCode,
-                      //     shrinkWrap: true,
-                      //     showMore: true,
-                      //   ),
-                      // ),
+                                onTap: () => SportsFunction()
+                                    .openAssetDetails(assets, context),
+                              )
+                      ),
                       const SizedBox(height: 24),
                     ],
                   ),

@@ -46,15 +46,17 @@ class BlockLayoutBuilder extends StatelessWidget {
       case 1:
         return _HighlightsCarouselLayout(
           title: title,
-          redTitle: redTitle,
+          redTitle: redTitle??'',
           assets: assets,
           assetBuilder: effectiveBuilder,
           block: block,
         );
       case 2:
+        print('${title}');
+
         return _TwoColumnLayout(
           title: title,
-          redTitle: redTitle,
+          redTitle: redTitle??'',
           assets: assets,
           assetBuilder: effectiveBuilder,
           block: block,
@@ -63,7 +65,7 @@ class BlockLayoutBuilder extends StatelessWidget {
       case 3:
         return _ListWithGrayBackgroundLayout(
           title: title,
-          redTitle: redTitle,
+          redTitle: redTitle??'',
           assets: assets,
           assetBuilder: effectiveBuilder,
           block: block,
@@ -71,7 +73,7 @@ class BlockLayoutBuilder extends StatelessWidget {
       case 4:
         return _FullWidthLayout(
           title: title,
-          redTitle: redTitle,
+          redTitle: redTitle??'',
           assets: assets,
           assetBuilder: effectiveBuilder,
           block: block,
@@ -79,7 +81,7 @@ class BlockLayoutBuilder extends StatelessWidget {
       case 5:
         return _ListWithWhiteBackgroundLayout(
           title: title,
-          redTitle: redTitle,
+          redTitle: redTitle??'',
           assets: assets,
           assetBuilder: effectiveBuilder,
           block: block,
@@ -88,7 +90,7 @@ class BlockLayoutBuilder extends StatelessWidget {
         // 2x2 grid carousel: horizontal scroll, each page = 4 cards (2 rows x 2 cols), chevrons
         return _TwoByTwoCarouselLayout(
           title: title,
-          redTitle: redTitle,
+          redTitle: redTitle??'',
           assets: assets,
           assetBuilder: effectiveBuilder,
           block: block,
@@ -104,7 +106,7 @@ class BlockLayoutBuilder extends StatelessWidget {
       default:
         return _TwoColumnLayout(
           title: title,
-          redTitle: redTitle,
+          redTitle: redTitle??'',
           assets: assets,
           assetBuilder: effectiveBuilder,
         );
@@ -218,6 +220,7 @@ class _HighlightsCarouselLayoutState extends State<_HighlightsCarouselLayout> {
                 asset: widget.assets[i],
                 onTap: () => SportsFunction()
                     .openAssetDetails(widget.assets[i], context),
+                showHighlights: widget.block?.showHighlights ?? false,
               ),
             ),
           ),
@@ -359,6 +362,9 @@ class _TwoColumnLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    print('PULA: ${block!.showPublishedAt}');
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: AppConfig.appPadding),
       child: Column(
@@ -371,7 +377,6 @@ class _TwoColumnLayout extends StatelessWidget {
                 titleRed: redTitle??'',
                 moreLabel: hasMore==false?'':AppLocalizations.of(context)!.see_more,
               onMore: hasMore==false ? null: () {
-
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => AssetsListingPage(
@@ -381,6 +386,7 @@ class _TwoColumnLayout extends StatelessWidget {
                       block!.title, // opțional; dacă lipsește se folosește block.title
                       assetBuilder: (context, asset) => AssetCard(
                         asset: asset,
+
                       ),
                     ),
                   ),

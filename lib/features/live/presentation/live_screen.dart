@@ -10,9 +10,7 @@ import '../../../core/theme/theme_provider.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../config/providers/config_provider.dart';
 import '../../../core/network/media_headers.dart';
-import '../../media/presentation/video_listing_two_columns.dart';
 import '../../media/presentation/video_player_dialog.dart';
-import '../../media/presentation/videos_listing.dart';
 
 class LiveScreen extends ConsumerWidget {
   LiveScreen({super.key});
@@ -286,6 +284,7 @@ class LiveScreen extends ConsumerWidget {
                     ));
               },
             ),
+                /*
                 if (firstSport['mpid'] != null && firstSport['mpid'].toString().isNotEmpty)
                   Padding(
               padding:
@@ -323,6 +322,8 @@ class LiveScreen extends ConsumerWidget {
                     // physics: const BouncingScrollPhysics(),
                   ),
                 ))
+
+                */
           ],
         ));
         return ListView.builder(

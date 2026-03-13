@@ -4,12 +4,16 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:video_player/video_player.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../core/app_config.dart';
 import '../../../core/app_functions.dart';
+import '../../../core/language/language_provider.dart';
 import '../../../core/network/app_image_cache.dart';
 import '../../../core/network/media_headers.dart';
 import '../../../core/theme/colors.dart';
@@ -17,9 +21,23 @@ import '../../../core/widgets/back_header.dart';
 import '../../../core/widgets/sports_app_bar.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/block_layouts.dart';
+import '../../config/providers/config_provider.dart';
+import '../../sports/providers/selected_sport_provider.dart';
 import '../data/media_platform_client.dart';
 import '../models/asset.dart';
 import 'asset_card.dart';
+
+/// Converts a string to a URL slug (lowercase, spaces to hyphens, alphanumeric + hyphens).
+String _slugify(String s) {
+  if (s.isEmpty) return s;
+  return s
+      .toLowerCase()
+      .trim()
+      .replaceAll(RegExp(r'[\s_]+'), '-')
+      .replaceAll(RegExp(r'[^a-z0-9\-]'), '')
+      .replaceAll(RegExp(r'-+'), '-')
+      .replaceAll(RegExp(r'^-|-$'), '');
+}
 
 /// Full-page asset details: video (thumb + play) or article (thumb + title + description + HTML),
 /// plus a "More" section with 4 assets from the same category (layoutType 6).
@@ -40,7 +58,7 @@ import 'asset_card.dart';
 ///   ),
 /// );
 /// ```
-class AssetDetailsPage extends StatefulWidget {
+class AssetDetailsPage extends ConsumerStatefulWidget {
   const AssetDetailsPage({
     super.key,
     required this.asset,
@@ -79,10 +97,10 @@ class AssetDetailsPage extends StatefulWidget {
   final Widget Function(BuildContext context, Asset asset)? moreItemBuilder;
 
   @override
-  State<AssetDetailsPage> createState() => _AssetDetailsPageState();
+  ConsumerState<AssetDetailsPage> createState() => _AssetDetailsPageState();
 }
 
-class _AssetDetailsPageState extends State<AssetDetailsPage> {
+class _AssetDetailsPageState extends ConsumerState<AssetDetailsPage> {
   List<Asset> _moreAssets = [];
   bool _moreLoading = true;
   Object? _moreError;
@@ -222,8 +240,8 @@ class _AssetDetailsPageState extends State<AssetDetailsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            BackHeader(title: widget.asset.categories[0]),
-            Padding(padding: EdgeInsets.symmetric(
+            _buildHeaderRow(context),
+            Padding(padding: const EdgeInsets.symmetric(
                 horizontal: AppConfig.appPadding, vertical: 0), child: Column(
               children: [
                 if (widget.asset.isVideo) ...[
@@ -254,7 +272,61 @@ class _AssetDetailsPageState extends State<AssetDetailsPage> {
     );
   }
 
-  String get _shareUrl => widget.asset.articleUrl ?? widget.asset.media ?? '';
+  /// Canonical share URL: {host}/{language}/{sport_slug}/news|video/{content_id}/{content_title_slug}
+  String _buildCanonicalShareUrl() {
+    final config = ref.read(configProvider).valueOrNull;
+    final host = (config?['host'] ?? config?['site_url'] ?? AppConfig.baseUrl)
+        .toString()
+        .replaceAll(RegExp(r'/$'), '');
+    final lang = widget.lang ?? ref.read(languageProvider).toString();
+    final language = lang.isEmpty ? 'en' : lang;
+    final sportSlug = widget.asset.categories.isNotEmpty
+        ? _slugify(widget.asset.categories[0])
+        : 'sport';
+    final contentType = widget.asset.isArticle ? 'news' : 'video';
+    final contentId = widget.asset.id;
+    final titleSlug = _slugify(widget.asset.title);
+    final path = titleSlug.isEmpty
+        ? '$host/$language/$sportSlug/$contentType/$contentId'
+        : '$host/$language/$sportSlug/$contentType/$contentId/$titleSlug';
+    return path;
+  }
+
+  Widget _buildHeaderRow(BuildContext context) {
+    final configAsync = ref.watch(configProvider);
+    final languageCode = ref.watch(languageProvider).isNotEmpty
+        ? ref.watch(languageProvider)
+        : 'en';
+
+    return Row(
+      children: [
+        Expanded(
+          child: BackHeader(
+            title: widget.asset.categories.isNotEmpty
+                ? widget.asset.categories[0]
+                : '',
+          ),
+        ),
+        configAsync.when(
+          data: (config) {
+            final sports = (config?['sports'] as List?) ?? [];
+            if (sports.isEmpty) return const SizedBox.shrink();
+            return Row(
+              children: [
+                _SportIconsDropdown(
+                  sports: sports,
+                  languageCode: languageCode,
+                ),
+                const SizedBox(width: AppConfig.appPadding,)
+              ],
+            );
+          },
+          loading: () => const SizedBox.shrink(),
+          error: (_, __) => const SizedBox.shrink(),
+        ),
+      ],
+    );
+  }
 
   Widget _buildTitleDescriptionAndShareBar(ThemeData theme) {
     final textTheme = Theme.of(context).textTheme;
@@ -296,6 +368,78 @@ class _AssetDetailsPageState extends State<AssetDetailsPage> {
     );
   }
 
+  Future<void> _shareToPlatform(String platform) async {
+    final shareUrl = _buildCanonicalShareUrl();
+    if (widget.onShare != null) {
+      widget.onShare!(platform, shareUrl);
+      return;
+    }
+    final encodedUrl = Uri.encodeComponent(shareUrl);
+    final encodedTitle = Uri.encodeComponent(widget.asset.title);
+
+    switch (platform) {
+      case 'link':
+        await Clipboard.setData(ClipboardData(text: shareUrl));
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Link copied to clipboard'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        break;
+      case 'email':
+        final mailto = Uri(
+          scheme: 'mailto',
+          query: 'subject=${encodedTitle}&body=$encodedUrl',
+        );
+        if (await canLaunchUrl(mailto)) {
+          await launchUrl(mailto);
+        }
+        break;
+      case 'facebook':
+        final uri = Uri.parse(
+          'https://www.facebook.com/sharer/sharer.php?u=$encodedUrl',
+        );
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+        break;
+      case 'twitter':
+        final uri = Uri.parse(
+          'https://twitter.com/intent/tweet?url=$encodedUrl&text=$encodedTitle',
+        );
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+        break;
+      case 'pinterest':
+        final uri = Uri.parse(
+          'https://pinterest.com/pin/create/button/?url=$encodedUrl&description=$encodedTitle',
+        );
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+        break;
+      case 'reddit':
+        final uri = Uri.parse(
+          'https://reddit.com/submit?url=$encodedUrl&title=$encodedTitle',
+        );
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+        break;
+      case 'linkedin':
+        final uri = Uri.parse(
+          'https://www.linkedin.com/sharing/share-offsite/?url=$encodedUrl',
+        );
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+        break;
+    }
+  }
+
   Widget _buildShareBar(ThemeData theme) {
     const platforms = [
       ('link', Icons.link),
@@ -307,19 +451,14 @@ class _AssetDetailsPageState extends State<AssetDetailsPage> {
       ('linkedin', Icons.business_center),
     ];
     return Container(
-      color: theme.colorScheme.error,
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      color: AppColors.redSports,
+      padding: const EdgeInsets.symmetric(vertical: 0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: platforms
             .map(
               (p) => IconButton(
-                onPressed: (){
-                  print('${p.$1} ${_shareUrl}');
-                  _shareUrl.isEmpty
-                      ? null
-                      : () => widget.onShare?.call(p.$1, _shareUrl);
-                },
+                onPressed: () => _shareToPlatform(p.$1),
                 icon: Icon(p.$2, color: Colors.white, size: 24),
                 tooltip: p.$1,
               ),
@@ -479,6 +618,95 @@ class _AssetDetailsPageState extends State<AssetDetailsPage> {
       assets: _moreAssets,
       assetBuilder: effectiveBuilder,
       hasMore: false,
+    );
+  }
+}
+
+/// Dropdown with sport icons only; on tap navigates to that sport's page.
+class _SportIconsDropdown extends ConsumerWidget {
+  const _SportIconsDropdown({
+    required this.sports,
+    required this.languageCode,
+  });
+
+  final List<dynamic> sports;
+  final String languageCode;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+
+    final color = Theme.of(context).colorScheme.onSurface;
+    return PopupMenuButton<int>(
+      padding: EdgeInsets.zero,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SvgPicture.asset(
+            'assets/images/sports.svg',
+            height: 35,
+            width: 35,
+            colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+          ),
+          const SizedBox(width: AppConfig.appPadding),
+
+        ],
+      ),
+      onSelected: (int index) {
+        ref.read(goToSportsWithIndexProvider.notifier).state = index;
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      },
+      itemBuilder: (BuildContext context) {
+        return [
+          for (int i = 0; i < sports.length; i++) ...[
+            PopupMenuItem<int>(
+              value: i,
+              padding: const EdgeInsets.symmetric(horizontal: AppConfig.smallSpace, vertical: AppConfig.smallSpace),
+              child: _SportIconItem(sport: sports[i] as Map<String, dynamic>),
+            ),
+          ],
+        ];
+      },
+    );
+  }
+}
+
+class _SportIconItem extends StatelessWidget {
+  const _SportIconItem({required this.sport});
+
+  final Map<String, dynamic> sport;
+
+  @override
+  Widget build(BuildContext context) {
+    final iconUrl = sport['icon']?.toString();
+    if (iconUrl != null && iconUrl.isNotEmpty) {
+      return Row(
+        children: [
+          SizedBox(
+            height: 30,
+            width: 30,
+            child: SvgIconLoader(
+              iconUrl: iconUrl,
+              headers: mediaHeaders,
+              size: 28,
+              color: Colors.white,
+              backgroundColor: Colors.black
+                  .withOpacity(0.9),
+            ),
+          ),
+          const SizedBox(width: AppConfig.smallSpace,),
+          Text(sport['name'],
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.headlineLarge!.copyWith(fontSize: 13)
+          )
+        ],
+      );
+    }
+    return const SizedBox(
+      height: 32,
+      width: 32,
+      child: Icon(Icons.sports, size: 32),
     );
   }
 }
@@ -726,49 +954,6 @@ class _ArticleHtmlBodyState extends State<ArticleHtmlBody> {
     return SizedBox(
       height: height,
       child: WebViewWidget(controller: _webController!),
-    );
-  }
-}
-
-/// Compact card for "More" section (layoutType 6).
-class _MoreItemCard extends StatelessWidget {
-  const _MoreItemCard({required this.asset, this.onTap});
-
-  final Asset asset;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final thumb = asset.thumb;
-
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: thumb != null && thumb.isNotEmpty
-                  ? AppNetworkImage(url: thumb, fit: BoxFit.cover)
-                  : Container(
-                      color: Colors.grey.shade300,
-                      child: const Icon(Icons.image),
-                    ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(
-                asset.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleSmall,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

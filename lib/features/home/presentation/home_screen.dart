@@ -5,18 +5,19 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sports_config_app/core/app_config.dart';
 import '../../../core/app_functions.dart';
 import '../../../core/widgets/custom_bottom_bar.dart';
-import '../../../core/widgets/section_header.dart';
 import '../../../core/theme/colors.dart';
-import '../../../core/widgets/horizontal_list_placeholder.dart';
 import '../../../core/widgets/sports_app_bar.dart';
+import '../../../core/network/media_headers.dart';
 import '../../config/providers/config_provider.dart';
+import '../../config/models/config_models.dart';
 import '../../../core/language/language_provider.dart';
 import '../../live/presentation/live_screen.dart';
-import '../../media/presentation/videos_listing.dart';
 import '../../sports/presentation/sport_screen.dart';
+import '../../sports/providers/selected_sport_provider.dart';
 import '../../studio/presentation/studio_screen.dart';
 import '../../more/presentation/more_screen.dart';
-import '../../media/presentation/video_list_horizontal.dart';
+import '../../asset/presentation/asset_card.dart';
+import '../../../widgets/block_assets_section.dart';
 import 'widgets/top_sports.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -43,7 +44,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return configAsync.when(
       data: (config) {
         final sports = (config?['sports'] as List?) ?? [];
-        final menuAreas = (config?['menu_areas'] as List?) ?? [];
 
         final selectedLanguage = ref.watch(languageProvider);
         final String languageCode =
@@ -85,14 +85,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         // indexul tab-ului Sports în bottom bar:
         final int sportsTabIndex = 1 + (hasLive ? 1 : 0);
 
-        // Home
+        // Dacă s-a cerut navigare la Sports cu un sport (ex: din dropdown Asset Details)
+        final goToSportsIndex = ref.watch(goToSportsWithIndexProvider);
+        if (goToSportsIndex != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            ref.read(goToSportsWithIndexProvider.notifier).state = null;
+            ref.read(selectedSportIndexProvider.notifier).state =
+                goToSportsIndex.clamp(0, sports.length - 1);
+            setState(() => _selectedIndex = sportsTabIndex);
+          });
+        }
+
+        // Home: use blocks from config['homepage'] (same pattern as Sports tab).
+        // Homepage blocks may omit "id" (Block.fromJson treats missing id as 0).
+        final homepage = config?['homepage'] as Map<String, dynamic>?;
+        final homepageBlocks = <Block>[];
+        if (homepage != null) {
+          final blocksRaw = homepage['blocks'] as List<dynamic>? ?? [];
+          for (final e in blocksRaw) {
+            if (e is Map) {
+              homepageBlocks.add(Block.fromJson(Map<String, dynamic>.from(e)));
+            }
+          }
+        }
+
         pages.add(
           _buildHomeBody(
             context,
             sports,
-            menuAreas,
             languageCode,
-                () {
+            homepageBlocks,
+            () {
               setState(() {
                 _selectedIndex = sportsTabIndex;
               });
@@ -108,9 +132,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         // Sports
         pages.add(SportScreen(sports: sports, languageCode: languageCode));
 
-        // Studio
+        // Studio: use blocks from config['studios']['blocks'] (like home config['homepage'], sports config['sports'])
+        final studios = config?['studios'] as Map<String, dynamic>?;
+        final studioBlocks = <Block>[];
+        if (studios != null) {
+          final blocksRaw = studios['blocks'] as List<dynamic>? ?? [];
+          for (final e in blocksRaw) {
+            if (e is Map) {
+              studioBlocks.add(Block.fromJson(Map<String, dynamic>.from(e)));
+            }
+          }
+        }
         pages.add(
-          StudioScreen(menuAreas: menuAreas, languageCode: languageCode),
+          StudioScreen(blocks: studioBlocks, languageCode: languageCode),
         );
 
         // More
@@ -153,16 +187,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildHomeBody(
-      BuildContext context,
-      List<dynamic> sports,
-      List<dynamic> menuAreas,
-      String languageCode,
-      VoidCallback goToSportsTab,
-      ) {
+    BuildContext context,
+    List<dynamic> sports,
+    String languageCode,
+    List<Block> homepageBlocks,
+    VoidCallback goToSportsTab,
+  ) {
+    // debugPrint('${homepageBlocks.length}');
+
     return Column(
       children: [
-
-        // bara de sporturi, fixă sus, la fel ca în tabul Sports
         SportsOnTop(
           sports: sports,
           highlightSelected: false,
@@ -171,113 +205,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         const Divider(height: 1),
         Expanded(
           child: Padding(
-            padding:
-            const EdgeInsets.symmetric(horizontal: AppConfig.appPadding),
-            child: Scrollbar( controller: _scrollController,
-                thickness: 4.0, // Lățime ușor crescută
-                radius: const Radius.circular(10), // Colțuri mai rotunjite
-                child: CustomScrollView(
-                  controller: _scrollController,
-                  slivers: [
-                ...menuAreas.expand((area) {
-                  final map = area as Map<String, dynamic>;
-                  final String name = map['name']?.toString() ?? '';
-
-                  final List<Widget> sectionWidgets = [];
-
-                  final areas = map['areas'] as List?;
-
-                  if (areas != null && areas.isNotEmpty) {
-                    for (final sub in areas) {
-                      final subMap = sub as Map<String, dynamic>;
-                      final subName = subMap['name']?.toString() ?? '';
-
-                      final mpidsValue =
-                      (subMap['mpids'] ?? subMap['mpid'])?.toString();
-
-                      sectionWidgets.add(
-                        SliverToBoxAdapter(
-                          child: SectionHeader(
-                            title: subName,
-                            moreLabel: AppLocalizations.of(context)!.see_more,
-                            onMore: (mpidsValue != null &&
-                                mpidsValue.trim().isNotEmpty)
-                                ? () {
-                              SportsAppLogger.log('1-$mpidsValue');
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => VideosListing(
-                                    title: name,
-                                    mpids: mpidsValue,
-                                    languageCode: languageCode,
-                                  ),
-                                ),
-                              );
-                            }
-                                : null,
-                          ),
-                        ),
-                      );
-
-                      if (mpidsValue != null && mpidsValue.trim().isNotEmpty) {
-                        sectionWidgets.add(
-                          SliverToBoxAdapter(
-                            child: VideoCaruselList(
-                              mpids: mpidsValue,
-                              title: '',
-                              languageCode: languageCode,
-                            ),
-                          ),
-                        );
-                      } else {
-                        sectionWidgets.add(
-                          const SliverToBoxAdapter(
-                            child: HorizontalListPlaceholder(),
-                          ),
-                        );
-                      }
-                    }
-                  } else {
-                    final mpidsValue =
-                    (map['mpids'] ?? map['mpid'])?.toString();
-
-                    if (mpidsValue != null && mpidsValue.trim().isNotEmpty) {
-                      sectionWidgets.add(
-                        SliverToBoxAdapter(
-                          child: SectionHeader(
-                            title: name,
-                            moreLabel: AppLocalizations.of(context)!.see_more,
-                            onMore: () {
-                              SportsAppLogger.log('2-$mpidsValue');
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => VideosListing(
-                                    title: name,
-                                    mpids: mpidsValue,
-                                    languageCode: languageCode,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      );
-                      sectionWidgets.add(
-                        SliverToBoxAdapter(
-                          child: VideoCaruselList(
-                            title: AppLocalizations.of(context)!.two,
-                            mpids: mpidsValue,
-                            languageCode: languageCode,
-                          ),
-                        ),
-                      );
-                    }
-                  }
-
-                  return sectionWidgets;
-                }),
-              ],
-            )),
+            padding: const EdgeInsets.symmetric(horizontal: AppConfig.zeroPadding),
+            child: Scrollbar(
+              controller: _scrollController,
+              thickness: 4.0,
+              radius: const Radius.circular(10),
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                child: BlockAssetsList(
+                  blocks: homepageBlocks,
+                  client: mediaPlatformClient,
+                  lang: languageCode,
+                  assetBuilder: (context, asset) => AssetCard(
+                    asset: asset,
+                    onTap: () => SportsFunction().openAssetDetails(asset, context),
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ],

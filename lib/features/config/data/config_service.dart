@@ -1,9 +1,11 @@
+import 'package:flutter/cupertino.dart';
+
 import '../../../core/app_config.dart';
 import '../../../core/network/dio_client.dart';
 
 class ConfigService {
   Future<Map<String, dynamic>> fetchConfig() async {
-    print('${AppConfig.baseUrl}/config');
+    debugPrint('${AppConfig.baseUrl}/config');
 
     final res = await dio.get('/api/v1/config',);
 

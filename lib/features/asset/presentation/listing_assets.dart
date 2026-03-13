@@ -11,6 +11,24 @@ import '../../config/models/config_models.dart';
 import '../data/media_platform_client.dart';
 import '../models/asset.dart';
 
+/// Minimal block for search listing (source: search).
+Block createSearchBlock(String query, {String contentType = 'video'}) {
+  return Block(
+    id: 0,
+    sportId: 0,
+    key: 'search',
+    title: query,
+    layoutType: 2,
+    contentType: contentType,
+    source: 'search',
+    filters: const BlockFilters(),
+    limit: 20,
+    enabled: true,
+    sortOrder: 0,
+    cacheTtl: 0,
+  );
+}
+
 class AssetsListingPage extends StatefulWidget {
   const AssetsListingPage({
     super.key,
@@ -21,6 +39,10 @@ class AssetsListingPage extends StatefulWidget {
     this.lang,
     this.country,
     this.assetBuilder,
+    /// When set, uses [ContentSource.search] and this query; [block.source] should be 'search'.
+    this.searchQuery,
+    /// When true with [searchQuery], fetches both video and article results and merges them.
+    this.searchBothTypes = false,
   });
 
   final MediaPlatformClient client;
@@ -33,6 +55,10 @@ class AssetsListingPage extends StatefulWidget {
   final String? country;
   /// Custom tile for each asset. If null, [DefaultAssetTile] is used.
   final Widget Function(BuildContext context, Asset asset)? assetBuilder;
+  /// Search query (use with block.source == 'search').
+  final String? searchQuery;
+  /// Search in both video and article; results are merged and sorted by date.
+  final bool searchBothTypes;
 
   @override
   State<AssetsListingPage> createState() => _AssetsListingPageState();
@@ -84,51 +110,99 @@ class _AssetsListingPageState extends State<AssetsListingPage> {
     }
 
     try {
-      final source = ContentSource.fromString(widget.block.source) ?? ContentSource.latest;
-      final contentType = ContentType.fromString(widget.block.contentType) ?? ContentType.video;
-      final filters = AssetFilters(
-        categories: widget.block.filters.categories,
-        tags: widget.block.filters.tags,
-        period: widget.block.filters.period,
-        excludeCategories: widget.block.filters.excludeCategories,
-        excludeTags: widget.block.filters.excludeTags,
-        excludeIds: widget.block.filters.excludeIds,
-      );
-      final res = await widget.client.fetchAssets(FetchAssetsParams(
-        source: source,
-        contentType: contentType,
-        filters: filters,
-        perPage: widget.perPage,
-        page: page,
-        lang: widget.lang,
-        country: widget.country,
-      ));
+      final useSearch = widget.searchQuery != null && widget.searchQuery!.trim().isNotEmpty;
+      final fetchBoth = useSearch && widget.searchBothTypes;
 
-      print(
-        {
-          "source": source,
-          "contentType": contentType,
-          "filters": filters.toJson(),
-          "perPage": widget.perPage,
-          "page": page,
-          "lang": widget.lang,
-          "country": widget.country,
-        }
-      );
-      print('Lungime: ${res.assets.length}');
+      if (fetchBoth) {
+        final filters = AssetFilters(
+          categories: widget.block.filters.categories,
+          tags: widget.block.filters.tags,
+          period: widget.block.filters.period,
+          excludeCategories: widget.block.filters.excludeCategories,
+          excludeTags: widget.block.filters.excludeTags,
+          excludeIds: widget.block.filters.excludeIds,
+        );
+        final q = widget.searchQuery!.trim();
+        final resVideo = widget.client.fetchAssets(FetchAssetsParams(
+          source: ContentSource.search,
+          contentType: ContentType.video,
+          filters: filters,
+          perPage: widget.perPage,
+          page: page,
+          query: q,
+          lang: widget.lang,
+          country: widget.country,
+        ));
+        final resArticle = widget.client.fetchAssets(FetchAssetsParams(
+          source: ContentSource.search,
+          contentType: ContentType.article,
+          filters: filters,
+          perPage: widget.perPage,
+          page: page,
+          query: q,
+          lang: widget.lang,
+          country: widget.country,
+        ));
+        final results = await Future.wait([resVideo, resArticle]);
+        final res1 = results[0];
+        final res2 = results[1];
+        final merged = <Asset>[...res1.assets, ...res2.assets];
+        final seenIds = <int>{};
+        merged.removeWhere((a) => !seenIds.add(a.id));
+        merged.sort((a, b) {
+          final da = a.publishedAt ?? '';
+          final db = b.publishedAt ?? '';
+          return db.compareTo(da);
+        });
+        if (!mounted) return;
+        setState(() {
+          if (page == 1) {
+            _assets.clear();
+            _loading = false;
+          } else {
+            _loadingMore = false;
+          }
+          _assets.addAll(merged);
+          _hasMore = res1.hasMore || res2.hasMore;
+          _page = page;
+        });
+      } else {
+        final source = useSearch
+            ? ContentSource.search
+            : (ContentSource.fromString(widget.block.source) ?? ContentSource.latest);
+        final contentType = ContentType.fromString(widget.block.contentType) ?? ContentType.video;
+        final filters = AssetFilters(
+          categories: widget.block.filters.categories,
+          tags: widget.block.filters.tags,
+          period: widget.block.filters.period,
+          excludeCategories: widget.block.filters.excludeCategories,
+          excludeTags: widget.block.filters.excludeTags,
+          excludeIds: widget.block.filters.excludeIds,
+        );
+        final res = await widget.client.fetchAssets(FetchAssetsParams(
+          source: source,
+          contentType: contentType,
+          filters: filters,
+          perPage: widget.perPage,
+          page: page,
+          query: useSearch ? widget.searchQuery!.trim() : null,
+          lang: widget.lang,
+          country: widget.country,
+        ));
 
-      if (!mounted) return;
-      setState(() {
-        if (page == 1) {
-          _assets.clear();
-          _loading = false;
-        } else {
-          _loadingMore = false;
-        }
-        _assets.addAll(res.assets);
-        _hasMore = res.hasMore;
-        _page = page;
-      });
+        if (!mounted) return;
+        setState(() {
+          if (page == 1) {
+            _assets.clear();
+            _loading = false;
+          } else {
+            _loadingMore = false;
+          }
+          _assets.addAll(res.assets);
+          _hasMore = res.hasMore;
+          _page = page;
+        });
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() {

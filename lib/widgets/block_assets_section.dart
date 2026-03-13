@@ -47,10 +47,13 @@ class _BlockAssetsSectionState extends State<BlockAssetsSection> {
   @override
   void didUpdateWidget(BlockAssetsSection oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.block.id != widget.block.id ||
-        oldWidget.block.limit != widget.block.limit ||
-        oldWidget.block.source != widget.block.source ||
-        oldWidget.block.contentType != widget.block.contentType) {
+    final oldB = oldWidget.block;
+    final newB = widget.block;
+    if (oldB.id != newB.id ||
+        oldB.key != newB.key ||
+        oldB.limit != newB.limit ||
+        oldB.source != newB.source ||
+        oldB.contentType != newB.contentType) {
       _load();
     }
   }

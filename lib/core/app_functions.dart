@@ -8,7 +8,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../features/asset/data/media_platform_client.dart';
 import '../features/asset/models/asset.dart';
 import '../features/asset/presentation/asset_details.dart';
-import '../features/media/data/video_item.dart';
 import '../features/media/presentation/video_player_dialog.dart';
 import '../l10n/app_localizations.dart';
 import 'app_config.dart';
@@ -252,23 +251,20 @@ class SportsFunction {
     return scale;
   }
 
-  void openPlayer(VideoItem v, BuildContext context) {
-    final url = v.videoUrl;
-    if (url == null || url.isEmpty) return;
-
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (_) => VideoPlayerDialog(
-        videoUrl: url,
-        title: v.title,
-      ),
-    );
-  }
+  // void openPlayer(VideoItem v, BuildContext context) {
+  //   final url = v.videoUrl;
+  //   if (url == null || url.isEmpty) return;
+  //
+  //   showDialog(
+  //     context: context,
+  //     barrierDismissible: true,
+  //     builder: (_) => VideoPlayerDialog(
+  //       videoUrl: url,
+  //       title: v.title,
+  //     ),
+  //   );
+  // }
   void openAssetDetails(Asset asset, BuildContext context) {
-
-    print('CLICK on ${asset.id} - ${asset.type} ');
-
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => AssetDetailsPage(
