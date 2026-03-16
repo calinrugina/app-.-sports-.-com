@@ -230,10 +230,13 @@ class MediaPlatformClient {
     if (params.lang != null && params.lang!.isNotEmpty) q['lang'] = params.lang!;
     if (params.country != null && params.country!.isNotEmpty) q['country'] = params.country!;
 
-    // print('_fetchLatest ${params.toJson()}');
+
 
     final uri = Uri.parse('${_base}v1/latest').replace(queryParameters: q);
     final res = await _get(uri);
+
+    print('_fetchLatest ${params.toJson()} COUNT: ${res.length}');
+
     return _parsePaginated(res, params.page, params.perPage);
   }
 
@@ -297,11 +300,32 @@ class MediaPlatformClient {
     if (params.lang != null && params.lang!.isNotEmpty) queryParams['lang'] = params.lang!;
     if (params.country != null && params.country!.isNotEmpty) queryParams['country'] = params.country!;
 
-    print('_fetchSearch ${params.toJson()}');
+    // print('_fetchSearch ${params.toJson()}');
 
     final uri = Uri.parse('${_base}v1/search').replace(queryParameters: queryParams);
     final res = await _get(uri);
     return _parseSearch(res, params.perPage);
+  }
+
+  /// Fetches a single asset by ID. GET /v1/assets/{id}
+  /// Returns null on error (e.g. 404).
+  Future<Asset?> fetchAsset(
+    int id, {
+    String? lang,
+    String? country,
+  }) async {
+    final q = <String, String>{};
+    if (lang != null && lang.isNotEmpty) q['lang'] = lang;
+    if (country != null && country.isNotEmpty) q['country'] = country;
+    final uri = Uri.parse('${_base}v1/assets/$id').replace(queryParameters: q.isEmpty ? null : q);
+    try {
+      final res = await _get(uri);
+      final data = res['data'] as Map<String, dynamic>? ?? res;
+      if (data.isEmpty) return null;
+      return Asset.fromJson(Map<String, dynamic>.from(data));
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Records a view for the asset. Call when the user opens the asset details.
@@ -358,9 +382,7 @@ class MediaPlatformClient {
     final lastPage = (meta?['last_page'] as num?)?.toInt();
     final total = (meta?['total'] as num?)?.toInt();
 
-    final hasMore = lastPage != null
-        ? currentPage < lastPage
-        : (total != null && (currentPage * perPage) < total);
+    final hasMore = meta?['has_more']??false;
 
     final assets = data
         .map((e) => Asset.fromJson(Map<String, dynamic>.from(e as Map)))

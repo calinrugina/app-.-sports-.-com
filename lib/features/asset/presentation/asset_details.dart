@@ -101,6 +101,8 @@ class AssetDetailsPage extends ConsumerStatefulWidget {
 }
 
 class _AssetDetailsPageState extends ConsumerState<AssetDetailsPage> {
+  Asset? _asset;
+  Object? _assetError;
   List<Asset> _moreAssets = [];
   bool _moreLoading = true;
   Object? _moreError;
@@ -112,21 +114,54 @@ class _AssetDetailsPageState extends ConsumerState<AssetDetailsPage> {
   ChewieController? _chewieController;
   bool _videoError = false;
 
+  bool get _assetLoading => _asset == null && _assetError == null;
+  Asset get _effectiveAsset => _asset ?? widget.asset;
+
   @override
   void initState() {
     super.initState();
-    _loadMore();
     _scrollController.addListener(_onScroll);
-    if (widget.asset.isVideo) _initVideoPlayer();
-    _recordView();
+    _loadAsset();
+  }
+
+  Future<void> _loadAsset() async {
+    try {
+      final a = await widget.client.fetchAsset(
+        widget.asset.id,
+        lang: widget.lang,
+        country: widget.country,
+      );
+      if (!mounted) return;
+      setState(() {
+        _asset = a;
+        _assetError = a == null ? true : null;
+      });
+      if (_asset != null) {
+        _recordView();
+        _loadMore();
+        if (_effectiveAsset.isVideo) _initVideoPlayer();
+      } else {
+        _loadMore();
+        if (widget.asset.isVideo) _initVideoPlayer();
+        _recordView();
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _assetError = e;
+      });
+      _loadMore();
+      if (widget.asset.isVideo) _initVideoPlayer();
+      _recordView();
+    }
   }
 
   void _recordView() {
-    widget.client.recordAssetView(widget.asset.id).ignore();
+    widget.client.recordAssetView(_effectiveAsset.id).ignore();
   }
 
   Future<void> _initVideoPlayer() async {
-    final mediaUrl = widget.asset.media;
+    final mediaUrl = _effectiveAsset.media;
     if (mediaUrl == null || mediaUrl.isEmpty) return;
     _videoController = VideoPlayerController.networkUrl(Uri.parse(mediaUrl),
         httpHeaders: mediaHeaders);
@@ -184,10 +219,17 @@ class _AssetDetailsPageState extends ConsumerState<AssetDetailsPage> {
   }
 
   Future<void> _loadMore() async {
-    final category = widget.asset.categories.isNotEmpty
-        ? widget.asset.categories.first
+
+
+    final category = _effectiveAsset.categories.isNotEmpty
+        ? _effectiveAsset.categories.first
         : null;
-    if (category == null) {
+    final tag = _effectiveAsset.tags.isNotEmpty
+        ? _effectiveAsset.tags.last
+        : null;
+
+
+    if (category == null && tag == null) {
       setState(() {
         _moreLoading = false;
         _moreAssets = [];
@@ -198,22 +240,31 @@ class _AssetDetailsPageState extends ConsumerState<AssetDetailsPage> {
       _moreLoading = true;
       _moreError = null;
     });
+
     try {
       final contentType =
-          widget.asset.isVideo ? ContentType.video : ContentType.article;
-      final res = await widget.client.fetchAssets(FetchAssetsParams(
-        source: ContentSource.latest,
-        contentType: contentType,
-        filters: AssetFilters(
-          categories: [category],
-          excludeIds: [widget.asset.id],
-        ),
-        perPage: 4,
-        page: 1,
-        lang: widget.lang,
-        country: widget.country,
-      ));
+          _effectiveAsset.isVideo ? ContentType.video : ContentType.article;
+      final filters = AssetFilters(
+        categories: category != null && category.isNotEmpty ? [category] : [],
+        tags: category == null && tag != null && tag.isNotEmpty ? [tag] : [],
+        excludeIds: [_effectiveAsset.id],
+      );
+print(filters.toJson());
+      final res = await widget.client.fetchAssets(
+          FetchAssetsParams(
+            source: ContentSource.latest,
+            contentType: contentType,
+            filters: filters,
+            perPage: 8,
+            page: 1,
+            lang: widget.lang,
+            country: widget.country,
+          )
+      );
+
       if (mounted) {
+        print('Related: ${filters.toJson()} Assets: ${res.assets.length}');
+
         setState(() {
           _moreAssets = res.assets;
           _moreLoading = false;
@@ -233,6 +284,13 @@ class _AssetDetailsPageState extends ConsumerState<AssetDetailsPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    if (_assetLoading) {
+      return Scaffold(
+        appBar: const SportsAppBar(),
+        body: SportsFunction().customLoading(),
+      );
+    }
+
     return Scaffold(
       appBar: const SportsAppBar(),
       body: SingleChildScrollView(
@@ -244,17 +302,17 @@ class _AssetDetailsPageState extends ConsumerState<AssetDetailsPage> {
             Padding(padding: const EdgeInsets.symmetric(
                 horizontal: AppConfig.appPadding, vertical: 0), child: Column(
               children: [
-                if (widget.asset.isVideo) ...[
+                if (_effectiveAsset.isVideo) ...[
                   _buildVideoSection(),
                   const SizedBox(height: AppConfig.appPadding),
                   _buildTitleDescriptionAndShareBar(theme),
                 ],
-                if (widget.asset.isArticle) _buildArticleSection(theme),
+                if (_effectiveAsset.isArticle) _buildArticleSection(theme),
               ],
             ),),
 
 
-            if (widget.asset.categories.isNotEmpty) ...[
+            if (_effectiveAsset.categories.isNotEmpty || _effectiveAsset.tags.isNotEmpty) ...[
               const SizedBox(height: AppConfig.appPadding),
               _buildMoreSection(theme),
             ],
@@ -280,12 +338,12 @@ class _AssetDetailsPageState extends ConsumerState<AssetDetailsPage> {
         .replaceAll(RegExp(r'/$'), '');
     final lang = widget.lang ?? ref.read(languageProvider).toString();
     final language = lang.isEmpty ? 'en' : lang;
-    final sportSlug = widget.asset.categories.isNotEmpty
-        ? _slugify(widget.asset.categories[0])
+    final sportSlug = _effectiveAsset.categories.isNotEmpty
+        ? _slugify(_effectiveAsset.categories[0])
         : 'sport';
-    final contentType = widget.asset.isArticle ? 'news' : 'video';
-    final contentId = widget.asset.id;
-    final titleSlug = _slugify(widget.asset.title);
+    final contentType = _effectiveAsset.isArticle ? 'news' : 'video';
+    final contentId = _effectiveAsset.id;
+    final titleSlug = _slugify(_effectiveAsset.title);
     final path = titleSlug.isEmpty
         ? '$host/$language/$sportSlug/$contentType/$contentId'
         : '$host/$language/$sportSlug/$contentType/$contentId/$titleSlug';
@@ -302,9 +360,9 @@ class _AssetDetailsPageState extends ConsumerState<AssetDetailsPage> {
       children: [
         Expanded(
           child: BackHeader(
-            title: widget.asset.categories.isNotEmpty
-                ? widget.asset.categories[0]
-                : '',
+            title: _effectiveAsset.categories.isNotEmpty
+                ? _effectiveAsset.categories[0]
+                : (_effectiveAsset.tags.isNotEmpty ? _effectiveAsset.tags[0] :''),
           ),
         ),
         configAsync.when(
@@ -336,27 +394,27 @@ class _AssetDetailsPageState extends ConsumerState<AssetDetailsPage> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          widget.asset.title,
+          _effectiveAsset.title,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: textTheme.titleLarge,
         ),
-        if (widget.asset.description != null &&
-            widget.asset.description!.isNotEmpty) ...[
+        if (_effectiveAsset.description != null &&
+            _effectiveAsset.description!.isNotEmpty) ...[
           const SizedBox(height: 12),
           Text(
-            widget.asset.description!,
+            _effectiveAsset.description!,
             maxLines: 4,
             overflow: TextOverflow.ellipsis,
             style: textTheme.bodyMedium,
           ),
         ],
-        if (widget.asset.publishedAt != null &&
-            widget.asset.publishedAt!.isNotEmpty) ...[
+        if (_effectiveAsset.publishedAt != null &&
+            _effectiveAsset.publishedAt!.isNotEmpty) ...[
           const SizedBox(height: 10),
           Text(
             SportsFunction()
-                .formatDateRelative(context, widget.asset.publishedAt!),
+                .formatDateRelative(context, _effectiveAsset.publishedAt!),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: textTheme.labelSmall,
@@ -375,7 +433,7 @@ class _AssetDetailsPageState extends ConsumerState<AssetDetailsPage> {
       return;
     }
     final encodedUrl = Uri.encodeComponent(shareUrl);
-    final encodedTitle = Uri.encodeComponent(widget.asset.title);
+    final encodedTitle = Uri.encodeComponent(_effectiveAsset.title);
 
     switch (platform) {
       case 'link':
@@ -469,7 +527,7 @@ class _AssetDetailsPageState extends ConsumerState<AssetDetailsPage> {
   }
 
   Widget _buildVideoSection() {
-    final mediaUrl = widget.asset.media;
+    final mediaUrl = _effectiveAsset.media;
 
     if (mediaUrl == null || mediaUrl.isEmpty) {
       return _buildVideoThumbFallback();
@@ -514,14 +572,14 @@ class _AssetDetailsPageState extends ConsumerState<AssetDetailsPage> {
   }
 
   Widget _buildVideoThumbFallback() {
-    final thumb = widget.asset.thumb;
-    final mediaUrl = widget.asset.media;
+    final thumb = _effectiveAsset.thumb;
+    final mediaUrl = _effectiveAsset.media;
     return AspectRatio(
       aspectRatio: 16 / 9,
       child: InkWell(
         onTap: () {
           if (widget.onPlayVideo != null) {
-            widget.onPlayVideo!(widget.asset);
+            widget.onPlayVideo!(_effectiveAsset);
           } else if (mediaUrl != null &&
               mediaUrl.isNotEmpty &&
               widget.onOpenUrl != null) {
@@ -561,8 +619,8 @@ class _AssetDetailsPageState extends ConsumerState<AssetDetailsPage> {
   }
 
   Widget _buildArticleSection(ThemeData theme) {
-    final thumb = widget.asset.thumb;
-    final articleUrl = widget.asset.articleUrl ?? widget.asset.media;
+    final thumb = _effectiveAsset.thumb;
+    final articleUrl = _effectiveAsset.articleUrl ?? _effectiveAsset.media;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

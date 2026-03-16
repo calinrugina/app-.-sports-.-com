@@ -24,7 +24,7 @@ class AssetCard extends StatelessWidget {
       this.onTap,
       this.compact = false,
       this.pictureRatio = 16 / 11,
-      this.showPublishedAt = true });
+      this.showPublishedAt = false});
 
   @override
   Widget build(BuildContext context) {
@@ -42,9 +42,11 @@ class AssetCard extends StatelessWidget {
     final clampedTextScale = mq.textScaleFactor.clamp(1.0, 1.2);
     final mediaWithClamp = mq.copyWith(textScaleFactor: clampedTextScale);
 
-    final formattedDate =
-        SportsFunction().formatDateRelative(context, asset.publishedAt!);
 
+
+
+    final formattedDate =
+    showPublishedAt==true? SportsFunction().formatDateRelative(context, asset.publishedAt!) : null;
 
     return Material(
       type: MaterialType.transparency,
@@ -127,7 +129,7 @@ class AssetCard extends StatelessWidget {
                         style: textTheme.bodyMedium,
                       ),
                     ),
-                    if (showPublishedAt == false )
+                    if (formattedDate != null )
                       Text(
                       formattedDate.toUpperCase(),
                       maxLines: 1,
@@ -432,7 +434,7 @@ class AssetCard2Columns extends StatelessWidget {
   final double pictureRatio;
   /// When true, shows "Highlights" label on the card (e.g. for layout_type 1).
   final bool showHighlights;
-
+  final bool showPublishedAt;
 
   const AssetCard2Columns(
       {super.key,
@@ -440,10 +442,14 @@ class AssetCard2Columns extends StatelessWidget {
       this.onTap,
       this.compact = false,
       this.pictureRatio = 16 / 11,
-      this.showHighlights = false});
+      this.showHighlights = false,
+        this.showPublishedAt = false});
 
   @override
   Widget build(BuildContext context) {
+    final formattedDate =
+    showPublishedAt==true? SportsFunction().formatDateRelative(context, asset.publishedAt!) : null;
+
     return SizedBox(
       width: 290,
       child: Card(
@@ -459,7 +465,7 @@ class AssetCard2Columns extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: Padding(
             padding: const EdgeInsets.symmetric(
-                horizontal: AppConfig.smallSpace, vertical: 0),
+                horizontal: AppConfig.smallSpace, vertical: AppConfig.appPadding),
             child: InkWell(
               onTap: onTap,
               child: Row(
@@ -511,12 +517,12 @@ class AssetCard2Columns extends StatelessWidget {
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
+                      // mainAxisAlignment: MainAxisAlignment.center,
+                      // mainAxisSize: MainAxisSize.min,
                       children: [
                         if (showHighlights)
                           Padding(
-                            padding: const EdgeInsets.only(bottom: 6),
+                            padding: const EdgeInsets.only(bottom: 0),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 10,
@@ -541,6 +547,13 @@ class AssetCard2Columns extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
+                        if (formattedDate != null )
+                          Text(
+                            formattedDate.toUpperCase(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.labelSmall,
+                          ),
                       ],
                     ),
                   ),

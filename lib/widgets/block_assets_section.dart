@@ -92,8 +92,6 @@ class _BlockAssetsSectionState extends State<BlockAssetsSection> {
         sectionName: widget.block.title,
       ));
 
-
-
       if (mounted) {
         setState(() {
           _response = res;
@@ -163,12 +161,15 @@ class _BlockAssetsSectionState extends State<BlockAssetsSection> {
       redTitle: widget.redTitle,
       assets: assets,
       assetBuilder: widget.assetBuilder,
-      block: widget.block
+      block: widget.block,
+      hasMore: _response?.hasMore,
     );
+    return layout ;
     return Column(
       children: [
+        // const SizedBox(height: AppConfig.smallSpace),
         layout,
-        const SizedBox(height: AppConfig.smallSpace),
+        // const SizedBox(height: AppConfig.smallSpace),
       ],
     );
   }
@@ -209,6 +210,7 @@ class BlockAssetsList extends StatelessWidget {
           country: country,
           redTitle: redTitle,
           assetBuilder: assetBuilder,
+
         );
       },
     );

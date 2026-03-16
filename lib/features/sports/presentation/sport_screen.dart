@@ -33,10 +33,13 @@ class SportScreen extends ConsumerStatefulWidget {
 class _SportScreenState extends ConsumerState<SportScreen> {
   final ScrollController _scrollController = ScrollController();
   bool _initialIndexSynced = false;
+  bool _showBackToTop = false;
+  static const double _backToTopThreshold = 400;
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     if (widget.initialIndex != null && widget.sports.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
@@ -49,8 +52,27 @@ class _SportScreenState extends ConsumerState<SportScreen> {
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    final show = _scrollController.hasClients &&
+        _scrollController.offset > _backToTopThreshold;
+    if (show != _showBackToTop && mounted) {
+      setState(() => _showBackToTop = show);
+    }
+  }
+
+  void _scrollToTop() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOutCubic,
+      );
+    }
   }
 
   @override
@@ -75,45 +97,56 @@ class _SportScreenState extends ConsumerState<SportScreen> {
 
     final config = CategoryConfig.fromJson(sport);
 
-    return Column(
+    return Stack(
       children: [
-        // lista de sporturi sus, fixa în tabul Sports
-        SportsOnTop(sports: sports),
-        const Divider(height: 1),
-        Expanded(
-          child: Scrollbar(
-              controller: _scrollController,
-              thickness: 4.0, // Lățime ușor crescută
-              radius: const Radius.circular(10), // Colțuri mai rotunjite
-              child: SingleChildScrollView(
+        Column(
+          children: [
+            SportsOnTop(sports: sports),
+            const Divider(height: 1),
+            Expanded(
+              child: Scrollbar(
                 controller: _scrollController,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: AppConfig.zeroPadding),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // const SizedBox(height: 16),
-                      SportBannersCarousel(sport: sport),
-
-                      BlockAssetsList(
+                thickness: 4.0,
+                radius: const Radius.circular(10),
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppConfig.zeroPadding),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SportBannersCarousel(sport: sport),
+                        BlockAssetsList(
                           blocks: config.blocks,
                           client: mediaPlatformClient,
                           lang: 'en',
-                          // country: 'GB',
                           redTitle: name,
                           assetBuilder: (context, assets) => AssetCard(
-                                asset: assets,
-                                onTap: () => SportsFunction()
-                                    .openAssetDetails(assets, context),
-                              )
-                      ),
-                      const SizedBox(height: 24),
-                    ],
+                            asset: assets,
+                            onTap: () =>
+                                SportsFunction().openAssetDetails(assets, context),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                    ),
                   ),
                 ),
-              )),
+              ),
+            ),
+          ],
         ),
+        if (_showBackToTop)
+          Positioned(
+            right: 16,
+            bottom: 24,
+            child: FloatingActionButton.small(
+              onPressed: _scrollToTop,
+              heroTag: 'sport_back_to_top',
+              child: const Icon(Icons.arrow_upward, color: Colors.white),
+            ),
+          ),
       ],
     );
   }

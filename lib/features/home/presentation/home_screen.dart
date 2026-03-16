@@ -30,11 +30,38 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _selectedIndex = 0;
   final ScrollController _scrollController = ScrollController();
+  bool _showBackToTop = false;
+  static const double _backToTopThreshold = 400;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    final show = _scrollController.hasClients &&
+        _scrollController.offset > _backToTopThreshold;
+    if (show != _showBackToTop && mounted) {
+      setState(() => _showBackToTop = show);
+    }
+  }
+
+  void _scrollToTop() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOutCubic,
+      );
+    }
   }
 
   @override
@@ -193,38 +220,50 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     List<Block> homepageBlocks,
     VoidCallback goToSportsTab,
   ) {
-    // debugPrint('${homepageBlocks.length}');
-
-    return Column(
+    return Stack(
       children: [
-        SportsOnTop(
-          sports: sports,
-          highlightSelected: false,
-          onSportSelected: (_) => goToSportsTab(),
-        ),
-        const Divider(height: 1),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppConfig.zeroPadding),
-            child: Scrollbar(
-              controller: _scrollController,
-              thickness: 4.0,
-              radius: const Radius.circular(10),
-              child: SingleChildScrollView(
-                controller: _scrollController,
-                child: BlockAssetsList(
-                  blocks: homepageBlocks,
-                  client: mediaPlatformClient,
-                  lang: languageCode,
-                  assetBuilder: (context, asset) => AssetCard(
-                    asset: asset,
-                    onTap: () => SportsFunction().openAssetDetails(asset, context),
+        Column(
+          children: [
+            SportsOnTop(
+              sports: sports,
+              highlightSelected: false,
+              onSportSelected: (_) => goToSportsTab(),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppConfig.zeroPadding),
+                child: Scrollbar(
+                  controller: _scrollController,
+                  thickness: 4.0,
+                  radius: const Radius.circular(10),
+                  child: SingleChildScrollView(
+                    controller: _scrollController,
+                    child: BlockAssetsList(
+                      blocks: homepageBlocks,
+                      client: mediaPlatformClient,
+                      lang: languageCode,
+                      assetBuilder: (context, asset) => AssetCard(
+                        asset: asset,
+                        onTap: () => SportsFunction().openAssetDetails(asset, context),
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
+          ],
         ),
+        if (_showBackToTop)
+          Positioned(
+            right: 16,
+            bottom: 24,
+            child: FloatingActionButton.small(
+              onPressed: _scrollToTop,
+              heroTag: 'home_back_to_top',
+              child: const Icon(Icons.arrow_upward, color: Colors.white),
+            ),
+          ),
       ],
     );
   }

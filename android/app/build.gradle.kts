@@ -15,15 +15,15 @@ plugins {
 
 android {
     namespace = "com.sportsdotcom.app"
-    compileSdk = 35
+    compileSdk = 36
     ndkVersion = "27.0.12077973"
 
     defaultConfig {
         applicationId = "com.sportsdotcom.app"  // TREBUIE să fie EXACT ID-ul din Google Play
-        minSdk = 21
+        minSdk = flutter.minSdkVersion
         targetSdk = 35
-        versionCode = 16      // > decât ce e acum live
-        versionName = "1.1.0"
+        versionCode = 20      // > decât ce e acum live
+        versionName = "1.1.1"
     }
 
     compileOptions {

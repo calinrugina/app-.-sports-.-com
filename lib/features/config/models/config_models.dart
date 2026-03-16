@@ -1,3 +1,11 @@
+/// Parses a value that may be num or String (API sometimes sends numbers as strings).
+int _parseInt(dynamic value, int defaultValue) {
+  if (value == null) return defaultValue;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value) ?? defaultValue;
+  return defaultValue;
+}
+
 /// Config from api/config: category/sport with blocks to display.
 class CategoryConfig {
   const CategoryConfig({
@@ -15,7 +23,7 @@ class CategoryConfig {
     final blocks = json['blocks'] as List<dynamic>? ?? [];
     final tournaments = json['tournaments'] as List<dynamic>? ?? [];
     return CategoryConfig(
-      id: (json['id'] as num).toInt(),
+      id: _parseInt(json['id'], 0),
       name: json['name'] as String? ?? '',
       slug: json['slug'] as String? ?? '',
       inHeader: json['in_header'] as bool? ?? false,
@@ -79,18 +87,18 @@ class Block {
   factory Block.fromJson(Map<String, dynamic> json) {
     final filters = json['filters'];
     return Block(
-      id: (json['id'] as num?)?.toInt() ?? 0,
-      sportId: (json['sport_id'] as num?)?.toInt() ?? 0,
+      id: _parseInt(json['id'], 0),
+      sportId: _parseInt(json['sport_id'], 0),
       key: json['key'] as String? ?? '',
       title: json['title'] as String? ?? '',
-      layoutType: (json['layout_type'] as num?)?.toInt() ?? 0,
+      layoutType: _parseInt(json['layout_type'], 0),
       contentType: json['content_type'] as String? ?? 'video',
       source: json['source'] as String? ?? 'latest',
       filters: filters is Map ? BlockFilters.fromMap(Map<String, dynamic>.from(filters)) : const BlockFilters(),
-      limit: (json['limit'] as num?)?.toInt() ?? 4,
+      limit: _parseInt(json['limit'], 4),
       enabled: json['enabled'] as bool? ?? true,
-      sortOrder: (json['sort_order'] as num?)?.toInt() ?? 0,
-      cacheTtl: (json['cache_ttl'] as num?)?.toInt() ?? 120,
+      sortOrder: _parseInt(json['sort_order'], 0),
+      cacheTtl: _parseInt(json['cache_ttl'], 120),
       createdAt: json['created_at'] as String?,
       updatedAt: json['updated_at'] as String?,
       logo: json['logo'] as String?,

@@ -72,6 +72,8 @@ class _AssetsListingPageState extends State<AssetsListingPage> {
   bool _loadingMore = false;
   Object? _error;
   final ScrollController _scrollController = ScrollController();
+  bool _showBackToTop = false;
+  static const double _backToTopThreshold = 400;
 
   @override
   void initState() {
@@ -88,10 +90,26 @@ class _AssetsListingPageState extends State<AssetsListingPage> {
   }
 
   void _onScroll() {
+    if (_scrollController.hasClients) {
+      final show = _scrollController.offset > _backToTopThreshold;
+      if (show != _showBackToTop && mounted) {
+        setState(() => _showBackToTop = show);
+      }
+    }
     if (!_hasMore || _loadingMore || _error != null) return;
     final pos = _scrollController.position;
     if (pos.pixels >= pos.maxScrollExtent - 200) {
       _loadPage(_page + 1);
+    }
+  }
+
+  void _scrollToTop() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOutCubic,
+      );
     }
   }
 
@@ -218,9 +236,9 @@ class _AssetsListingPageState extends State<AssetsListingPage> {
     final title = widget.title ?? widget.block.title;
 
     if (_loading && _assets.isEmpty) {
-      return Scaffold(
-        appBar: const SportsAppBar(),
-        body: const Center(child: CircularProgressIndicator()),
+      return const Scaffold(
+        appBar: SportsAppBar(),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -253,6 +271,13 @@ class _AssetsListingPageState extends State<AssetsListingPage> {
 
     return Scaffold(
       appBar: const SportsAppBar(),
+      floatingActionButton: _showBackToTop
+          ? FloatingActionButton.small(
+              onPressed: _scrollToTop,
+              heroTag: 'listing_back_to_top',
+              child: const Icon(Icons.arrow_upward, color: Colors.white),
+            )
+          : null,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

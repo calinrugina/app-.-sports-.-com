@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../../../core/app_functions.dart';
 import '../../../core/widgets/back_header.dart';
 import '../../../core/widgets/sports_app_bar.dart';
 
@@ -55,9 +56,7 @@ class _SimpleWebViewScreenState extends State<SimpleWebViewScreen> {
             children: [
               WebViewWidget(controller: _controller),
               if (_loading)
-                const Center(
-                  child: CircularProgressIndicator(),
-                ),
+                SportsFunction().customLoading(),
             ],
           ))
         ],
