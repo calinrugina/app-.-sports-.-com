@@ -1,9 +1,11 @@
 import 'package:sports_config_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../auth/providers/auth_provider.dart';
-import '../../auth/presentation/login_screen.dart';
+import '../../../core/theme/colors.dart';
 import '../../../core/theme/theme_provider.dart';
+import '../../auth/presentation/login_screen.dart';
+import '../../auth/presentation/signup_screen.dart';
+import '../../auth/providers/auth_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -49,22 +51,62 @@ class ProfileScreen extends ConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.person_outline, size: 60),
-                const SizedBox(height: 12),
-                const Text(
-                  'You are not logged in.',
-                  style: TextStyle(fontSize: 16),
+                const Icon(Icons.person_outline, size: 60, color: AppColors.gray60),
+                const SizedBox(height: 16),
+                Text(
+                  AppLocalizations.of(context)!.user_not_logged_in,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const LoginScreen(),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.redSports,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(
+                      AppLocalizations.of(context)!.sign_in,
+                      style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 12),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const LoginScreen(),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const SignupScreen(),
+                        ),
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.redSports,
+                      side: const BorderSide(color: AppColors.redSports, width: 1.5),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    );
-                  },
-                  child:  Text(AppLocalizations.of(context)!.login_sign_up),
+                    ),
+                    child: Text(
+                      AppLocalizations.of(context)!.sign_up_action,
+                      style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                    ),
+                  ),
                 ),
               ],
             ),

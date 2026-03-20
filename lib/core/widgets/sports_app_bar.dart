@@ -117,28 +117,28 @@ class SportsAppBar extends ConsumerWidget implements PreferredSizeWidget {
           // ),
 
 
-          // IconButton(
-          //   onPressed: () {
-          //     Navigator.of(context).push(
-          //       MaterialPageRoute(
-          //         builder: (_) => const ProfileScreen(),
-          //       ),
-          //     );
-          //   },
-          //   icon: const CircleAvatar(
-          //     radius: 14,
-          //     backgroundColor: Colors.white,
-          //     child: CircleAvatar(
-          //       radius: 12,
-          //       backgroundColor: AppColors.redSports,
-          //       child: Icon(
-          //         Icons.person,
-          //         size: 16,
-          //         color: Colors.white,
-          //       ),
-          //     ),
-          //   ),
-          // ),
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const ProfileScreen(),
+                ),
+              );
+            },
+            icon: const CircleAvatar(
+              radius: 14,
+              backgroundColor: Colors.white,
+              child: CircleAvatar(
+                radius: 12,
+                backgroundColor: AppColors.redSports,
+                child: Icon(
+                  Icons.person,
+                  size: 16,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

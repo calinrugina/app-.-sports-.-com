@@ -5,6 +5,14 @@ import 'package:http/http.dart' as http;
 import '../models/asset.dart';
 import 'api_response.dart';
 
+/// Reads an int from API JSON (value may be [num] or [String]).
+int? _optionalInt(dynamic value) {
+  if (value == null) return null;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value.trim());
+  return null;
+}
+
 /// Which API endpoint to call.
 enum ContentSource {
   latest,
@@ -378,11 +386,11 @@ class MediaPlatformClient {
   AssetsResponse _parsePaginated(Map<String, dynamic> json, int page, int perPage) {
     final data = json['data'] as List<dynamic>? ?? [];
     final meta = json['meta'] as Map<String, dynamic>?;
-    final currentPage = (meta?['current_page'] as num?)?.toInt() ?? page;
-    final lastPage = (meta?['last_page'] as num?)?.toInt();
-    final total = (meta?['total'] as num?)?.toInt();
+    final currentPage = _optionalInt(meta?['current_page']) ?? page;
+    final lastPage = _optionalInt(meta?['last_page']);
+    final total = _optionalInt(meta?['total']);
 
-    final hasMore = meta?['has_more']??false;
+    final hasMore = meta?['has_more'] ?? false;
 
     final assets = data
         .map((e) => Asset.fromJson(Map<String, dynamic>.from(e as Map)))
@@ -398,7 +406,7 @@ class MediaPlatformClient {
 
   AssetsResponse _parseSearch(Map<String, dynamic> json, int limit) {
     final data = json['data'] as List<dynamic>? ?? [];
-    final total = (json['total'] as num?)?.toInt() ?? 0;
+    final total = _optionalInt(json['total']) ?? 0;
     final assets = data
         .map((e) => Asset.fromJson(Map<String, dynamic>.from(e as Map)))
         .toList();
